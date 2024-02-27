@@ -1,6 +1,4 @@
-'use strict'
-
-module.exports = {
+export const config = {
 	puppeteer : {
     		"args": ["--lang=es-ES", "--no-sandbox", "--disable-setuid-sandbox"],
 		"headless": true,

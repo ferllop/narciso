@@ -1,9 +1,7 @@
-'use strict'
+import puppeteer from 'puppeteer'
+import { config } from './.env.js'
 
-const puppeteer = require('puppeteer'),
-    config = require('./.env')
-
-const starOfService = async (url) => {
+export const starOfService = async (url) => {
     let browser = await puppeteer.launch(config.puppeteer);
     const page = await browser.newPage()
 
@@ -58,5 +56,3 @@ const starOfService = async (url) => {
 
     return reviews
 }
-
-module.exports = starOfService

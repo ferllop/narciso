@@ -1,25 +1,24 @@
-'use strict'
-
-const
-    fs = require('fs'),
-    config = require('./.env'),
-    providers = {
-        google : require('./google'),
-        star_of_service : require('./star-of-service')
-    };
+import fs from 'node:fs'
+import { config } from './.env.js'
+import { google } from './google.js'
+import { starOfService } from './star-of-service.js'
 
 (async () => {
+    const providers = {
+        google,
+        star_of_service: starOfService,
+    }
     let reviews = []
     
     for (const web of config.webs) {
-        if ( ! web.activate)
+        if (!web.activate)
             continue
         
         try {
             let providerReviews = await providers[web.provider](web.url)
             await providerReviews.forEach( review => reviews.push(review) )
         } catch (ex) {
-            console.log("Ha habido un error: " + ex.message);
+            console.log("Ha habido un error: " + ex.message)
         }
     
     }
@@ -30,4 +29,4 @@ const
             return
         }
     })
-})();
+})()
