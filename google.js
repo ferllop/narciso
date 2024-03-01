@@ -1,7 +1,6 @@
 import puppeteer from 'puppeteer'
-import { config } from './.env.js'
 
-export const google = async (url) => 
+export const google = config => async url => 
 {
     let browser = await puppeteer.launch(config.puppeteer);
     const page = await browser.newPage()

@@ -1,7 +1,6 @@
 import puppeteer from 'puppeteer'
-import { config } from './.env.js'
 
-export const starOfService = async (url) => {
+export const starOfService = config => async url => {
     let browser = await puppeteer.launch(config.puppeteer);
     const page = await browser.newPage()
 
