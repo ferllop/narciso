@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import configData from './config.json' assert {type: 'json'}
+import configData from '../config.json' assert {type: 'json'}
 import { google } from './google.js'
 import { starOfService } from './star-of-service.js'
 import { configParser } from './config-parser.js'
