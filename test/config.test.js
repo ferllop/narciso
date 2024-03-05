@@ -18,10 +18,14 @@ const assertConfigWithData = configData => ({
 })
 
 const assertPath = (...path) => {
-    const applyPath =  (obj, path) => 
-        path.length === 0 
-            ? obj 
-            : applyPath(obj[path[0]], path.slice(1))
+    const applyPath =  (obj, path) => {
+        if (path.length === 0) {
+            return obj
+        } 
+
+        const [p, ...ps] = path
+        return applyPath(obj[p], ps)
+    }
 
     return {
         inConfigWithData: configData => ({
