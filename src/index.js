@@ -3,11 +3,13 @@ import configData from '../config.json' assert {type: 'json'}
 import { google } from './google.js'
 import { starOfService } from './star-of-service.js'
 import { configParser } from './config-parser.js'
+import puppeteer from 'puppeteer'
 
 (async () => {
     const config = configParser(configData)
+    const browser = await puppeteer.launch(config.puppeteer)
     const providers = {
-        google: google(config),
+        google: google(browser, config),
         star_of_service: starOfService(config),
     }
     let reviews = []
@@ -25,10 +27,11 @@ import { configParser } from './config-parser.js'
     
     }
     
-    await fs.writeFile('./reviews.json', JSON.stringify(reviews, null, 2), (err) => {
+    fs.writeFileSync('./reviews.json', JSON.stringify(reviews, null, 2), (err) => {
         if (err) {
             console.error(err)
             return
         }
     })
+    await browser.close()
 })()
