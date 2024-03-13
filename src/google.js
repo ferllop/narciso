@@ -53,11 +53,13 @@ export const loadAllReviews = async (page, reviewSelector) => {
     } while (loadedQuantity > previousQuantity)
 }
 
-export const getInnermostByText = async (text, page) => page.$eval(`::-p-text(${text})`, el => el.classList) 
+export const getInnermostByText = async (text, page) => page.$(`::-p-text(${text})`) 
 
 export const getClassOfElementWithText = async (name, page) => {
-    const classList = await getInnermostByText(name, page)
-    return '.' + classList[0]
+    const el = await getInnermostByText(name, page)
+    const tag = await el.evaluate(el => el.nodeName.toLowerCase())
+    const className = await el.evaluate(el => el.classList[0])
+    return tag + '.' + className
 }
 
 export const getReviews = async (page, reviewsSelector) => page.$$(reviewsSelector)
@@ -79,13 +81,21 @@ export const getName = nameSelector => async review =>
 
 export const getContent = contentSelector => 
     async review => {
-        const moreButton = await review.$(`[aria-label~="más"]`)
-        // const moreButton = await review.$(`button ::-p-text(Más)`)
-        console.log(moreButton)
-        // const translateButton = getInnermostByText('Ver original')(review)
-        if (moreButton) {
-            await moreButton.click()
+        const content = await review.$(contentSelector)
+        if (!content) {
+            return Promise.resolve('')
         }
+
+        const translateButton = await review.$(`span ::-p-text(Ver original)`)
+        if (translateButton) {
+            await translateButton.evaluate(b => b.click())
+        }
+
+        const moreButton = await review.$(`button ::-p-text(Más)`)
+        if (moreButton) {
+            await moreButton.evaluate(b => b.click())
+        }
+
         return review.$eval(contentSelector, el => el.innerHTML)
     }
 

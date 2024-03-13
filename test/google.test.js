@@ -11,7 +11,7 @@ const config = configParser({
         "browserLanguage": browserLanguage,
         "sandboxBrowser": true,
         "disableSetuidSandbox": true,
-        "headless": false,
+        "headless": true,
         "dumpio": true
     },
     "webs":[{
@@ -80,5 +80,22 @@ describe('given google scraper', async () => {
         assert(rejectCookiesButton.click, 'the handle must be clickable')
     })
 
+    it('when it ', async () => {
+        await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url'))
+        const reviews = await getReviews(page, '.jftiEf')
+        const nameSelector = await getClassOfElementWithText('Lidia Gonzalez Pot', page)
+        const contentSelector = await getClassOfElementWithText('¡Buen trato, buena faena, buen resultado! Recomendable', page)
+        const reviewsResult = await Promise.all(reviews.map( async review => {
+            const rating = await getRating(review)
+            const name = await getName(nameSelector)(review)
+            const content = await getContent(contentSelector)(review)
+            return {
+                rating, name, content
+            }
+        }))
+
+
+        console.log(reviewsResult.filter(review => review.content.length > 0))
+    })
 })
 
