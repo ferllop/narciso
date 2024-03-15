@@ -48,25 +48,6 @@ export const executeClickIfPresent = async (reason, handle, selector) => {
 export const clickOrFailOnTagContainingText = async (reason, JSHandle, tag, text, timeout = 30000) => 
     executeClickOrFail(reason, JSHandle, `${tag} ::-p-text(${text})`, timeout)
 
-export const clickOnRejectCookiesButton = async (page, rejectButtonText, timeout = 30000) => {
-    return executeClickOrFail('to reject cookies', page, `button ::-p-text(${rejectButtonText})`, timeout)
-}
-
-const goToReviewsSection = async (page, ariaLabelWord) => {
-    const selector = `[aria-label~="${ariaLabelWord}"]`
-    return executeClickOrFail('to navigate to reviews section', page, selector)
-}
-
-const orderByNewest = async (page, orderSelectAriaLabel) => {
-    const action = async () => {
-        await page.waitForNetworkIdle()
-        await page.click(`[aria-label~="${orderSelectAriaLabel}"`)
-        await page.keyboard.press('ArrowDown')
-        await page.keyboard.press('Enter')
-    }
-    return execute('ORDER_REVIEWS_BY_NEWEST', action, false)
-}
-
 export const getFirstClassOfElementWithText = async (name, page) => {
     const action = async () => {
         const el = await page.$(`::-p-text(${name})`)
@@ -96,10 +77,10 @@ export const getRating = async review => {
     const action = async () => review.$eval(
         '[aria-label~="estrellas"]', 
         rating => rating.getAttribute('aria-label').replace(/\D/g, ''))
-    return execute('get Rating', action, true)
+    return execute('GET_RATING', action, true)
 }
 
-export const getName = nameSelector => async review => {
+export const getName = async (review, nameSelector) => {
     const action = async () => review.$eval(
         nameSelector,
         el => el.innerText
@@ -108,29 +89,29 @@ export const getName = nameSelector => async review => {
                 .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
                 .join(' ')
                 )
-    return execute('get author name', action, true)
+    return execute('GET_AUTHOR_NAME', action, true)
 }
 
-export const viewEntireContent = async review => 
-    executeClickIfPresent('to view the entire content', review, `button ::-p-text(Más)`)
+export const viewEntireContent = async (review, viewMoreButtonText) => 
+    executeClickIfPresent('to view the entire content', review, `button ::-p-text(${viewMoreButtonText})`)
 
-export const viewUntranslatedContent = async review => 
-    executeClickIfPresent('to view untranslated content', review, `span ::-p-text(Ver original)`)
+export const viewUntranslatedContent = async (review, viewUntranslatedButtonText) => 
+    executeClickIfPresent('to view untranslated content', review, `span ::-p-text(${viewUntranslatedButtonText})`)
 
-export const getContent = contentSelector => async review => {
+export const getContent = async (review, contentSelector, viewMoreButtonText, viewUntranslatedButtonText) => {
     const action = async () => {
         const content = await review.$(contentSelector)
         if (!content) {
             return Promise.resolve('')
         }
-        await viewEntireContent(review)
-        await viewUntranslatedContent(review)
+        await viewEntireContent(review, viewMoreButtonText)
+        await viewUntranslatedContent(review, viewUntranslatedButtonText)
         return review.$eval(contentSelector, el => el.innerHTML)
     }
-    return execute('get content', action, true)
+    return execute('GET_CONTENT', action, true)
 }
 
-export const scrapeReviews = async (reviews, webConfig, nameSelector, contentSelector) => {
+export const scrapeReviews = async (reviews, webConfig, selectors, viewMoreButtonText, viewUntranslatedButtonText) => {
     const action = async () => { 
         const {ignore_reviews, provider} = webConfig
         const minimumRating = ignore_reviews.by_minimum_rating
@@ -139,8 +120,8 @@ export const scrapeReviews = async (reviews, webConfig, nameSelector, contentSel
         let accum = []
         for await (const review of reviews) {
             const rating = await getRating(review)
-            const name = await getName(nameSelector)(review)
-            const content = await getContent(contentSelector)(review)
+            const name = await getName(review, selectors.name)
+            const content = await getContent(review, selectors.content, viewMoreButtonText, viewUntranslatedButtonText)
 
             if (rating < minimumRating 
                 || content.length < minimumCharInContent 
@@ -169,9 +150,12 @@ export const loadAllReviews = async (page, lastReview) => {
 }
 
 export const scrapeGoogleUrl = browser => async webConfig => {
-    const rejectCookiesButtonText = 'Rechazar Todo'
+    const rejectCookiesButtonText = 'Rechazar todo'
     const reviewsSectionButtonText = 'Reseñas'
     const orderingButtonText = 'Ordenar'
+    const byNewestOptionText = 'Más recientes'
+    const viewMoreButtonText = 'Más'
+    const viewUntranslatedButtonText = 'Ver original'
     const knownReview = {
         name: 'Lidia Gonzalez Pot',
         content: '¡Buen trato, buena faena, buen resultado! Recomendable',
@@ -180,16 +164,17 @@ export const scrapeGoogleUrl = browser => async webConfig => {
 
     const page = await browser.newPage()
     await page.goto(webConfig.url)
-    await clickOrFailOnTagContainingText('to reject cookies', page, 'button', rejectCookiesButtonText)
+    await clickOrFailOnTagContainingText('to reject cookies', page, 'button', rejectCookiesButtonText, 5000)
     await clickOrFailOnTagContainingText('to go to reviews tab', page, 'button', reviewsSectionButtonText)
     await clickOrFailOnTagContainingText('to open ordering options', page, 'button', orderingButtonText)
-    await page.keyboard.press('ArrowDown')
-    await page.keyboard.press('Enter')
-    await page.waitForNetworkIdle()
+    await clickOrFailOnTagContainingText('to order by newest', page, '', byNewestOptionText)
     await loadAllReviews(page, oldestReview)
-    const reviewSelector = await getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page)
-    const reviews = await getReviewElements(page, reviewSelector)
-    const nameSelector = await getFirstClassOfElementWithText(knownReview.name, page)
-    const contentSelector = await getFirstClassOfElementWithText(knownReview.content, page)
-    return await scrapeReviews(reviews, webConfig, nameSelector, contentSelector)
+
+    const selectors = {
+        review: await getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page),
+        name: await getFirstClassOfElementWithText(knownReview.name, page),
+        content: await getFirstClassOfElementWithText(knownReview.content, page),
+    }
+    const reviews = await getReviewElements(page, selectors.review)
+    return await scrapeReviews(reviews, webConfig, selectors, viewMoreButtonText, viewUntranslatedButtonText)
 }
