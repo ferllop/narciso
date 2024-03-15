@@ -45,6 +45,9 @@ export const executeClickIfPresent = async (reason, handle, selector) => {
     return execute(message, action, true)
 }
 
+export const clickOrFailOnTagContainingText = async (reason, JSHandle, tag, text, timeout = 30000) => 
+    executeClickOrFail(reason, JSHandle, `${tag} ::-p-text(${text})`, timeout)
+
 export const clickOnRejectCookiesButton = async (page, rejectButtonText, timeout = 30000) => {
     return executeClickOrFail('to reject cookies', page, `button ::-p-text(${rejectButtonText})`, timeout)
 }
@@ -64,26 +67,7 @@ const orderByNewest = async (page, orderSelectAriaLabel) => {
     return execute('ORDER_REVIEWS_BY_NEWEST', action, false)
 }
 
-export const loadAllReviews = async (page, reviewSelector) => {
-    const action = async () => {
-        await goToReviewsSection(page, 'Reseñas')
-        await orderByNewest(page, 'Ordenar')
-        await page.waitForNetworkIdle()
-        await page.keyboard.press('Tab')
-
-        let previousQuantity
-        let loadedQuantity = await page.$$eval(reviewSelector, nodes => nodes.length)
-        do {
-            previousQuantity = loadedQuantity
-            await page.keyboard.press('End')
-            await page.waitForNetworkIdle()
-            loadedQuantity = await page.$$eval(reviewSelector, nodes => nodes.length)
-        } while (loadedQuantity > previousQuantity)
-    }
-    return execute('SCROLL_UNTIL_ALL_REVIEWS_ARE_LOADED', action, false)
-}
-
-export const getClassOfElementWithText = async (name, page) => {
+export const getFirstClassOfElementWithText = async (name, page) => {
     const action = async () => {
         const el = await page.$(`::-p-text(${name})`)
         const tag = await el.evaluate(el => el.nodeName.toLowerCase())
@@ -91,6 +75,16 @@ export const getClassOfElementWithText = async (name, page) => {
         return tag + '.' + className
     }
     return execute(`GET_CLASS_OF_ELEMENT_WITH_TEXT ${name}`, action, false)
+}
+
+export const getFirstClassOfElementWithSelector = async (selector, page) => {
+    const action = async () => {
+        const el = await page.$(selector)
+        const tag = await el.evaluate(el => el.nodeName.toLowerCase())
+        const className = await el.evaluate(el => el.classList[0])
+        return tag + '.' + className
+    }
+    return execute(`GET_CLASS_OF_ELEMENT_WITH_SELECTOR ${selector}`, action, false)
 }
 
 export const getReviewElements = async (page, reviewsSelector) => {
@@ -161,13 +155,41 @@ export const scrapeReviews = async (reviews, webConfig, nameSelector, contentSel
     return execute('scrape reviews', action, false)
 }
 
+export const loadAllReviews = async (page, lastReview) => {
+    const action = async () => {
+        await page.keyboard.press('Tab')
+        let lastReviewElement
+        do {
+            await page.keyboard.press('End')
+            await page.waitForNetworkIdle()
+            lastReviewElement = await page.$(`::-p-text(${lastReview.name})`)
+        } while (!lastReviewElement)
+    }
+    return execute('SCROLL_UNTIL_ALL_REVIEWS_ARE_LOADED', action, false)
+}
+
 export const scrapeGoogleUrl = browser => async webConfig => {
+    const rejectCookiesButtonText = 'Rechazar Todo'
+    const reviewsSectionButtonText = 'Reseñas'
+    const orderingButtonText = 'Ordenar'
+    const knownReview = {
+        name: 'Lidia Gonzalez Pot',
+        content: '¡Buen trato, buena faena, buen resultado! Recomendable',
+    }
+    const oldestReview = { name: 'Q- Beat' }
+
     const page = await browser.newPage()
     await page.goto(webConfig.url)
-    await clickOnRejectCookiesButton(page, 'Rechazar')
-    await loadAllReviews(page, '.jftiEf')
-    const reviews = await getReviewElements(page, '.jftiEf')
-    const nameSelector = await getClassOfElementWithText('Lidia Gonzalez Pot', page)
-    const contentSelector = await getClassOfElementWithText('¡Buen trato, buena faena, buen resultado! Recomendable', page)
+    await clickOrFailOnTagContainingText('to reject cookies', page, 'button', rejectCookiesButtonText)
+    await clickOrFailOnTagContainingText('to go to reviews tab', page, 'button', reviewsSectionButtonText)
+    await clickOrFailOnTagContainingText('to open ordering options', page, 'button', orderingButtonText)
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    await page.waitForNetworkIdle()
+    await loadAllReviews(page, oldestReview)
+    const reviewSelector = await getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page)
+    const reviews = await getReviewElements(page, reviewSelector)
+    const nameSelector = await getFirstClassOfElementWithText(knownReview.name, page)
+    const contentSelector = await getFirstClassOfElementWithText(knownReview.content, page)
     return await scrapeReviews(reviews, webConfig, nameSelector, contentSelector)
 }
