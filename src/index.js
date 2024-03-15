@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import configData from '../config.json' assert {type: 'json'}
-import { google } from './google.js'
+import { scrapeGoogleUrl } from './google.js'
 import { starOfService } from './star-of-service.js'
 import { configParser } from './config-parser.js'
 import puppeteer from 'puppeteer'
@@ -9,7 +9,7 @@ import puppeteer from 'puppeteer'
     const config = configParser(configData)
     const browser = await puppeteer.launch(config.puppeteer)
     const providers = {
-        google: google(browser, config),
+        google: scrapeGoogleUrl(browser),
         star_of_service: starOfService(config),
     }
     let reviews = []
@@ -19,10 +19,11 @@ import puppeteer from 'puppeteer'
             continue
         
         try {
-            let providerReviews = await providers[web.provider](web.url)
+            let providerReviews = await providers[web.provider](web)
             await providerReviews.forEach( review => reviews.push(review) )
         } catch (ex) {
-            console.log("Ha habido un error: " + ex.message)
+            console.log(`There was an error scraping the web titled ${web.title ?? 'untitled'}: ` + ex.message)
+            continue
         }
     
     }
