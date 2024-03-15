@@ -2,7 +2,15 @@ import { describe, it, before, beforeEach, after, afterEach} from 'node:test'
 import assert from 'node:assert'
 import puppeteer, { ElementHandle } from 'puppeteer'
 import { configParser } from '../src/config-parser.js'
-import { findRejectCookiesButton, getClassOfElementWithText, getContent, getName, getRating, getReviews, google, loadAllReviews } from '../src/google.js'
+import { 
+    clickOnRejectCookiesButton, 
+    getClassOfElementWithText, 
+    getReviewElements, 
+    loadAllReviews, 
+    scrapeReviews, 
+    viewEntireContent,
+    viewUntranslatedContent
+} from '../src/google.js'
 import { getAbsoluteFilePath, writeWebContentToFile } from './helpers.js'
 
 const browserLanguage = 'es-ES'
@@ -26,7 +34,6 @@ const config = configParser({
     }]
 })
 
-
 const getAbsoluteFilePathWithLanguageSuffix = getAbsoluteFilePath('', `-${browserLanguage}.html`)
 
 describe('given google scraper', async () => {
@@ -34,15 +41,15 @@ describe('given google scraper', async () => {
     before(async () => {
         await writeWebContentToFile(
             browser,
-            config.webs[0].url, 
+            config.webs[0].url,
             getAbsoluteFilePathWithLanguageSuffix('google-cookies-consent'))
 
         await writeWebContentToFile(
             browser,
-            config.webs[0].url, 
-            getAbsoluteFilePathWithLanguageSuffix('google-url'), 
+            config.webs[0].url,
+            getAbsoluteFilePathWithLanguageSuffix('google-url'),
             async page => {
-                const reject = await findRejectCookiesButton(page, 'Rechazar', 500)
+                const reject = await clickOnRejectCookiesButton(page, 'Rechazar', 500)
                 await reject.click()
                 await loadAllReviews(page, '.jftiEf') })
     })
@@ -75,27 +82,36 @@ describe('given google scraper', async () => {
         then it knows how to find the button to reject the cookies', async () => {
         const cookiesHtml = getAbsoluteFilePathWithLanguageSuffix('google-cookies-consent')
         await page.goto(cookiesHtml)
-        const rejectCookiesButton = await findRejectCookiesButton(page, 'Rechazar', 500)
+        const rejectCookiesButton = await clickOnRejectCookiesButton(page, 'Rechazar', 500)
         assert(rejectCookiesButton instanceof ElementHandle, 'an element handle must be found')
         assert(rejectCookiesButton.click, 'the handle must be clickable')
     })
 
-    it('when it ', async () => {
+    it('when it scrapes a review \
+        then it knows how to find the button to view the entire content', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url'))
-        const reviews = await getReviews(page, '.jftiEf')
+        const reviews = await getReviewElements(page, '.jftiEf')
+        const moreButton = await viewEntireContent(reviews[0])
+        assert(moreButton instanceof ElementHandle, 'an element handle must be found')
+        assert(moreButton.click, 'the handle must be clickable')
+    })
+
+    it('when it scrapes a review \
+        then it knows how to find the button to view the untranslated content', async () => {
+        await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url'))
+        const reviews = await getReviewElements(page, '.jftiEf')
+        const seeOriginalButton = await viewUntranslatedContent(reviews[5])
+        assert(seeOriginalButton instanceof ElementHandle, 'an element handle must be found')
+        assert(seeOriginalButton.click, 'the handle must be clickable')
+    })
+    it('when it scrapes a reviews page it scrapes the first and the last reviews', async () => {
+        await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url'))
+        const reviews = await getReviewElements(page, '.jftiEf')
         const nameSelector = await getClassOfElementWithText('Lidia Gonzalez Pot', page)
         const contentSelector = await getClassOfElementWithText('¡Buen trato, buena faena, buen resultado! Recomendable', page)
-        const reviewsResult = await Promise.all(reviews.map( async review => {
-            const rating = await getRating(review)
-            const name = await getName(nameSelector)(review)
-            const content = await getContent(contentSelector)(review)
-            return {
-                rating, name, content
-            }
-        }))
-
-
-        console.log(reviewsResult.filter(review => review.content.length > 0))
+        const reviewsResult = await scrapeReviews(reviews, config.webs[0], nameSelector, contentSelector)
+        assert(reviewsResult.some(({name}) => name === 'Q- Beat'))
+        assert(reviewsResult.some(({name}) => name === 'Lorena Antúnez'))
     })
 })
 
