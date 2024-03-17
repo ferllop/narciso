@@ -1,3 +1,5 @@
+import puppeteer from "puppeteer"
+
 /**
 * @typedef {(message: string) => void } log
 */
@@ -9,6 +11,8 @@
 /**
 * @type number Milliseconds
 */
+
+const launchBrowser = config => async () => await puppeteer.launch(config.puppeteer)
 
 export const execute = (/** @type logger */ logger) => async (actionName, action, /** @type boolean */ onlyLogIfError) => {
 	if (!onlyLogIfError) {
@@ -78,12 +82,13 @@ export const getFirstClassOfElementWithSelector = (/** @type logger */ logger) =
 	return execute(logger)(`GET_CLASS_OF_ELEMENT_WITH_SELECTOR ${selector}`, action, false)
 }
 
-export const Bot = (/** @type Logger */ logger, /** @type Milliseconds */ timeout = 30000) => {
+export const Bot = (config, /** @type Logger */ logger) => {
 	return {
+		launchBrowser: launchBrowser(config),
 		execute: execute(logger),
-		executeClickOrFail: executeClickOrFail(logger, timeout),
+		executeClickOrFail: executeClickOrFail(logger, config.puppeteer.timeout),
 		executeClickIfPresent: executeClickIfPresent(logger),
-		clickOrFailOnTagContainingText: clickOrFailOnTagContainingText(logger, timeout),
+		clickOrFailOnTagContainingText: clickOrFailOnTagContainingText(logger, config.puppeteer.timeout),
 		getFirstClassOfElementWithText: getFirstClassOfElementWithText(logger),
 		getFirstClassOfElementWithSelector: getFirstClassOfElementWithSelector(logger),
 	}

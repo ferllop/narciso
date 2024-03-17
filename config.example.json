@@ -4,7 +4,8 @@
     "sandboxBrowser": true,
     "disableSetuidSandbox": true,
     "headless": false,
-    "dumpio": true
+    "dumpio": true,
+    "timeout": 30000
   },
   "webs": [
     {

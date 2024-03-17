@@ -1,6 +1,6 @@
 import { describe, it, before, beforeEach, after, afterEach} from 'node:test'
 import assert from 'node:assert'
-import puppeteer, { ElementHandle } from 'puppeteer'
+import { ElementHandle } from 'puppeteer'
 import { configParser } from '../src/config-parser.js'
 import { 
     getReviewElements, 
@@ -20,7 +20,8 @@ const config = configParser({
         "sandboxBrowser": true,
         "disableSetuidSandbox": true,
         "headless": true,
-        "dumpio": true
+        "dumpio": true,
+        "timeout": 500
     },
     "webs":[{
         "activate": true,
@@ -42,10 +43,10 @@ const knownReview = config.webs[0].knownReview
 
 const getAbsoluteFilePathWithLanguageSuffix = getAbsoluteFilePath('', `-${browserLanguage}.html`)
 const doNothing = () => {}
-const testBot = Bot({logStart: doNothing, logFinish: doNothing, logError: doNothing}, 500)
+const testBot = Bot(config, {logStart: doNothing, logFinish: doNothing, logError: doNothing})
 
 describe('given google scraper', async () => {
-    const browser = await puppeteer.launch(config.puppeteer)
+    const browser = await testBot.launchBrowser()
     before(async () => {
         await writeWebContentToFile(
             browser,

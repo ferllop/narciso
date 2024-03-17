@@ -3,7 +3,6 @@ import configData from '../config.json' assert {type: 'json'}
 import { scrapeGoogleUrl } from './google.js'
 import { starOfService } from './star-of-service.js'
 import { configParser } from './config-parser.js'
-import puppeteer from 'puppeteer'
 import { Bot } from './bot.js'
 
 (async () => {
@@ -13,9 +12,10 @@ import { Bot } from './bot.js'
         logError: console.error
     }
     const config = configParser(configData)
-    const browser = await puppeteer.launch(config.puppeteer)
+    const bot = Bot(config, logger, 30000)
+    const browser = await bot.launchBrowser()
     const providers = {
-        google: scrapeGoogleUrl(Bot(logger, 30000), browser),
+        google: scrapeGoogleUrl(bot, browser),
         star_of_service: starOfService(config),
     }
 
