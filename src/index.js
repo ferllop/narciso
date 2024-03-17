@@ -4,20 +4,25 @@ import { scrapeGoogleUrl } from './google.js'
 import { starOfService } from './star-of-service.js'
 import { configParser } from './config-parser.js'
 import puppeteer from 'puppeteer'
+import { Bot } from './bot.js'
 
 (async () => {
+    const logger = {
+        logStart: console.info, 
+        logFinish: console.info, 
+        logError: console.error
+    }
     const config = configParser(configData)
     const browser = await puppeteer.launch(config.puppeteer)
     const providers = {
-        google: scrapeGoogleUrl(browser),
+        google: scrapeGoogleUrl(Bot(logger, 30000), browser),
         star_of_service: starOfService(config),
     }
+
     let reviews = []
-    
     for (const web of config.webs) {
         if (!web.activate)
             continue
-        
         try {
             let providerReviews = await providers[web.provider](web)
             await providerReviews.forEach( review => reviews.push(review) )
@@ -25,7 +30,6 @@ import puppeteer from 'puppeteer'
             console.log(`There was an error scraping the web titled ${web.title ?? 'untitled'}: ` + ex.message)
             continue
         }
-    
     }
     
     fs.writeFileSync('./reviews.json', JSON.stringify(reviews, null, 2), (err) => {
