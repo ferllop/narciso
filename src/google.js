@@ -1,17 +1,19 @@
 export const getReviewElements = async (bot, page, reviewsSelector) => {
-    const action = async () => page.$$(reviewsSelector)
+    const action = async () => bot.findAll(page, reviewsSelector)
     return bot.execute(`GET REVIEWS WITH SELECTOR ${reviewsSelector}`, action, false)
 }
 
 export const getRating = async (bot, review) => {
-    const action = async () => review.$eval(
+    const action = async () => bot.findOneAndEval(
+        review,
         '[aria-label~="estrellas"]', 
         rating => rating.getAttribute('aria-label').replace(/\D/g, ''))
     return bot.execute('GET_RATING', action, true)
 }
 
 export const getName = async (bot, review, nameSelector) => {
-    const action = async () => review.$eval(
+    const action = async () => bot.findOneAndEval(
+        review,
         nameSelector,
         el => el.innerText
                 .toLowerCase()
@@ -30,13 +32,13 @@ export const viewUntranslatedContent = async (bot, review, viewUntranslatedButto
 
 export const getContent = async (bot, review, contentSelector, viewMoreButtonText, viewUntranslatedButtonText) => {
     const action = async () => {
-        const content = await review.$(contentSelector)
+        const content = await bot.findOne(review, contentSelector)
         if (!content) {
             return Promise.resolve('')
         }
         await viewEntireContent(bot, review, viewMoreButtonText)
         await viewUntranslatedContent(bot, review, viewUntranslatedButtonText)
-        return review.$eval(contentSelector, el => el.innerHTML)
+        return bot.findOneAndEval(review, contentSelector, el => el.innerHTML)
     }
     return bot.execute('GET_CONTENT', action, true)
 }
@@ -68,12 +70,12 @@ export const scrapeReviews = async (bot, reviews, webConfig, selectors, viewMore
 
 export const loadAllReviews = async (bot, page, lastReview) => {
     const action = async () => {
-        await page.keyboard.press('Tab')
+        await bot.pressKey(page, 'Tab')
         let lastReviewElement
         do {
-            await page.keyboard.press('End')
-            await page.waitForNetworkIdle()
-            lastReviewElement = await page.$(`::-p-text(${lastReview.name})`)
+            await bot.pressKey(page, 'End')
+            await bot.waitForNetworkIdle(page)
+            lastReviewElement = await bot.findOne(page, `::-p-text(${lastReview.name})`)
         } while (!lastReviewElement)
     }
     return bot.execute('SCROLL_UNTIL_ALL_REVIEWS_ARE_LOADED', action, false)
@@ -96,7 +98,7 @@ export const scrapeGoogleUrl = (bot, browser) => async webConfig => {
     const oldestReview = { name: 'Q- Beat' }
 
     const page = await browser.newPage()
-    await page.goto(webConfig.url)
+    await bot.goto(page, webConfig.url)
     await rejectCookies(bot, page, rejectCookiesButtonText)
     await bot.clickOrFailOnTagContainingText('to go to reviews tab', page, 'button', reviewsSectionButtonText)
     await bot.clickOrFailOnTagContainingText('to open ordering options', page, 'button', orderingButtonText)

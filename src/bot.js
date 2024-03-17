@@ -13,6 +13,12 @@ import puppeteer from "puppeteer"
 */
 
 const launchBrowser = config => async () => await puppeteer.launch(config.puppeteer)
+const findOne = async (handle, selector) => handle.$(selector)
+const findAll = async (handle, selector) => handle.$$(selector)
+const findOneAndEval = async (handle, selector, f) => handle.$eval(selector, f)
+const pressKey = async (handle, key) => await handle.keyboard.press(key)
+const waitForNetworkIdle = config => async handle => await handle.waitForNetworkIdle(config.puppeteer.timeout)
+const goto = async (page, url) => page.goto(url)
 
 export const execute = (/** @type logger */ logger) => async (actionName, action, /** @type boolean */ onlyLogIfError) => {
 	if (!onlyLogIfError) {
@@ -85,6 +91,12 @@ export const getFirstClassOfElementWithSelector = (/** @type logger */ logger) =
 export const Bot = (config, /** @type Logger */ logger) => {
 	return {
 		launchBrowser: launchBrowser(config),
+		findOne,
+		findAll,
+		findOneAndEval,
+		pressKey,
+		goto,
+		waitForNetworkIdle: waitForNetworkIdle(config),
 		execute: execute(logger),
 		executeClickOrFail: executeClickOrFail(logger, config.puppeteer.timeout),
 		executeClickIfPresent: executeClickIfPresent(logger),
