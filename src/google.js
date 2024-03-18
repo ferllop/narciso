@@ -1,46 +1,29 @@
-export const getReviewElements = async (bot, page, reviewsSelector) => {
-    const action = async () => bot.findAll(page, reviewsSelector)
-    return bot.execute(`GET REVIEWS WITH SELECTOR ${reviewsSelector}`, action, false)
-}
+export const getReviewElements = async (bot, page, reviewsSelector) => 
+    bot.findAll('to get reviews', page, reviewsSelector)
 
-export const getRating = async (bot, review) => {
-    const action = async () => bot.findOneAndEval(
+export const getRating = async (bot, review) =>
+    bot.findOneAndEval(
+        'to get the rating',
         review,
         '[aria-label~="estrellas"]', 
         rating => rating.getAttribute('aria-label').replace(/\D/g, ''))
-    return bot.execute('GET_RATING', action, true)
-}
 
-export const getName = async (bot, review, nameSelector) => {
-    const action = async () => bot.findOneAndEval(
+
+export const getName = async (bot, review, nameSelector) =>
+    await bot.findOneAndEval(
+        'to get the author name',
         review,
         nameSelector,
         el => el.innerText
-                .toLowerCase()
-                .split(' ')
-                .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
-                .join(' ')
-                )
-    return bot.execute('GET_AUTHOR_NAME', action, true)
-}
-
-export const viewEntireContent = async (bot, review, viewMoreButtonText) => 
-    bot.executeClickIfPresent('to view the entire content', review, `button ::-p-text(${viewMoreButtonText})`)
-
-export const viewUntranslatedContent = async (bot, review, viewUntranslatedButtonText) => 
-    bot.executeClickIfPresent('to view untranslated content', review, `span ::-p-text(${viewUntranslatedButtonText})`)
+            .toLowerCase()
+            .split(' ')
+            .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+            .join(' '))
 
 export const getContent = async (bot, review, contentSelector, viewMoreButtonText, viewUntranslatedButtonText) => {
-    const action = async () => {
-        const content = await bot.findOne(review, contentSelector)
-        if (!content) {
-            return Promise.resolve('')
-        }
-        await viewEntireContent(bot, review, viewMoreButtonText)
-        await viewUntranslatedContent(bot, review, viewUntranslatedButtonText)
-        return bot.findOneAndEval(review, contentSelector, el => el.innerHTML)
-    }
-    return bot.execute('GET_CONTENT', action, true)
+    await bot.clickIfPresent('to view the entire content', review, `button ::-p-text(${viewMoreButtonText})`)
+    await bot.clickIfPresent('to view untranslated content', review, `span ::-p-text(${viewUntranslatedButtonText})`)
+    return await bot.findOneAndEval('to get the content', review, contentSelector, el => el.innerHTML, () => '')
 }
 
 export const scrapeReviews = async (bot, reviews, webConfig, selectors, viewMoreButtonText, viewUntranslatedButtonText) => {
@@ -51,9 +34,10 @@ export const scrapeReviews = async (bot, reviews, webConfig, selectors, viewMore
         const minimumCharInContent = ignore_reviews.by_minimum_characters_count_in_content
         let accum = []
         for await (const review of reviews) {
-            const rating = await getRating(bot, review)
-            const name = await getName(bot, review, selectors.name)
-            const content = await getContent(bot, review, selectors.content, viewMoreButtonText, viewUntranslatedButtonText)
+            const logOnlyOnErrorBot = bot.modifyLogger({logStart: () => {}, logFinish: () => {}})
+            const rating = await getRating(logOnlyOnErrorBot, review)
+            const name = await getName(logOnlyOnErrorBot, review, selectors.name)
+            const content = await getContent(logOnlyOnErrorBot, review, selectors.content, viewMoreButtonText, viewUntranslatedButtonText)
 
             if (rating < minimumRating 
                 || content.length < minimumCharInContent 

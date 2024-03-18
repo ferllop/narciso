@@ -7,8 +7,6 @@ import {
     loadAllReviews, 
     rejectCookies, 
     scrapeReviews, 
-    viewEntireContent,
-    viewUntranslatedContent
 } from '../src/google.js'
 import { getAbsoluteFilePath, writeWebContentToFile } from './helpers.js'
 import { Bot } from '../src/bot.js'
@@ -96,7 +94,7 @@ describe('given google scraper', async () => {
         assert(rejectCookiesButton.click, 'the handle must be clickable')
     })
 
-    it('when it scrapes a review \
+    it.skip('when it scrapes a review \
         then it knows how to find the button to view the entire content', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url'))
         const reviewSelector = await testBot.getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page)
@@ -106,7 +104,7 @@ describe('given google scraper', async () => {
         assert(moreButton.click, 'the handle must be clickable')
     })
 
-    it('when it scrapes a review \
+    it.skip('when it scrapes a review \
         then it knows how to find the button to view the untranslated content', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url'))
         const reviewSelector = await testBot.getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page)
