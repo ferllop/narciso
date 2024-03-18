@@ -4,6 +4,7 @@ import { ElementHandle } from 'puppeteer'
 import { configParser } from '../src/config-parser.js'
 import { 
     getReviewElements, 
+    isValidReview, 
     rejectCookies, 
     scrapeReviews, 
 } from '../src/google.js'
@@ -120,9 +121,10 @@ describe('given google scraper', async () => {
             name: await testBot.getFirstClassOfElementWithText('Lidia Gonzalez Pot', page),
             content: await testBot.getFirstClassOfElementWithText('¡Buen trato, buena faena, buen resultado! Recomendable', page),
         }
-        const reviewsResult = await testBot.findAllAndExecute('', page, reviewSelector, scrapeReviews(testBot, selectors, 'Más', 'Ver original'))
-        assert(reviewsResult.some(({name}) => name === 'Q- Beat'))
-        assert(reviewsResult.some(({name}) => name === 'Lorena Antúnez'))
+        const reviews = await testBot.findAllAndExecute('', page, reviewSelector, scrapeReviews(testBot, selectors, 'Más', 'Ver original'))
+        const result = reviews.filter(isValidReview(config.webs[0].ignore_reviews))
+        assert(result.some(({name}) => name === 'Q- Beat'))
+        assert(result.some(({name}) => name === 'Lorena Antúnez'))
     })
 })
 

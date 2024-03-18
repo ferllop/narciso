@@ -36,14 +36,14 @@ export const scrapeReviews = (bot, selectors, viewMoreButtonText, viewUntranslat
         return {provider: PROVIDER_NAME, rating, name, content}
     }
 
-export const isReviewToIgnore = ignoreConfig => review => {
+export const isValidReview = ignoreConfig => review => {
     const minimumRating = ignoreConfig.by_minimum_rating
     const prohibitedNames = ignoreConfig.by_name
     const minimumCharInContent = ignoreConfig.by_minimum_characters_count_in_content
     const {rating, name, content} = review
-    return rating < minimumRating
-        || content.length < minimumCharInContent 
-        || prohibitedNames.includes(name)
+    return rating >= minimumRating
+        && content.length >= minimumCharInContent 
+        && !prohibitedNames.includes(name)
 }
 
 export const rejectCookies = async (bot, page, rejectCookiesButtonText) =>
@@ -78,5 +78,5 @@ export const scrapeGoogleUrl = (bot, browser) => async webConfig => {
         content: await bot.getFirstClassOfElementWithText(knownReview.content, page),
     }
     const reviews = await bot.findAllAndExecute('to get all the reviews', page, selectors.review, scrapeReviews(bot, selectors, viewMoreButtonText,viewUntranslatedButtonText))
-    return reviews.filter(isReviewToIgnore(webConfig.ignore_reviews))
+    return reviews.filter(isValidReview(webConfig.ignore_reviews))
 }
