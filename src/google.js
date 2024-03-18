@@ -1,3 +1,5 @@
+const PROVIDER_NAME = 'google'
+
 export const getReviewElements = async (bot, page, reviewsSelector) => 
     bot.findAll('to get reviews', page, reviewsSelector)
 
@@ -25,30 +27,23 @@ export const getContent = async (bot, review, contentSelector, viewMoreButtonTex
     return await bot.findOneAndEval('to get the content', review, contentSelector, el => el.innerHTML, () => '')
 }
 
-export const scrapeReviews = async (bot, reviews, webConfig, selectors, viewMoreButtonText, viewUntranslatedButtonText) => {
-    const action = async () => { 
-        const {ignore_reviews, provider} = webConfig
-        const minimumRating = ignore_reviews.by_minimum_rating
-        const prohibitedNames = ignore_reviews.by_name
-        const minimumCharInContent = ignore_reviews.by_minimum_characters_count_in_content
-        let accum = []
-        for await (const review of reviews) {
-            const logOnlyOnErrorBot = bot.modifyLogger({logStart: () => {}, logFinish: () => {}})
-            const rating = await getRating(logOnlyOnErrorBot, review)
-            const name = await getName(logOnlyOnErrorBot, review, selectors.name)
-            const content = await getContent(logOnlyOnErrorBot, review, selectors.content, viewMoreButtonText, viewUntranslatedButtonText)
+export const scrapeReviews = (bot, selectors, viewMoreButtonText, viewUntranslatedButtonText) => async review => { 
+        const logOnlyOnErrorBot = bot.modifyLogger({logStart: () => {}, logFinish: () => {}})
+        const rating = await getRating(logOnlyOnErrorBot, review)
+        const name = await getName(logOnlyOnErrorBot, review, selectors.name)
+        const content = await getContent(logOnlyOnErrorBot, review, selectors.content, viewMoreButtonText, viewUntranslatedButtonText)
 
-            if (rating < minimumRating 
-                || content.length < minimumCharInContent 
-                || prohibitedNames.includes(name)) {
-                continue
-            }
-
-            accum.push({provider, rating, name, content})
-        }
-        return accum
+        return {provider: PROVIDER_NAME, rating, name, content}
     }
-    return bot.execute('SCRAPE_ALL_REVIEWS', action)
+
+export const isReviewToIgnore = ignoreConfig => review => {
+    const minimumRating = ignoreConfig.by_minimum_rating
+    const prohibitedNames = ignoreConfig.by_name
+    const minimumCharInContent = ignoreConfig.by_minimum_characters_count_in_content
+    const {rating, name, content} = review
+    return rating < minimumRating
+        || content.length < minimumCharInContent 
+        || prohibitedNames.includes(name)
 }
 
 export const rejectCookies = async (bot, page, rejectCookiesButtonText) =>
@@ -82,6 +77,6 @@ export const scrapeGoogleUrl = (bot, browser) => async webConfig => {
         name: await bot.getFirstClassOfElementWithText(knownReview.name, page),
         content: await bot.getFirstClassOfElementWithText(knownReview.content, page),
     }
-    const reviews = await getReviewElements(bot, page, selectors.review)
-    return await scrapeReviews(bot, reviews, webConfig, selectors, viewMoreButtonText, viewUntranslatedButtonText)
+    const reviews = await bot.findAllAndExecute('to get all the reviews', page, selectors.review, scrapeReviews(bot, selectors, viewMoreButtonText,viewUntranslatedButtonText))
+    return reviews.filter(isReviewToIgnore(webConfig.ignore_reviews))
 }

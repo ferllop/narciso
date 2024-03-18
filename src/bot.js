@@ -57,6 +57,14 @@ const findOneAndEval = (/** @type logger */ logger) => async (reason, handle, se
 	return execute(logger)(message, action)
 }
 
+export const findAllAndExecute = logger => async (reason, handle, selector, onEach) => {
+	const action = async () => {
+		const elements = await handle.$$(selector, onEach)
+		return await Promise.all(elements.map(onEach))
+	}
+	const message = `FIND_ALL_SELECTOR_AND_EXECUTE ${selector} ${reason}`
+	return execute(logger)(message, action)
+}
 export const clickOrFail = (/** @type logger */ logger, /** @type Milliseconds */ timeout) => 
 	async (/** @type string */ reason, handle, selector) => {
 	const action = async () => {
@@ -132,6 +140,7 @@ export const Bot = (config, /** @type Logger */ logger) => {
 		findOne: findOne(logger),
 		findAll: findAll(logger),
 		findOneAndEval: findOneAndEval(logger),
+		findAllAndExecute: findAllAndExecute(logger),
 		clickOrFail: clickOrFail(logger, config.puppeteer.timeout),
 		clickIfPresent: clickIfPresent(logger),
 		clickOrFailOnTagContainingText: clickOrFailOnTagContainingText(logger, config.puppeteer.timeout),

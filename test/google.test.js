@@ -116,12 +116,12 @@ describe('given google scraper', async () => {
     it('when it scrapes a reviews page it scrapes the first and the last reviews', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url'))
         const reviewSelector = await testBot.getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page)
-        const reviews = await getReviewElements(testBot, page, reviewSelector)
+        // const reviews = await getReviewElements(testBot, page, reviewSelector)
         const selectors = {
             name: await testBot.getFirstClassOfElementWithText('Lidia Gonzalez Pot', page),
             content: await testBot.getFirstClassOfElementWithText('¡Buen trato, buena faena, buen resultado! Recomendable', page),
         }
-        const reviewsResult = await scrapeReviews(testBot, reviews, config.webs[0], selectors, 'Más', 'Ver original')
+        const reviewsResult = await testBot.findAllAndExecute('', page, reviewSelector, scrapeReviews(testBot, selectors, 'Más', 'Ver original'))
         assert(reviewsResult.some(({name}) => name === 'Q- Beat'))
         assert(reviewsResult.some(({name}) => name === 'Lorena Antúnez'))
     })
