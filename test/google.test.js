@@ -40,7 +40,7 @@ const knownReview = config.webs[0].knownReview
 
 const getAbsoluteFilePathWithLanguageSuffix = getAbsoluteFilePath('', `-${browserLanguage}.html`)
 const doNothing = () => {}
-const testBot = Bot(config, {logStart: doNothing, logFinish: doNothing, logError: doNothing})
+const testBot = Bot({logStart: doNothing, logFinish: doNothing, logError: doNothing}, config)
 
 describe('given google scraper', async () => {
     const browser = await testBot.launchBrowser()
@@ -116,7 +116,6 @@ describe('given google scraper', async () => {
     it('when it scrapes a reviews page it scrapes the first and the last reviews', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url'))
         const reviewSelector = await testBot.getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page)
-        // const reviews = await getReviewElements(testBot, page, reviewSelector)
         const selectors = {
             name: await testBot.getFirstClassOfElementWithText('Lidia Gonzalez Pot', page),
             content: await testBot.getFirstClassOfElementWithText('¡Buen trato, buena faena, buen resultado! Recomendable', page),

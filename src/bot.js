@@ -17,7 +17,7 @@ const pressKey = async (page, key) => await page.keyboard.press(key)
 const waitForNetworkIdle = config => async page => await page.waitForNetworkIdle(config.puppeteer.timeout)
 const goto = async (page, url) => page.goto(url)
 
-export const execute = (/** @type logger */ logger) => async (actionName, action) => {
+export const execute = (/** @type Logger */ logger) => async (actionName, action) => {
 	logger.logStart(`Start "${actionName.trim()}" started`)
 	try {
 		const result = await action()
@@ -34,19 +34,19 @@ export const execute = (/** @type logger */ logger) => async (actionName, action
 	}
 }
 
-const findOne = (/** @type logger */ logger) => async (reason, handle, selector) => {
+const findOne = (/** @type Logger */ logger) => async (reason, handle, selector) => {
 	const action = async () => await handle.$(selector)
 	const message = `FIND_ONE_ELEMENT_WITH_SELECTOR ${selector} ${reason}`
 	return execute(logger)(message, action)
 }
 
-const findAll = (/** @type logger */ logger) => async (reason, handle, selector) => {
+const findAll = (/** @type Logger */ logger) => async (reason, handle, selector) => {
 	const action = async () => await handle.$$(selector)
 	const message = `FIND_ALL_ELEMENTS_WITH_SELECTOR ${selector} ${reason}`
 	return execute(logger)(message, action)
 }
 
-const findOneAndEval = (/** @type logger */ logger) => async (reason, handle, selector, onFound, onNotFound) => {
+const findOneAndEval = (/** @type Logger */ logger) => async (reason, handle, selector, onFound, onNotFound) => {
 	const action = async () => {
 		const element = await handle.$(selector)
 		return element 
@@ -65,7 +65,7 @@ export const findAllAndExecute = logger => async (reason, handle, selector, onEa
 	const message = `FIND_ALL_SELECTOR_AND_EXECUTE ${selector} ${reason}`
 	return execute(logger)(message, action)
 }
-export const clickOrFail = (/** @type logger */ logger, /** @type Milliseconds */ timeout) => 
+export const clickOrFail = (/** @type Logger */ logger, /** @type Milliseconds */ timeout) => 
 	async (/** @type string */ reason, handle, selector) => {
 	const action = async () => {
 		const element = await handle.waitForSelector(selector, {timeout})
@@ -76,7 +76,7 @@ export const clickOrFail = (/** @type logger */ logger, /** @type Milliseconds *
 	return execute(logger)(message, action)
 }
 
-export const clickIfPresent = (/** @type logger */ logger) => async (reason, handle, selector) => {
+export const clickIfPresent = (/** @type Logger */ logger) => async (reason, handle, selector) => {
 	const action = async () => {
 		const element = await handle.$(selector)
 		if (element) {
@@ -89,7 +89,7 @@ export const clickIfPresent = (/** @type logger */ logger) => async (reason, han
 }
 
 export const clickOrFailOnTagContainingText = 
-	(/** @type logger */ logger, /** @type Milliseconds */ timeout) => 
+	(/** @type Logger */ logger, /** @type Milliseconds */ timeout) => 
 		async (reason, JSHandle, tag, text) => 
 			clickOrFail(logger, timeout)(reason, JSHandle, `${tag} ::-p-text(${text})`)
 
@@ -106,7 +106,7 @@ export const scrollDownUntilTextIsLoaded = (logger, config) => async (reason, pa
 	return execute(logger)(message, action)
 }
 
-export const getFirstClassOfElementWithText = (/** @type logger */ logger) => async (name, handle) => {
+export const getFirstClassOfElementWithText = (/** @type Logger */ logger) => async (name, handle) => {
 	const action = async () => {
 		const el = await handle.$(`::-p-text(${name})`)
 		const tag = await el.evaluate(el => el.nodeName.toLowerCase())
@@ -116,7 +116,7 @@ export const getFirstClassOfElementWithText = (/** @type logger */ logger) => as
 	return execute(logger)(`GET_CLASS_OF_ELEMENT_WITH_TEXT ${name}`, action)
 }
 
-export const getFirstClassOfElementWithSelector = (/** @type logger */ logger) => async (selector, handle) => {
+export const getFirstClassOfElementWithSelector = (/** @type Logger */ logger) => async (selector, handle) => {
 	const action = async () => {
 		const el = await handle.$(selector)
 		const tag = await el.evaluate(el => el.nodeName.toLowerCase())
@@ -126,15 +126,15 @@ export const getFirstClassOfElementWithSelector = (/** @type logger */ logger) =
 	return execute(logger)(`GET_CLASS_OF_ELEMENT_WITH_SELECTOR ${selector}`, action)
 }
 
-const modifyLogger = (config, logger) => loggerModifications => Bot(config, {...logger, ...loggerModifications})
+const modifyLogger = (logger, config) => loggerModifications => Bot({...logger, ...loggerModifications}, config)
 
-export const Bot = (config, /** @type Logger */ logger) => {
+export const Bot = (/** @type Logger */ logger, config) => {
 	return {
 		launchBrowser: launchBrowser(config),
 		goto,
 		pressKey,
 		waitForNetworkIdle: waitForNetworkIdle(config),
-		modifyLogger: modifyLogger(config, logger),
+		modifyLogger: modifyLogger(logger, config),
 		execute: execute(logger),
 		scrollDownUntilTextIsLoaded: scrollDownUntilTextIsLoaded(logger, config),
 		findOne: findOne(logger),

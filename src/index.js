@@ -12,7 +12,7 @@ import { Bot } from './bot.js'
         logError: console.error
     }
     const config = configParser(configData)
-    const bot = Bot(config, logger, 30000)
+    const bot = Bot(logger, config)
     const browser = await bot.launchBrowser()
     const providers = {
         google: scrapeGoogleUrl(bot, browser),
