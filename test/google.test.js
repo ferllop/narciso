@@ -4,7 +4,6 @@ import { ElementHandle } from 'puppeteer'
 import { configParser } from '../src/config-parser.js'
 import { 
     getReviewElements, 
-    loadAllReviews, 
     rejectCookies, 
     scrapeReviews, 
 } from '../src/google.js'
@@ -58,7 +57,7 @@ describe('given google scraper', async () => {
             async page => {
                 const reject = await rejectCookies(testBot, page, 'Rechazar todo')
                 await reject.click()
-                await loadAllReviews(page, '.jftiEf') })
+                await testBot.scrollDownUntilTextIsLoaded('', page, 'Q- Beat') })
     })
 
     let page

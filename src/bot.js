@@ -13,8 +13,8 @@ import puppeteer from "puppeteer"
 */
 
 const launchBrowser = config => async () => await puppeteer.launch(config.puppeteer)
-const pressKey = async (handle, key) => await handle.keyboard.press(key)
-const waitForNetworkIdle = config => async handle => await handle.waitForNetworkIdle(config.puppeteer.timeout)
+const pressKey = async (page, key) => await page.keyboard.press(key)
+const waitForNetworkIdle = config => async page => await page.waitForNetworkIdle(config.puppeteer.timeout)
 const goto = async (page, url) => page.goto(url)
 
 export const execute = (/** @type logger */ logger) => async (actionName, action) => {
@@ -85,6 +85,19 @@ export const clickOrFailOnTagContainingText =
 		async (reason, JSHandle, tag, text) => 
 			clickOrFail(logger, timeout)(reason, JSHandle, `${tag} ::-p-text(${text})`)
 
+export const scrollDownUntilTextIsLoaded = (logger, config) => async (reason, page, text) => {
+	const action = async () => {
+		let element
+		do {
+			await pressKey(page, 'End')
+			await waitForNetworkIdle(config)(page)
+			element = await findOne(logger)(reason, page, `::-p-text(${text})`)
+		} while (!element)
+	}
+	const message = `SCROLL_DOWN_UNTIL_TEXT_IS_PRESENT ${text} ${reason}`
+	return execute(logger)(message, action)
+}
+
 export const getFirstClassOfElementWithText = (/** @type logger */ logger) => async (name, handle) => {
 	const action = async () => {
 		const el = await handle.$(`::-p-text(${name})`)
@@ -115,6 +128,7 @@ export const Bot = (config, /** @type Logger */ logger) => {
 		waitForNetworkIdle: waitForNetworkIdle(config),
 		modifyLogger: modifyLogger(config, logger),
 		execute: execute(logger),
+		scrollDownUntilTextIsLoaded: scrollDownUntilTextIsLoaded(logger, config),
 		findOne: findOne(logger),
 		findAll: findAll(logger),
 		findOneAndEval: findOneAndEval(logger),

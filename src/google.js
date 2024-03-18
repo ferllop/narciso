@@ -8,7 +8,6 @@ export const getRating = async (bot, review) =>
         '[aria-label~="estrellas"]', 
         rating => rating.getAttribute('aria-label').replace(/\D/g, ''))
 
-
 export const getName = async (bot, review, nameSelector) =>
     await bot.findOneAndEval(
         'to get the author name',
@@ -49,20 +48,7 @@ export const scrapeReviews = async (bot, reviews, webConfig, selectors, viewMore
         }
         return accum
     }
-    return bot.execute('scrape reviews', action, false)
-}
-
-export const loadAllReviews = async (bot, page, lastReview) => {
-    const action = async () => {
-        await bot.pressKey(page, 'Tab')
-        let lastReviewElement
-        do {
-            await bot.pressKey(page, 'End')
-            await bot.waitForNetworkIdle(page)
-            lastReviewElement = await bot.findOne(page, `::-p-text(${lastReview.name})`)
-        } while (!lastReviewElement)
-    }
-    return bot.execute('SCROLL_UNTIL_ALL_REVIEWS_ARE_LOADED', action, false)
+    return bot.execute('SCRAPE_ALL_REVIEWS', action)
 }
 
 export const rejectCookies = async (bot, page, rejectCookiesButtonText) =>
@@ -85,9 +71,11 @@ export const scrapeGoogleUrl = (bot, browser) => async webConfig => {
     await bot.goto(page, webConfig.url)
     await rejectCookies(bot, page, rejectCookiesButtonText)
     await bot.clickOrFailOnTagContainingText('to go to reviews tab', page, 'button', reviewsSectionButtonText)
+    await bot.waitForNetworkIdle(page)
     await bot.clickOrFailOnTagContainingText('to open ordering options', page, 'button', orderingButtonText)
     await bot.clickOrFailOnTagContainingText('to order by newest', page, '', byNewestOptionText)
-    await loadAllReviews(bot, page, oldestReview)
+    await bot.pressKey(page, 'Tab')
+    await bot.scrollDownUntilTextIsLoaded('to load all the reviews', page, oldestReview.name)
 
     const selectors = {
         review: await bot.getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page),
