@@ -95,12 +95,12 @@ export const clickOrFailOnTagContainingText =
 
 export const scrollDownUntilTextIsLoaded = (logger, config) => async (reason, page, text) => {
 	const action = async () => {
-		let element
-		do {
-			await pressKey(page, 'End')
-			await waitForNetworkIdle(config)(page)
-			element = await findOne(logger)(reason, page, `::-p-text(${text})`)
-		} while (!element)
+		await pressKey(page, 'End')
+		await waitForNetworkIdle(config)(page)
+		const element = await findOne(logger)(reason, page, `::-p-text(${text})`)
+		if (!element) {
+			await action()
+		}
 	}
 	const message = `SCROLL_DOWN_UNTIL_TEXT_IS_PRESENT ${text} ${reason}`
 	return execute(logger)(message, action)
