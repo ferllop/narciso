@@ -2,3 +2,4 @@ node_modules
 reviews.json
 config.json
 .env
+build
