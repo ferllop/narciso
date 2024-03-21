@@ -1,7 +1,7 @@
 import { describe, it, before, beforeEach, after, afterEach} from 'node:test'
 import assert from 'node:assert'
 import { ElementHandle } from 'puppeteer'
-import { configParser } from '../src/config-parser.js'
+import { configParser } from '../src/config-parser.ts'
 import { 
     getReviewElements, 
     isValidReview, 

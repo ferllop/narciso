@@ -2,8 +2,15 @@ import fs from 'node:fs'
 import configData from '../config.json' assert {type: 'json'}
 import { scrapeGoogleUrl } from './google.js'
 import { starOfService } from './star-of-service.js'
-import { configParser } from './config-parser.js'
+import { WebConfig, configParser } from './config-parser.js'
 import { Bot } from './bot.js'
+
+export type Review = {
+    provider: string
+    name: string
+    rating: number
+    content: string
+}
 
 (async () => {
     const logger = {
@@ -14,25 +21,28 @@ import { Bot } from './bot.js'
     const config = configParser(configData)
     const bot = Bot(logger, config)
     const browser = await bot.launchBrowser()
-    const providers = {
+    const providers: Record<string, (webConfig: WebConfig) => Promise<Review[]>> = {
         google: scrapeGoogleUrl(bot, browser),
         star_of_service: starOfService(config),
     }
 
-    let reviews = []
+    let reviews: Review[] = []
     for (const web of config.webs) {
-        if (!web.activate)
+        if (!web.activate) {
             continue
+        }
         try {
             let providerReviews = await providers[web.provider](web)
-            await providerReviews.forEach( review => reviews.push(review) )
-        } catch (ex) {
-            console.log(`There was an error scraping the web titled ${web.title ?? 'untitled'}: ` + ex.message)
+            reviews = [...reviews, ...providerReviews]
+        } catch (ex: unknown) {
+            if (ex instanceof Error) {
+                console.log(`There was an error scraping the ${web.provider} provider: ` + ex.message)
+            }
             continue
         }
     }
     
-    fs.writeFileSync('./reviews.json', JSON.stringify(reviews, null, 2), (err) => {
+    fs.writeFile('./reviews.json', JSON.stringify(reviews, null, 2), err => {
         if (err) {
             console.error(err)
             return

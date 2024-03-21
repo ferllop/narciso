@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { configParser } from "../src/config-parser.js"
+import { configParser } from "../src/config-parser.ts"
 
 const assertArrayContains = (actualArray, expectedValue, message) => 
     assert.ok(actualArray.some(item => item === expectedValue), message)
