@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "./config.json"],
+  "include": ["src/**/*", "test/**/*", "./config.json"],
   "compilerOptions": {
     "lib": ["es2022"],
     "noEmit": true,
