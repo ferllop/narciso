@@ -1,4 +1,4 @@
-import puppeteer, { ElementHandle, Page } from "puppeteer"
+import puppeteer from "puppeteer"
 import { Config } from "./config-parser.js"
 
 type Log = (message: string) => void
@@ -31,7 +31,7 @@ type Milliseconds = number
 type Action<T> = () => Promise<T>
 type ActionName = string
 export type Page = puppeteer.Page
-export type Handle = ElementHandle | Page
+export type Handle = puppeteer.ElementHandle | Page
 export type Reason = string
 export type Selector = string
 type Tag = string
