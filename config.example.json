@@ -21,8 +21,15 @@
       "known": {
         "review": {
           "name": "Jane Foo",
-          "content": "The experience was amaizing"
-        }
+          "content": "The experience was amazing"
+        },
+        "rejectCookiesButtonText": "Rechazar todo",
+        "viewMoreButtonText": "Más",
+        "viewUntranslatedContentButtonText": "Ver original",
+        "reviewsSectionButtonText": "Reseñas",
+        "sortingButtonText": "Ordenar",
+        "byNewestOptionButtonText": "Más recientes",
+        "oldestReviewAuthorName": "Mr. T"
       }
     },
     {

@@ -32,15 +32,31 @@ const config = configParser({
             "by_minimum_characters_count_in_content": 10
         },
         "known": {
-            "review": {
-                name: 'Lidia Gonzalez Pot',
-                content: '¡Buen trato, buena faena, buen resultado! Recomendable',
-            }
+          "review": {
+              "name": "Lidia Gonzalez Pot",
+              "content": "¡Buen trato, buena faena, buen resultado! Recomendable",
+          },
+          "rejectCookiesButtonText": "Rechazar todo",
+          "viewMoreButtonText": "Más",
+          "viewUntranslatedContentButtonText": "Ver original",
+          "reviewsSectionButtonText": "Reseñas",
+          "sortingButtonText": "Ordenar",
+          "byNewestOptionButtonText": "Más recientes",
+          "oldestReviewAuthorName": "Q- Beat"
         }
     }]
 })
 
-const knownReview = config.webs[0].known.review
+const {
+    rejectCookiesButtonText, 
+    viewMoreButtonText, 
+    viewUntranslatedContentButtonText, 
+    review: knownReview,
+    reviewsSectionButtonText,
+    sortingButtonText,
+    byNewestOptionButtonText,
+    oldestReviewAuthorName
+} = config.webs[0].known
 const getAbsoluteFilePathWithLanguageSuffix = getAbsoluteFilePath('', `-${browserLanguage}.html`)
 const doNothing = () => {}
 const testBot = Bot({logStart: doNothing, logFinish: doNothing, logError: doNothing}, config)
@@ -58,9 +74,9 @@ describe('given google scraper', async () => {
             config.webs[0].url,
             getAbsoluteFilePathWithLanguageSuffix('google-url'),
             async page => {
-                await rejectCookies(testBot, page, 'Rechazar todo')
-                await loadAllReviews(testBot,page)
-                await testBot.scrollDownUntilTextIsLoaded('', page, 'Q- Beat') })
+                await rejectCookies(testBot, page, rejectCookiesButtonText)
+                await loadAllReviews(testBot,page, config.webs[0])
+            })
     })
 
     let page: Page
@@ -91,7 +107,7 @@ describe('given google scraper', async () => {
         then it knows how to find the button to reject the cookies', async () => {
         const cookiesHtml = getAbsoluteFilePathWithLanguageSuffix('google-cookies-consent').toString()
         await page.goto(cookiesHtml)
-        const rejectCookiesButton = await rejectCookies(testBot, page, 'Rechazar')
+        const rejectCookiesButton = await rejectCookies(testBot, page, rejectCookiesButtonText)
         assert(rejectCookiesButton instanceof ElementHandle, 'an element handle must be found')
         assert(rejectCookiesButton.click, 'the handle must be clickable')
     })
@@ -101,7 +117,7 @@ describe('given google scraper', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
         const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.name}"]`)
         const reviews = await getReviewElements(testBot, page, reviewSelector)
-        const moreButton = await testBot.clickOrFailOnTagContainingText('', reviews[0], '', 'Más')
+        const moreButton = await testBot.clickOrFailOnTagContainingText('', reviews[0], '', viewMoreButtonText)
         assert(moreButton instanceof ElementHandle, 'an element handle must be found')
         assert(moreButton.click, 'the handle must be clickable')
     })
@@ -111,7 +127,7 @@ describe('given google scraper', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
         const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.name}"]`)
         const reviews = await getReviewElements(testBot, page, reviewSelector)
-        const seeOriginalButton = await testBot.clickOrFailOnTagContainingText('', reviews[5], '', 'Ver original')
+        const seeOriginalButton = await testBot.clickOrFailOnTagContainingText('', reviews[5], '', viewUntranslatedContentButtonText)
         assert(seeOriginalButton instanceof ElementHandle, 'an element handle must be found')
         assert(seeOriginalButton.click, 'the handle must be clickable')
     })
@@ -120,10 +136,10 @@ describe('given google scraper', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
         const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.name}"]`)
         const selectors = {
-            name: await testBot.getFirstClassOfElementWithText('', page, 'Lidia Gonzalez Pot'),
-            content: await testBot.getFirstClassOfElementWithText('', page, '¡Buen trato, buena faena, buen resultado! Recomendable'),
+            name: await testBot.getFirstClassOfElementWithText('', page, knownReview.name),
+            content: await testBot.getFirstClassOfElementWithText('', page, knownReview.content),
         }
-        const promises = await testBot.findAllAndExecute('', page, reviewSelector, scrapeReviews(testBot, selectors, 'Más', 'Ver original'))
+        const promises = await testBot.findAllAndExecute('', page, reviewSelector, scrapeReviews(testBot, selectors, viewMoreButtonText, viewUntranslatedContentButtonText))
         const reviews = await Promise.all(promises)
         const result = reviews.filter(isValidReview(config.webs[0].ignoreReviews))
         assert(result.some(({name}) => name === 'Q- Beat'))

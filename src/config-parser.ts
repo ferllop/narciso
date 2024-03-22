@@ -5,7 +5,17 @@ export type IgnoreReviewsConfig = {
 }
 
 export type KnownConfig = {
-	review: {name: string, content: string}
+	review: {
+		name: string, 
+		content: string
+	}
+	rejectCookiesButtonText: string
+	viewMoreButtonText: string
+	viewUntranslatedContentButtonText: string
+	reviewsSectionButtonText: string
+	sortingButtonText: string
+	byNewestOptionButtonText: string
+	oldestReviewAuthorName: string
 }
 
 export type WebConfig = {

@@ -55,29 +55,33 @@ export const isValidReview = (ignoreConfig: IgnoreReviewsConfig) => (review: Rev
 export const rejectCookies = async (bot: Bot, handle: Handle, rejectCookiesButtonText: string) =>
     await bot.clickOrFailOnTagContainingText('to reject cookies', handle, 'button', rejectCookiesButtonText)
 
-export const loadAllReviews = async (bot: Bot, page: Page) => {
-    const reviewsSectionButtonText = 'Reseñas'
-    const orderingButtonText = 'Ordenar'
-    const byNewestOptionText = 'Más recientes'
-    const oldestReview = { name: 'Q- Beat' }
+export const loadAllReviews = async (bot: Bot, page: Page, webConfig: WebConfig) => {
+    const {
+        reviewsSectionButtonText,
+        sortingButtonText,
+        byNewestOptionButtonText,
+        oldestReviewAuthorName
+    } = webConfig.known
     await bot.clickOrFailOnTagContainingText('to go to reviews tab', page, 'button', reviewsSectionButtonText)
     await bot.waitForNetworkIdle(page)
-    await bot.clickOrFailOnTagContainingText('to open ordering options', page, 'button', orderingButtonText)
-    await bot.clickOrFailOnTagContainingText('to order by newest', page, '', byNewestOptionText)
+    await bot.clickOrFailOnTagContainingText('to open ordering options', page, 'button', sortingButtonText)
+    await bot.clickOrFailOnTagContainingText('to order by newest', page, '', byNewestOptionButtonText)
     await bot.pressKey(page, 'Tab')
-    await bot.scrollDownUntilTextIsLoaded('to load all the reviews', page, oldestReview.name)
+    await bot.scrollDownUntilTextIsLoaded('to load all the reviews', page, oldestReviewAuthorName)
 }
 
 export const scrapeGoogleUrl = (bot: Bot, browser: Browser) => async (webConfig: WebConfig) => {
-    const rejectCookiesButtonText = 'Rechazar todo'
-    const viewMoreButtonText = 'Más'
-    const viewUntranslatedButtonText = 'Ver original'
-    const knownReview = webConfig.known.review
+    const {
+        rejectCookiesButtonText, 
+        viewMoreButtonText, 
+        viewUntranslatedContentButtonText, 
+        review: knownReview
+    } = webConfig.known
     const page = await browser.newPage()
     await bot.goto(page, webConfig.url)
     await rejectCookies(bot, page, rejectCookiesButtonText)
 
-    await loadAllReviews(bot, page)
+    await loadAllReviews(bot, page, webConfig)
 
     const selectors = {
         review: await bot.getFirstClassOfElementWithSelector('to get the class to find each review', page, `[aria-label="${knownReview.name}"]`),
@@ -88,7 +92,7 @@ export const scrapeGoogleUrl = (bot: Bot, browser: Browser) => async (webConfig:
         'to get all the reviews', 
         page, 
         selectors.review, 
-        scrapeReviews(bot, selectors, viewMoreButtonText,viewUntranslatedButtonText))
+        scrapeReviews(bot, selectors, viewMoreButtonText,viewUntranslatedContentButtonText))
     const reviews = await Promise.all(promises)
     return reviews.filter(isValidReview(webConfig.ignoreReviews))
 }
