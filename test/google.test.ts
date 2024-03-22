@@ -142,5 +142,20 @@ describe('given google scraper', async () => {
         assert(result.some(({authorName}) => authorName === 'Q- Beat'))
         assert(result.some(({authorName}) => authorName === 'Lorena Antúnez'))
     })
+
+    it('when it scrapes a reviews page it not scrapes the reviews whom author names are declared to be ignored in config file', async () => {
+        await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
+        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
+        const selectors = {
+            authorName: await testBot.getFirstClassOfElementWithText('', page, knownReview.authorName),
+            content: await testBot.getFirstClassOfElementWithText('', page, knownReview.content),
+        }
+        const promises = await testBot.findAllAndExecute('', page, reviewSelector, 
+            scrapeReviews(testBot, selectors, viewMoreButtonText, viewUntranslatedContentButtonText))
+        const reviews = await Promise.all(promises)
+        const result = reviews.filter(isValidReview({...config.webs[0].ignoreReviews, byAuthorName: ['Q- Beat', 'Lorena Antúnez']}))
+        assert(!result.some(({authorName}) => authorName === 'Q- Beat'))
+        assert(!result.some(({authorName}) => authorName === 'Lorena Antúnez'))
+    })
 })
 
