@@ -1,16 +1,21 @@
+import { Bot, Browser, Handle, Selector } from "./bot.js"
+import { IgnoreReviewsConfig, WebConfig } from "./config-parser.js"
+import { Review } from "./index.js"
+
 const PROVIDER_NAME = 'google'
 
-export const getReviewElements = async (bot, page, reviewsSelector) => 
+export const getReviewElements = async (bot: Bot, page: Handle, reviewsSelector: Selector) => 
     bot.findAll('to get reviews', page, reviewsSelector)
 
-export const getRating = async (bot, review) =>
+export const getRating = async (bot: Bot, review: Handle) =>
     bot.findOneAndEval(
         'to get the rating',
         review,
         '[aria-label~="estrellas"]', 
-        rating => rating.getAttribute('aria-label').replace(/\D/g, ''))
+        rating => rating.getAttribute('aria-label').replace(/\D/g, ''),
+        () => '')
 
-export const getName = async (bot, review, nameSelector) =>
+export const getName = async (bot: Bot, review: Handle, nameSelector: Selector) =>
     await bot.findOneAndEval(
         'to get the author name',
         review,
@@ -18,16 +23,17 @@ export const getName = async (bot, review, nameSelector) =>
         el => el.innerText
             .toLowerCase()
             .split(' ')
-            .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
-            .join(' '))
+            .map((s: string) => s.charAt(0).toUpperCase() + s.substring(1))
+            .join(' '),
+        () => '')
 
-export const getContent = async (bot, review, contentSelector, viewMoreButtonText, viewUntranslatedButtonText) => {
+export const getContent = async (bot: Bot, review: Handle, contentSelector: Selector, viewMoreButtonText: string, viewUntranslatedButtonText: string) => {
     await bot.clickIfPresent('to view the entire content', review, `button ::-p-text(${viewMoreButtonText})`)
     await bot.clickIfPresent('to view untranslated content', review, `span ::-p-text(${viewUntranslatedButtonText})`)
     return await bot.findOneAndEval('to get the content', review, contentSelector, el => el.innerHTML, () => '')
 }
 
-export const scrapeReviews = (bot, selectors, viewMoreButtonText, viewUntranslatedButtonText) => async review => { 
+export const scrapeReviews = (bot: Bot, selectors: Record<string, Selector>, viewMoreButtonText: string, viewUntranslatedButtonText: string) => async (review: Handle) => { 
         const logOnlyOnErrorBot = bot.modifyLogger({logStart: () => {}, logFinish: () => {}})
         const rating = await getRating(logOnlyOnErrorBot, review)
         const name = await getName(logOnlyOnErrorBot, review, selectors.name)
@@ -36,20 +42,20 @@ export const scrapeReviews = (bot, selectors, viewMoreButtonText, viewUntranslat
         return {provider: PROVIDER_NAME, rating, name, content}
     }
 
-export const isValidReview = ignoreConfig => review => {
-    const minimumRating = ignoreConfig.by_minimum_rating
-    const prohibitedNames = ignoreConfig.by_name
-    const minimumCharInContent = ignoreConfig.by_minimum_characters_count_in_content
+export const isValidReview = (ignoreConfig: IgnoreReviewsConfig) => (review: Review) => {
+    const minimumRating = ignoreConfig.byMinimumRating
+    const prohibitedNames = ignoreConfig.byName
+    const minimumCharInContent = ignoreConfig.byMinimumCharactersCountInContent
     const {rating, name, content} = review
     return rating >= minimumRating
         && content.length >= minimumCharInContent 
         && !prohibitedNames.includes(name)
 }
 
-export const rejectCookies = async (bot, page, rejectCookiesButtonText) =>
-    await bot.clickOrFailOnTagContainingText('to reject cookies', page, 'button', rejectCookiesButtonText)
+export const rejectCookies = async (bot: Bot, handle: Handle, rejectCookiesButtonText: string) =>
+    await bot.clickOrFailOnTagContainingText('to reject cookies', handle, 'button', rejectCookiesButtonText)
 
-export const scrapeGoogleUrl = (bot, browser) => async webConfig => {
+export const scrapeGoogleUrl = (bot: Bot, browser: Browser) => async (webConfig: WebConfig) => {
     const rejectCookiesButtonText = 'Rechazar todo'
     const reviewsSectionButtonText = 'Reseñas'
     const orderingButtonText = 'Ordenar'
@@ -73,10 +79,15 @@ export const scrapeGoogleUrl = (bot, browser) => async webConfig => {
     await bot.scrollDownUntilTextIsLoaded('to load all the reviews', page, oldestReview.name)
 
     const selectors = {
-        review: await bot.getFirstClassOfElementWithSelector(`[aria-label="${knownReview.name}"]`, page),
-        name: await bot.getFirstClassOfElementWithText(knownReview.name, page),
-        content: await bot.getFirstClassOfElementWithText(knownReview.content, page),
+        review: await bot.getFirstClassOfElementWithSelector('to get the class to find each review', page, `[aria-label="${knownReview.name}"]`),
+        name: await bot.getFirstClassOfElementWithText('to get the class to get the author name', page, knownReview.name),
+        content: await bot.getFirstClassOfElementWithText('to get the class to get the content', page, knownReview.content),
     }
-    const reviews = await bot.findAllAndExecute('to get all the reviews', page, selectors.review, scrapeReviews(bot, selectors, viewMoreButtonText,viewUntranslatedButtonText))
-    return reviews.filter(isValidReview(webConfig.ignore_reviews))
+    const promises = await bot.findAllAndExecute(
+        'to get all the reviews', 
+        page, 
+        selectors.review, 
+        scrapeReviews(bot, selectors, viewMoreButtonText,viewUntranslatedButtonText))
+    const reviews = await Promise.all(promises)
+    return reviews.filter(isValidReview(webConfig.ignoreReviews))
 }
