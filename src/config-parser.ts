@@ -57,9 +57,9 @@ const parseWebsConfigSection = (rawConfig: any): WebConfig[] => rawConfig.webs?.
 	activate: web.activate,
 	url: web.url, 
 	ignoreReviews: {
-		byAuthorName: web.ignore_reviews?.by_author_name ?? [],
-		byMinimumRating: web.ignore_reviews?.by_minimum_rating ?? 0,
-		byMinimumCharactersCountInContent: web.ignore_reviews?.by_minimum_characters_count_in_content ?? 0,
+		byAuthorName: web.ignoreReviews?.byAuthorName ?? [],
+		byMinimumRating: web.ignoreReviews?.byMinimumRating ?? 0,
+		byMinimumCharactersCountInContent: web.ignoreReviews?.byMinimumCharactersCountInContent ?? 0,
 	},
 }))
 
@@ -67,5 +67,4 @@ export const configParser = (rawConfig: any): Config => ({
 	puppeteer: parsePuppeteerConfigSection(rawConfig),
 	webs: parseWebsConfigSection(rawConfig),
 })
-
 

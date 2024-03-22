@@ -13,10 +13,10 @@
       "title": "SOME_TITLE_TO_IDENTIFY_THIS_WEB_IN_LOGS",
       "url" : "https://www.google.com/search?q=some+search+with+opinions#lrd=0x12a482b981b3f765:0x7ca8c3c9b3eadc99,1,,,",
       "provider": "google",
-      "ignore_reviews": {
-        "by_author_name": ["John Doe", "Foo Bar"],
-        "by_minimum_rating": 4,
-        "by_minimum_characters_count_in_content": 10
+      "ignoreReviews": {
+        "byAuthorName": ["John Doe", "Foo Bar"],
+        "byMinimumRating": 4,
+        "byMinimumCharactersCountInContent": 10
       },
       "known": {
         "review": {
@@ -37,10 +37,10 @@
       "title": "ANOTHER_TITLE_TO_IDENTIFY_THIS_WEB_IN_LOGS",
       "url": "https://www.starofservice.es/profesional/photgrapher/ibiza/34467567/michael-photo#/",
       "provider": "star_of_service",
-      "ignore_reviews": {
-        "by_name": [],
-        "by_minimum_rating": 4,
-        "by_minimum_characters_count_in_content": 10
+      "ignoreReviews": {
+        "byName": [],
+        "byMinimumRating": 4,
+        "byMinimumCharactersCountInContent": 10
       }
     }
   ]
