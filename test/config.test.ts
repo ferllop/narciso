@@ -148,4 +148,11 @@ describe('given the config parser', () => {
             .inConfigWithData({ webs: [ { url: 'https://google.com/some-uri', provider: 'Explicit Provider'}]})
             .hasValue('Explicit Provider', 'when is present')
     })
+
+    it('when parsing the known review of the web then it parses correctly', () => {
+        const knownReview = { name: 'Jane', content: 'Was here'}
+        assertPath('webs', 0, 'known', 'review')
+            .inConfigWithData({ webs: [ { url: 'https://google.com/some-uri', known: { review: knownReview }}]})
+            .hasValue(knownReview, 'when is present')
+    })
 })

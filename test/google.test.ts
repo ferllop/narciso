@@ -31,14 +31,16 @@ const config = configParser({
             "by_minimum_rating": 4,
             "by_minimum_characters_count_in_content": 10
         },
+        "known": {
+            "review": {
+                name: 'Lidia Gonzalez Pot',
+                content: '¡Buen trato, buena faena, buen resultado! Recomendable',
+            }
+        }
     }]
 })
 
-const knownReview = {
-    name: 'Lidia Gonzalez Pot',
-    content: '¡Buen trato, buena faena, buen resultado! Recomendable',
-}
-
+const knownReview = config.webs[0].known.review
 const getAbsoluteFilePathWithLanguageSuffix = getAbsoluteFilePath('', `-${browserLanguage}.html`)
 const doNothing = () => {}
 const testBot = Bot({logStart: doNothing, logFinish: doNothing, logError: doNothing}, config)

@@ -13,6 +13,7 @@ export type WebConfig = {
 	url: string 
 	provider: string
 	ignoreReviews: IgnoreReviewsConfig
+	known: KnownConfig
 }
 
 export type PuppeteerConfig = {

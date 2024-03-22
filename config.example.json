@@ -17,6 +17,12 @@
         "by_name": ["John Doe", "Foo Bar"],
         "by_minimum_rating": 4,
         "by_minimum_characters_count_in_content": 10
+      },
+      "known": {
+        "review": {
+          "name": "Jane Foo",
+          "content": "The experience was amaizing"
+        }
       }
     },
     {

@@ -72,11 +72,7 @@ export const scrapeGoogleUrl = (bot: Bot, browser: Browser) => async (webConfig:
     const rejectCookiesButtonText = 'Rechazar todo'
     const viewMoreButtonText = 'Más'
     const viewUntranslatedButtonText = 'Ver original'
-    const knownReview = {
-        name: 'Lidia Gonzalez Pot',
-        content: '¡Buen trato, buena faena, buen resultado! Recomendable',
-    }
-
+    const knownReview = webConfig.known.review
     const page = await browser.newPage()
     await bot.goto(page, webConfig.url)
     await rejectCookies(bot, page, rejectCookiesButtonText)
