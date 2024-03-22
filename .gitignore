@@ -3,3 +3,5 @@ reviews.json
 config.json
 .env
 build
+*.html
+
