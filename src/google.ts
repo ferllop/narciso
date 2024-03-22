@@ -1,5 +1,5 @@
 import { Bot, Browser, Handle, Selector, Page } from "./bot.js"
-import { IgnoreReviewsConfig, WebConfig } from "./config-parser.js"
+import { IgnoreReviewsConfig, KnownConfig, WebConfig } from "./config-parser.js"
 import { Review } from "./index.js"
 
 const PROVIDER_NAME = 'google'
@@ -70,6 +70,12 @@ export const loadAllReviews = async (bot: Bot, page: Page, webConfig: WebConfig)
     await bot.scrollDownUntilTextIsLoaded('to load all the reviews', page, oldestReviewAuthorName)
 }
 
+export const getSelectors = async (bot: Bot, page: Page, knownReview: KnownConfig["review"]) => ({
+        review: await bot.getFirstClassOfElementWithSelector('to get the class to find each review', page, `[aria-label="${knownReview.authorName}"]`),
+        authorName: await bot.getFirstClassOfElementWithText('to get the class to get the author name', page, knownReview.authorName),
+        content: await bot.getFirstClassOfElementWithText('to get the class to get the content', page, knownReview.content),
+    })
+
 export const scrapeGoogleUrl = (bot: Bot, browser: Browser) => async (webConfig: WebConfig) => {
     const {
         rejectCookiesButtonText, 
@@ -80,14 +86,8 @@ export const scrapeGoogleUrl = (bot: Bot, browser: Browser) => async (webConfig:
     const page = await browser.newPage()
     await bot.goto(page, webConfig.url)
     await rejectCookies(bot, page, rejectCookiesButtonText)
-
     await loadAllReviews(bot, page, webConfig)
-
-    const selectors = {
-        review: await bot.getFirstClassOfElementWithSelector('to get the class to find each review', page, `[aria-label="${knownReview.authorName}"]`),
-        authorName: await bot.getFirstClassOfElementWithText('to get the class to get the author name', page, knownReview.authorName),
-        content: await bot.getFirstClassOfElementWithText('to get the class to get the content', page, knownReview.content),
-    }
+    const selectors = await getSelectors(bot, page, knownReview)
     const promises = await bot.findAllAndExecute(
         'to get all the reviews', 
         page, 
