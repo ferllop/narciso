@@ -133,9 +133,8 @@ describe('given google scraper', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
         const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
         const selectors = await getSelectors(testBot, page, knownReview)
-        const promises = await testBot.findAllAndExecute('', page, reviewSelector, 
+        const reviews = await testBot.findAllAndExecute('', page, reviewSelector, 
             scrapeReviews(testBot, selectors, viewMoreButtonText, viewUntranslatedContentButtonText))
-        const reviews = await Promise.all(promises)
         const result = reviews.filter(isValidReview(config.webs[0].ignoreReviews))
         assert(result.some(({authorName}) => authorName === 'Q- Beat'))
         assert(result.some(({authorName}) => authorName === 'Lorena Antúnez'))
@@ -147,7 +146,6 @@ describe('given google scraper', async () => {
         const selectors = await getSelectors(testBot, page, knownReview)
         const reviews = await testBot.findAllAndExecute('', page, reviewSelector, 
             scrapeReviews(testBot, selectors, viewMoreButtonText, viewUntranslatedContentButtonText))
-        // const reviews = await Promise.all(promises)
         const result = reviews.filter(isValidReview({...config.webs[0].ignoreReviews, byAuthorName: ['Q- Beat', 'Lorena Antúnez']}))
         assert(!result.some(({authorName}) => authorName === 'Q- Beat'))
         assert(!result.some(({authorName}) => authorName === 'Lorena Antúnez'))

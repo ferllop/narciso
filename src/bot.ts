@@ -18,7 +18,7 @@ export interface Bot {
 	findOne: (r: Reason, h: Handle, s: Selector) => Promise<puppeteer.ElementHandle | null>,
 	findAll: (r: Reason, h: Handle, s: Selector) => Promise<Awaited<puppeteer.ElementHandle>[]>,
 	findOneAndEval: <T>(r: Reason, h: Handle, s: Selector, onFound: (el: any) => T, onNotFound: () => T) => Promise<T>,
-	findAllAndExecute: <T>(r: Reason, h: Handle, s: Selector, onEach: (el: puppeteer.ElementHandle) => T) => Promise<T[]>,
+	findAllAndExecute: <T>(r: Reason, h: Handle, s: Selector, onEach: (el: puppeteer.ElementHandle) => Promise<T>) => Promise<T[]>,
 	clickOrFail: (r: Reason, h: Handle, s: Selector) => Promise<puppeteer.ElementHandle>,
 	clickIfPresent: (r: Reason, h: Handle, s: Selector) => Promise<puppeteer.ElementHandle | null>,
 	clickOrFailOnTagContainingText: (r: Reason, h: Handle, tag: string, txt: string) => Promise<puppeteer.ElementHandle>,
@@ -82,7 +82,7 @@ const findOneAndEval = (logger: Logger) => async <IN, OUT>(reason: Reason, handl
 	return execute(logger)(message, action)
 }
 
-export const findAllAndExecute = (logger: Logger) => async <OUT>(reason: Reason, handle: Handle, selector: Selector, onEach: (x: puppeteer.ElementHandle) => OUT) => {
+export const findAllAndExecute = (logger: Logger) => async <OUT>(reason: Reason, handle: Handle, selector: Selector, onEach: (x: puppeteer.ElementHandle) => Promise<OUT>) => {
 	const action = async () => {
 		const elements = await handle.$$(selector)
 		return await Promise.all(elements.map(onEach))
@@ -90,6 +90,7 @@ export const findAllAndExecute = (logger: Logger) => async <OUT>(reason: Reason,
 	const message = `FIND_ALL_SELECTOR_AND_EXECUTE ${selector} ${reason}`
 	return execute(logger)(message, action)
 }
+
 export const clickOrFail = (logger: Logger, timeout: Milliseconds) => 
 	async (reason: Reason, handle: Handle, selector: Selector) => {
 	const action = async () => {

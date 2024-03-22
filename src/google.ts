@@ -88,11 +88,10 @@ export const scrapeGoogleUrl = (bot: Bot, browser: Browser) => async (webConfig:
     await rejectCookies(bot, page, rejectCookiesButtonText)
     await loadAllReviews(bot, page, webConfig)
     const selectors = await getSelectors(bot, page, knownReview)
-    const promises = await bot.findAllAndExecute(
+    const reviews = await bot.findAllAndExecute(
         'to get all the reviews', 
         page, 
         selectors.review, 
         scrapeReviews(bot, selectors, viewMoreButtonText,viewUntranslatedContentButtonText))
-    const reviews = await Promise.all(promises)
     return reviews.filter(isValidReview(webConfig.ignoreReviews))
 }
