@@ -1,12 +1,12 @@
 export type IgnoreReviewsConfig = {
-	byName: string[] 
+	byAuthorName: string[] 
 	byMinimumCharactersCountInContent: number 
 	byMinimumRating: number
 }
 
 export type KnownConfig = {
 	review: {
-		name: string, 
+		authorName: string 
 		content: string
 	}
 	rejectCookiesButtonText: string
@@ -57,7 +57,7 @@ const parseWebsConfigSection = (rawConfig: any): WebConfig[] => rawConfig.webs?.
 	activate: web.activate,
 	url: web.url, 
 	ignoreReviews: {
-		byName: web.ignore_reviews?.by_name ?? [],
+		byAuthorName: web.ignore_reviews?.by_author_name ?? [],
 		byMinimumRating: web.ignore_reviews?.by_minimum_rating ?? 0,
 		byMinimumCharactersCountInContent: web.ignore_reviews?.by_minimum_characters_count_in_content ?? 0,
 	},

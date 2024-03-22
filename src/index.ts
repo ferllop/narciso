@@ -7,7 +7,7 @@ import { Bot } from './bot.js'
 
 export type Review = {
     provider: string
-    name: string
+    authorName: string
     rating: number
     content: string
 }

@@ -33,23 +33,23 @@ export const getContent = async (bot: Bot, review: Handle, contentSelector: Sele
     return await bot.findOneAndEval('to get the content', review, contentSelector, el => el.innerHTML, () => '')
 }
 
-export const scrapeReviews = (bot: Bot, selectors: Record<string, Selector>, viewMoreButtonText: string, viewUntranslatedButtonText: string) => async (review: Handle) => { 
+export const scrapeReviews = (bot: Bot, selectors: Record<string, Selector>, viewMoreButtonText: string, viewUntranslatedButtonText: string) => async (review: Handle): Promise<Review> => { 
         const logOnlyOnErrorBot = bot.modifyLogger({logStart: () => {}, logFinish: () => {}})
         const rating = await getRating(logOnlyOnErrorBot, review)
-        const name = await getName(logOnlyOnErrorBot, review, selectors.name)
+        const authorName = await getName(logOnlyOnErrorBot, review, selectors.authorName)
         const content = await getContent(logOnlyOnErrorBot, review, selectors.content, viewMoreButtonText, viewUntranslatedButtonText)
 
-        return {provider: PROVIDER_NAME, rating, name, content}
+        return {provider: PROVIDER_NAME, rating, authorName, content}
     }
 
 export const isValidReview = (ignoreConfig: IgnoreReviewsConfig) => (review: Review) => {
     const minimumRating = ignoreConfig.byMinimumRating
-    const prohibitedNames = ignoreConfig.byName
+    const prohibitedNames = ignoreConfig.byAuthorName
     const minimumCharInContent = ignoreConfig.byMinimumCharactersCountInContent
-    const {rating, name, content} = review
+    const {rating, authorName, content} = review
     return rating >= minimumRating
         && content.length >= minimumCharInContent 
-        && !prohibitedNames.includes(name)
+        && !prohibitedNames.includes(authorName)
 }
 
 export const rejectCookies = async (bot: Bot, handle: Handle, rejectCookiesButtonText: string) =>
@@ -84,8 +84,8 @@ export const scrapeGoogleUrl = (bot: Bot, browser: Browser) => async (webConfig:
     await loadAllReviews(bot, page, webConfig)
 
     const selectors = {
-        review: await bot.getFirstClassOfElementWithSelector('to get the class to find each review', page, `[aria-label="${knownReview.name}"]`),
-        name: await bot.getFirstClassOfElementWithText('to get the class to get the author name', page, knownReview.name),
+        review: await bot.getFirstClassOfElementWithSelector('to get the class to find each review', page, `[aria-label="${knownReview.authorName}"]`),
+        authorName: await bot.getFirstClassOfElementWithText('to get the class to get the author name', page, knownReview.authorName),
         content: await bot.getFirstClassOfElementWithText('to get the class to get the content', page, knownReview.content),
     }
     const promises = await bot.findAllAndExecute(

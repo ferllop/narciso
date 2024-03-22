@@ -14,13 +14,13 @@
       "url" : "https://www.google.com/search?q=some+search+with+opinions#lrd=0x12a482b981b3f765:0x7ca8c3c9b3eadc99,1,,,",
       "provider": "google",
       "ignore_reviews": {
-        "by_name": ["John Doe", "Foo Bar"],
+        "by_author_name": ["John Doe", "Foo Bar"],
         "by_minimum_rating": 4,
         "by_minimum_characters_count_in_content": 10
       },
       "known": {
         "review": {
-          "name": "Jane Foo",
+          "authorName": "Jane Foo",
           "content": "The experience was amazing"
         },
         "rejectCookiesButtonText": "Rechazar todo",

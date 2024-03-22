@@ -27,13 +27,13 @@ const config = configParser({
         "url": "https://www.google.com/maps/place/DJ+MARIAN/@41.2791903,1.9760167,17z/data=!4m6!3m5!1s0x12a482b981b3f765:0x7ca8c3c9b3eadc99!8m2!3d41.2791903!4d1.9760167!16s%2Fg%2F11c61mwhrb?entry=ttu",
         "provider": "google",
         "ignore_reviews": {
-            "by_name": ["John Doe", "Foo Bar"],
+            "by_author_name": ["John Doe", "Foo Bar"],
             "by_minimum_rating": 4,
             "by_minimum_characters_count_in_content": 10
         },
         "known": {
           "review": {
-              "name": "Lidia Gonzalez Pot",
+              "authorName": "Lidia Gonzalez Pot",
               "content": "¡Buen trato, buena faena, buen resultado! Recomendable",
           },
           "rejectCookiesButtonText": "Rechazar todo",
@@ -52,10 +52,6 @@ const {
     viewMoreButtonText, 
     viewUntranslatedContentButtonText, 
     review: knownReview,
-    reviewsSectionButtonText,
-    sortingButtonText,
-    byNewestOptionButtonText,
-    oldestReviewAuthorName
 } = config.webs[0].known
 const getAbsoluteFilePathWithLanguageSuffix = getAbsoluteFilePath('', `-${browserLanguage}.html`)
 const doNothing = () => {}
@@ -115,7 +111,7 @@ describe('given google scraper', async () => {
     it('when it scrapes a review \
         then it knows how to find the button to view the entire content', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
-        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.name}"]`)
+        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
         const reviews = await getReviewElements(testBot, page, reviewSelector)
         const moreButton = await testBot.clickOrFailOnTagContainingText('', reviews[0], '', viewMoreButtonText)
         assert(moreButton instanceof ElementHandle, 'an element handle must be found')
@@ -125,7 +121,7 @@ describe('given google scraper', async () => {
     it('when it scrapes a review \
         then it knows how to find the button to view the untranslated content', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
-        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.name}"]`)
+        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
         const reviews = await getReviewElements(testBot, page, reviewSelector)
         const seeOriginalButton = await testBot.clickOrFailOnTagContainingText('', reviews[5], '', viewUntranslatedContentButtonText)
         assert(seeOriginalButton instanceof ElementHandle, 'an element handle must be found')
@@ -134,16 +130,17 @@ describe('given google scraper', async () => {
 
     it('when it scrapes a reviews page it scrapes the first and the last reviews', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
-        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.name}"]`)
+        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
         const selectors = {
-            name: await testBot.getFirstClassOfElementWithText('', page, knownReview.name),
+            authorName: await testBot.getFirstClassOfElementWithText('', page, knownReview.authorName),
             content: await testBot.getFirstClassOfElementWithText('', page, knownReview.content),
         }
-        const promises = await testBot.findAllAndExecute('', page, reviewSelector, scrapeReviews(testBot, selectors, viewMoreButtonText, viewUntranslatedContentButtonText))
+        const promises = await testBot.findAllAndExecute('', page, reviewSelector, 
+            scrapeReviews(testBot, selectors, viewMoreButtonText, viewUntranslatedContentButtonText))
         const reviews = await Promise.all(promises)
         const result = reviews.filter(isValidReview(config.webs[0].ignoreReviews))
-        assert(result.some(({name}) => name === 'Q- Beat'))
-        assert(result.some(({name}) => name === 'Lorena Antúnez'))
+        assert(result.some(({authorName}) => authorName === 'Q- Beat'))
+        assert(result.some(({authorName}) => authorName === 'Lorena Antúnez'))
     })
 })
 
