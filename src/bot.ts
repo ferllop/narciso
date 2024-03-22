@@ -30,6 +30,7 @@ type Milliseconds = number
 
 type Action<T> = () => Promise<T>
 type ActionName = string
+export type Page = puppeteer.Page
 export type Handle = ElementHandle | Page
 export type Reason = string
 export type Selector = string

@@ -5,6 +5,7 @@ import { configParser } from '../src/config-parser.js'
 import { 
     getReviewElements, 
     isValidReview, 
+    loadAllReviews, 
     rejectCookies, 
     scrapeReviews, 
 } from '../src/google.js'
@@ -17,7 +18,7 @@ const config = configParser({
         "browserLanguage": browserLanguage,
         "sandboxBrowser": true,
         "disableSetuidSandbox": true,
-        "headless": false,
+        "headless": true,
         "dumpio": true,
         "timeout": 30000
     },
@@ -39,7 +40,7 @@ const knownReview = {
 }
 
 const getAbsoluteFilePathWithLanguageSuffix = getAbsoluteFilePath('', `-${browserLanguage}.html`)
-const doNothing = console.log
+const doNothing = () => {}
 const testBot = Bot({logStart: doNothing, logFinish: doNothing, logError: doNothing}, config)
 
 describe('given google scraper', async () => {
@@ -55,8 +56,8 @@ describe('given google scraper', async () => {
             config.webs[0].url,
             getAbsoluteFilePathWithLanguageSuffix('google-url'),
             async page => {
-                const reject = await rejectCookies(testBot, page, 'Rechazar todo')
-                await reject.click()
+                await rejectCookies(testBot, page, 'Rechazar todo')
+                await loadAllReviews(testBot,page)
                 await testBot.scrollDownUntilTextIsLoaded('', page, 'Q- Beat') })
     })
 
