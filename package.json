@@ -9,7 +9,7 @@
     "prepare": "npm run build",
     "tsc:watch": "tsc --noEmit --watch",
     "start": "tsx ./src/index.ts",
-    "test": "tsx --test"
+    "test": "tsx --test ./test/**/*.test.ts"
   },
   "author": "",
   "license": "ISC",
