@@ -1,5 +1,6 @@
 import fs from 'node:fs'
-import { Browser, Page } from 'puppeteer'
+import puppeteer, { Page } from 'puppeteer'
+import { PuppeteerConfig } from '../src/config-parser.js'
 
 export const validFullConfig = {
     "puppeteer": {
@@ -12,7 +13,7 @@ export const validFullConfig = {
     },
     "webs":[{
         "activate": true,
-        "url": "https://www.google.com/maps/place/SOME+COMPANY/@40.2234903,2.4440167,17z/data=lotsofgibberish",
+        "url": "https://www.google.com/maps/place/DJ+MARIAN/@41.2791903,1.9760167,17z/data=!4m6!3m5!1s0x12a482b981b3f765:0x7ca8c3c9b3eadc99!8m2!3d41.2791903!4d1.9760167!16s%2Fg%2F11c61mwhrb?entry=ttu",
         "provider": "google",
         "ignoreReviews": {
             "byAuthorName": ["John Doe", "Foo Bar"],
@@ -38,16 +39,18 @@ export const validFullConfig = {
 export const getAbsoluteFilePath = (prefix: string, suffix: string) => 
     (relativeFilePath: string) => new URL(prefix + relativeFilePath + suffix, import.meta.url)
 
-export const writeWebContentToFile = async (browser: Browser, url: string, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<void> = async () => {}) => {
+export const writeWebContentToFile = async (puppeteerConfig: PuppeteerConfig, url: string, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<void> = async () => {}) => {
     if (!fs.existsSync(absoluteFilePath)) {
+        const browser = await puppeteer.launch(puppeteerConfig)
         const page = await browser.newPage()
         await page.goto(url)
         await doBeforeGetContent(page)
-        const milisecondsOfNetworkIdle = 2000
-        await page.waitForNetworkIdle({timeout: milisecondsOfNetworkIdle})
+        const miliseconds = 2000
+        await page.waitForNetworkIdle({timeout: miliseconds})
         const content = await page.content()
         fs.writeFileSync(absoluteFilePath, content)
         await page.close()
+        await browser.close()
     }
 }
 

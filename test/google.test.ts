@@ -33,17 +33,17 @@ describe('given google scraper', async () => {
     const browser = await testBot.launchBrowser()
     before(async () => {
         await writeWebContentToFile(
-            browser,
+            config.puppeteer,
             config.webs[0].url,
             getAbsoluteFilePathWithLanguageSuffix('google-cookies-consent'))
 
         await writeWebContentToFile(
-            browser,
+            config.puppeteer,
             config.webs[0].url,
             getAbsoluteFilePathWithLanguageSuffix('google-url'),
             async page => {
                 await rejectCookies(testBot, page, rejectCookiesButtonText)
-                await loadAllReviews(testBot,page, config.webs[0])
+                await loadAllReviews(testBot, page, config.webs[0])
             })
     })
 
