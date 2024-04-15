@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import configData from '../config.json' assert {type: 'json'}
 import { starOfService } from './star-of-service.js'
-import { WebConfig, configParser } from './config-parser.js'
+import { WebConfig, parseConfig } from './config-parser.js'
 import { consoleLogger, createLog, onlyOnErrorLogger } from './logger.js'
 import { launch } from 'puppeteer'
 import { createGoogleReviewsScraper } from './google.js'
@@ -10,7 +10,7 @@ import { Review } from './review.js'
 const onlyErrorLog = createLog(onlyOnErrorLogger)
 const consoleLog = createLog(consoleLogger)
 
-const config = configParser(configData)
+const config = parseConfig(configData)
 const browser = await launch()
 const providers: Record<string, (webConfig: WebConfig) => Promise<Review[]>> = {
     google: createGoogleReviewsScraper(consoleLog, onlyErrorLog, config.puppeteer.timeout, browser),

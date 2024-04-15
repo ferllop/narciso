@@ -41,30 +41,38 @@ export type Config = {
 const isAbsentOrExplicitlyTrue = (value: any) => [true, undefined].includes(value)
 const isExplicitlyTrue = (value: any) => value === true
 
-const parsePuppeteerConfigSection = (rawConfig: any): PuppeteerConfig => ({
-	...rawConfig.puppeteer,
-	args: [ `--lang=${rawConfig.puppeteer?.browserLanguage ?? 'en-US'}`, 
-		isAbsentOrExplicitlyTrue(rawConfig.puppeteer?.sandboxBrowser) ? '' : '--no-sandbox', 
-		isExplicitlyTrue(rawConfig.puppeteer?.disableSetuidSandbox) ? '--disable-setuid-sandbox' : ''
+export const parsePuppeteerConfig = (rawPuppeteerConfig: any): PuppeteerConfig => ({
+	...rawPuppeteerConfig,
+	args: [ `--lang=${rawPuppeteerConfig.browserLanguage ?? 'en-US'}`, 
+		isAbsentOrExplicitlyTrue(rawPuppeteerConfig.sandboxBrowser) ? '' : '--no-sandbox', 
+		isExplicitlyTrue(rawPuppeteerConfig.disableSetuidSandbox) ? '--disable-setuid-sandbox' : ''
 	],
-	headless: isAbsentOrExplicitlyTrue(rawConfig.puppeteer?.headless),
-	dumpio : isAbsentOrExplicitlyTrue(rawConfig.puppeteer?.dumpio),
+	headless: isAbsentOrExplicitlyTrue(rawPuppeteerConfig.headless),
+	dumpio : isAbsentOrExplicitlyTrue(rawPuppeteerConfig.dumpio),
 })
 
-const parseWebsConfigSection = (rawConfig: any): WebConfig[] => rawConfig.webs?.map((web: any) => ({
-	...web,
-	provider: web.provider ?? new URL(web.url).hostname,
-	activate: web.activate,
-	url: web.url, 
+export const parseWebConfig = (rawWebConfig: any) => ({
+	provider: rawWebConfig.provider ?? new URL(rawWebConfig.url).hostname,
+	activate: rawWebConfig.activate,
+	url: rawWebConfig.url, 
 	ignoreReviews: {
-		byAuthorName: web.ignoreReviews?.byAuthorName ?? [],
-		byMinimumRating: web.ignoreReviews?.byMinimumRating ?? 0,
-		byMinimumCharactersCountInContent: web.ignoreReviews?.byMinimumCharactersCountInContent ?? 0,
+		byAuthorName: rawWebConfig.ignoreReviews?.byAuthorName ?? [],
+		byMinimumRating: rawWebConfig.ignoreReviews?.byMinimumRating ?? 0,
+		byMinimumCharactersCountInContent: rawWebConfig.ignoreReviews?.byMinimumCharactersCountInContent ?? 0,
 	},
-}))
+	known: { 
+		...rawWebConfig.known, 
+		review: {
+			authorName: rawWebConfig.known?.review?.authorName,
+			content: rawWebConfig.known?.review?.content
+		},
+	},
+})
 
-export const configParser = (rawConfig: any): Config => ({
-	puppeteer: parsePuppeteerConfigSection(rawConfig),
-	webs: parseWebsConfigSection(rawConfig),
+export const parseWebsConfig = (rawWebsConfig: any): WebConfig[] => rawWebsConfig.map(parseWebConfig)
+
+export const parseConfig = (rawConfig: any): Config => ({
+	puppeteer: parsePuppeteerConfig(rawConfig.puppeteer),
+	webs: parseWebsConfig(rawConfig.webs),
 })
 
