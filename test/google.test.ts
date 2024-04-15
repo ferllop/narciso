@@ -1,17 +1,12 @@
 import { describe, it, before, beforeEach, after, afterEach} from 'node:test'
 import assert from 'node:assert'
-import { ElementHandle, Page } from 'puppeteer'
+import { ElementHandle, Page, launch } from 'puppeteer'
 import { configParser } from '../src/config-parser.js'
-import { 
-    getReviewElements, 
-    getSelectors, 
-    isValidReview, 
-    loadAllReviews, 
-    rejectCookies, 
-    scrapeReviews, 
-} from '../src/google.js'
 import { getAbsoluteFilePath, validFullConfig, writeWebContentToFile } from './helpers.js'
-import { Bot } from '../src/bot.js'
+import { consoleLogger, createLog, noLogLogger, onlyOnErrorLogger } from '../src/logger.js'
+import { getSelectors, loadAllReviews, rejectCookies, scrapeReview } from '../src/google.js'
+import { clickOrFailOnTagContainingText, findAll, findAllAndExecute, getFirstClassOfElementWithSelector } from '../src/puppeteer-actions.js'
+import { createReviewValidator } from '../src/review.js'
 
 const browserLanguage = 'es-ES'
 const validConfig = validFullConfig
@@ -26,11 +21,10 @@ const {
     review: knownReview,
 } = config.webs[0].known
 const getAbsoluteFilePathWithLanguageSuffix = getAbsoluteFilePath('', `-${browserLanguage}.html`)
-const doNothing = () => {}
-const testBot = Bot({logStart: doNothing, logFinish: doNothing, logError: doNothing}, config)
+const log = createLog(noLogLogger)
+const onLoopLog = createLog(noLogLogger)
 
 describe('given google scraper', async () => {
-    const browser = await testBot.launchBrowser()
     before(async () => {
         await writeWebContentToFile(
             config.puppeteer,
@@ -42,11 +36,12 @@ describe('given google scraper', async () => {
             config.webs[0].url,
             getAbsoluteFilePathWithLanguageSuffix('google-url'),
             async page => {
-                await rejectCookies(testBot, page, rejectCookiesButtonText)
-                await loadAllReviews(testBot, page, config.webs[0])
+                await rejectCookies(log, config.puppeteer.timeout)(rejectCookiesButtonText, page)
+                await loadAllReviews(log, config.puppeteer.timeout)(page, config.webs[0].known)
             })
     })
 
+    const browser = await launch(config.puppeteer)
     let page: Page
     beforeEach(async () => {
         page = await browser.newPage()
@@ -75,7 +70,7 @@ describe('given google scraper', async () => {
         then it knows how to find the button to reject the cookies', async () => {
         const cookiesHtml = getAbsoluteFilePathWithLanguageSuffix('google-cookies-consent').toString()
         await page.goto(cookiesHtml)
-        const rejectCookiesButton = await rejectCookies(testBot, page, rejectCookiesButtonText)
+        const rejectCookiesButton = await rejectCookies(log, config.puppeteer.timeout)(rejectCookiesButtonText, page)
         assert(rejectCookiesButton instanceof ElementHandle, 'an element handle must be found')
         assert(rejectCookiesButton.click, 'the handle must be clickable')
     })
@@ -83,9 +78,9 @@ describe('given google scraper', async () => {
     it('when it scrapes a review \
         then it knows how to find the button to view the entire content', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
-        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
-        const reviews = await getReviewElements(testBot, page, reviewSelector)
-        const moreButton = await testBot.clickOrFailOnTagContainingText('', reviews[0], '', viewMoreButtonText)
+        const reviewSelector = await getFirstClassOfElementWithSelector(log)('', `[aria-label="${knownReview.authorName}"]`, page)
+        const reviews = await findAll(log)('', reviewSelector, page)
+        const moreButton = await clickOrFailOnTagContainingText(log, config.puppeteer.timeout)('', '', viewMoreButtonText, reviews[0])
         assert(moreButton instanceof ElementHandle, 'an element handle must be found')
         assert(moreButton.click, 'the handle must be clickable')
     })
@@ -93,31 +88,30 @@ describe('given google scraper', async () => {
     it('when it scrapes a review \
         then it knows how to find the button to view the untranslated content', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
-        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
-        const reviews = await getReviewElements(testBot, page, reviewSelector)
-        const seeOriginalButton = await testBot.clickOrFailOnTagContainingText('', reviews[5], '', viewUntranslatedContentButtonText)
+        const reviewSelector = await getFirstClassOfElementWithSelector(log)('', `[aria-label="${knownReview.authorName}"]`, page)
+        const reviews = await findAll(log)('', reviewSelector, page)
+        const seeOriginalButton = await clickOrFailOnTagContainingText(log, config.puppeteer.timeout)('', '', viewUntranslatedContentButtonText, reviews[5])
         assert(seeOriginalButton instanceof ElementHandle, 'an element handle must be found')
         assert(seeOriginalButton.click, 'the handle must be clickable')
     })
 
     it('when it scrapes a reviews page it scrapes the first and the last reviews', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
-        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
-        const selectors = await getSelectors(testBot, page, knownReview)
-        const reviews = await testBot.findAllAndExecute('', page, reviewSelector, 
-            scrapeReviews(testBot, selectors, viewMoreButtonText, viewUntranslatedContentButtonText))
-        const result = reviews.filter(isValidReview(config.webs[0].ignoreReviews))
-        assert(result.some(({authorName}) => authorName === 'Q- Beat'))
-        assert(result.some(({authorName}) => authorName === 'Lorena Antúnez'))
+        const reviewSelector = await getFirstClassOfElementWithSelector(log)('', `[aria-label="${knownReview.authorName}"]`, page)
+        const selectors = await getSelectors(log)(page, knownReview)
+        const reviews = await findAllAndExecute(log)('', reviewSelector, 
+            scrapeReview(onLoopLog)(selectors, viewMoreButtonText, viewUntranslatedContentButtonText), page)
+        assert(reviews.some(({authorName}) => authorName === 'Q- Beat'))
+        assert(reviews.some(({authorName}) => authorName === 'Lorena Antúnez'))
     })
 
     it('when it scrapes a reviews page it not scrapes the reviews whom author names are declared to be ignored in config file', async () => {
         await page.goto(getAbsoluteFilePathWithLanguageSuffix('google-url').toString())
-        const reviewSelector = await testBot.getFirstClassOfElementWithSelector('', page, `[aria-label="${knownReview.authorName}"]`)
-        const selectors = await getSelectors(testBot, page, knownReview)
-        const reviews = await testBot.findAllAndExecute('', page, reviewSelector, 
-            scrapeReviews(testBot, selectors, viewMoreButtonText, viewUntranslatedContentButtonText))
-        const result = reviews.filter(isValidReview({...config.webs[0].ignoreReviews, byAuthorName: ['Q- Beat', 'Lorena Antúnez']}))
+        const reviewSelector = await getFirstClassOfElementWithSelector(log)('', `[aria-label="${knownReview.authorName}"]`, page)
+        const selectors = await getSelectors(log)(page, knownReview)
+        const reviews = await findAllAndExecute(log)('', reviewSelector, 
+            scrapeReview(onLoopLog)(selectors, viewMoreButtonText, viewUntranslatedContentButtonText), page)
+        const result = reviews.filter(createReviewValidator({...config.webs[0].ignoreReviews, byAuthorName: ['Q- Beat', 'Lorena Antúnez']}))
         assert(!result.some(({authorName}) => authorName === 'Q- Beat'))
         assert(!result.some(({authorName}) => authorName === 'Lorena Antúnez'))
     })
