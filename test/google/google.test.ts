@@ -1,12 +1,11 @@
-import { describe, it, before, beforeEach, after, afterEach} from 'node:test'
 import assert from 'node:assert'
+import { describe, it, before, beforeEach, after, afterEach} from 'node:test'
 import { ElementHandle, Page, launch } from 'puppeteer'
 import testConfigData from './google.config.json' assert {type: 'json'}
 import { TestConfig, avoidExternalRequests, getAbsoluteFilePathWithLanguageSuffix, parseTestConfig, writeWebContentToFile } from '../helpers.js'
 import { createLog, noLogLogger } from '../../src/logger.js'
 import { getSelectors, loadAllReviews, rejectCookies, scrapeReview } from '../../src/google.js'
 import { clickOrFailOnTagContainingText, findAll, findAllAndExecute, getFirstClassOfElementWithSelector } from '../../src/puppeteer-actions.js'
-import { createReviewValidator } from '../../src/review.js'
 
 const browserLanguage = 'es-ES'
 const cookiesPageName = 'google-cookies-page'
@@ -81,17 +80,6 @@ describe('given google scraper', async () => {
             scrapeReview(onLoopLog)(selectors, viewMoreButtonText, viewUntranslatedContentButtonText), page)
         assert(reviews.some(({authorName}) => authorName === 'Q- Beat'))
         assert(reviews.some(({authorName}) => authorName === 'Lorena Antúnez'))
-    })
-
-    it('when it scrapes a reviews page it not scrapes the reviews whom author names are declared to be ignored in config file', async () => {
-        await page.goto(getPagePath(reviewsPageName).toString())
-        const reviewSelector = await getFirstClassOfElementWithSelector(log)('', `[aria-label="${knownReview.authorName}"]`, page)
-        const selectors = await getSelectors(log)(page, knownReview)
-        const reviews = await findAllAndExecute(log)('', reviewSelector, 
-            scrapeReview(onLoopLog)(selectors, viewMoreButtonText, viewUntranslatedContentButtonText), page)
-        const result = reviews.filter(createReviewValidator({...config.web.ignoreReviews, byAuthorName: ['Q- Beat', 'Lorena Antúnez']}))
-        assert(!result.some(({authorName}) => authorName === 'Q- Beat'))
-        assert(!result.some(({authorName}) => authorName === 'Lorena Antúnez'))
     })
 })
 

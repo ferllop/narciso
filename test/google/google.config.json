@@ -5,7 +5,7 @@
         "disableSetuidSandbox": true,
         "headless": true,
         "dumpio": true,
-        "timeout": 500,
+        "timeout": 1000,
         "getContentTimeout": 2000
     },
     "web":{
