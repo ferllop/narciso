@@ -2,14 +2,11 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { Config, parseConfig } from "../src/config-parser.js"
 import configDataTemplate from '../config.example.json' assert { type: 'json' }
-
-const assertArrayContains = (actualArray: any[], expectedValue: any, message: string = '') => 
-    assert.ok(actualArray.some(item => item === expectedValue), message)
-const assertArrayNotContains = (actualArray: any[], expectedValue: any, message: string) => 
-    assert.throws(() => assertArrayContains(actualArray, expectedValue), message)
+import { assertArrayContains, assertArrayNotContains } from './custom-asserts.js'
 
 const assertArgsContains = (argToContain: any) => (message: string, configData: Config) => 
     assertArrayContains(parseConfig(configData).puppeteer.args, argToContain, message)
+
 const assertArgsNotContains = (argToContain: any) => (message: string, configData: Config) => 
     assertArrayNotContains(parseConfig(configData).puppeteer.args, argToContain, message)
 

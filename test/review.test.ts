@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert/strict'
 import { Review, createReviewValidator } from '../src/review.js'
 import { IgnoreReviewsConfig } from '../src/config-parser.js'
+import { assertNotOk } from './custom-asserts.js'
 
 const reviewTemplate: Review = {
     provider: '',
@@ -15,8 +15,6 @@ const ignoreReviewsTemplate: IgnoreReviewsConfig = {
     byMinimumRating: 0,
     byMinimumCharactersCountInContent: 0
 }
-
-const assertNotOk = (actual: boolean, message = '') => assert.equal(actual, false, message)
 
 describe('Given a review', () => {
     it('when it has a name which is invalid then is not validated by the review validator', async () => {
