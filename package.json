@@ -9,7 +9,12 @@
     "prepare": "npm run build",
     "tsc:watch": "tsc --noEmit --watch",
     "start": "tsx ./src/index.ts",
-    "test": "tsx --test ./test/**/*.test.ts"
+
+    "\n# TESTING": "",
+    "test:args": "tsx --test --test-reporter spec",
+    "test:files": "echo './test/**/**/*.test.ts'",
+    "test": "npm run test:args $(npm run test:files)",
+    "test:watch": "npm run test:args -- --watch $(npm run test:files)"
   },
   "author": "",
   "license": "ISC",
