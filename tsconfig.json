@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "test/**/*", "./config.json"],
+  "include": ["src/**/*", "test/**/*", "./config.json", "./.eslintrc.cjs"],
   "compilerOptions": {
     "lib": ["es2022"],
     "noEmit": true,
