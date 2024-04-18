@@ -11,7 +11,7 @@ const onlyErrorLog = createLog(onlyOnErrorLogger)
 const consoleLog = createLog(consoleLogger)
 
 const config = parseConfig(configData)
-const browser = await launch()
+const browser = await launch(config.puppeteer)
 const providers: Record<string, (webConfig: WebConfig) => Promise<Review[]>> = {
     google: createGoogleReviewsScraper(consoleLog, onlyErrorLog, config.puppeteer.timeout, browser),
     star_of_service: starOfService(config),
