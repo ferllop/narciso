@@ -15,7 +15,6 @@ export const pipeAsync =
 export const composeAsync = 
         <T>(...fns: Do<T>[]) => async (x: T) => fns.reduceRight(async (y: T | Promise<T>, f: Do<T>) => f(await y), x)
 
-export type Pair = readonly [Handle, ElementHandle | null]
 type TriadA = {
         page: Page, 
         selector: Selector, 
@@ -34,9 +33,6 @@ export const doActions =
         (x: Triad) => 
         log(reason)(async () => await pipeAsync<Triad>(...fns)(x))
 
-export const Pair = {
-        of: (p: Page, eh: ElementHandle | null = null): Pair => [p, eh] as const
-}
 export const Triad = {
         of: (page: Page, selector: Selector | null = null, handle:ElementHandle | null = null): Triad => 
                 selector === null
