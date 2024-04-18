@@ -1,5 +1,6 @@
-import { Page, ElementHandle, Browser, NodeFor } from "puppeteer"
+import { Page, ElementHandle, Browser, NodeFor, KeyInput } from "puppeteer"
 import { LogFunction } from "./logger.js"
+
 
 export type Reason = string
 export type Tag = string
@@ -7,6 +8,99 @@ export type Selector = string
 export type Milliseconds = number
 export type Handle = ElementHandle | Page
 export { Page, Browser }
+
+type Do<T> = (x: T) => Promise<T>
+export const pipeAsync = 
+        <T>(...fns: Do<T>[]) => async (x: T) => fns.reduce(async (y: T | Promise<T>, f: Do<T>) => f(await y), x)
+export const composeAsync = 
+        <T>(...fns: Do<T>[]) => async (x: T) => fns.reduceRight(async (y: T | Promise<T>, f: Do<T>) => f(await y), x)
+
+export type Pair = readonly [Handle, ElementHandle | null]
+type TriadA = {
+        page: Page, 
+        selector: Selector, 
+        handle: ElementHandle | null
+}
+type TriadB = {
+        page: Page, 
+        selector: null, 
+        handle: null
+}
+export type Triad = TriadA | TriadB
+export const doActions = 
+        (log: LogFunction) => 
+        (reason: Reason) => 
+        (...fns: Do<Triad>[]) => 
+        (x: Triad) => 
+        log(reason)(async () => await pipeAsync<Triad>(...fns)(x))
+
+export const Pair = {
+        of: (p: Page, eh: ElementHandle | null = null): Pair => [p, eh] as const
+}
+export const Triad = {
+        of: (page: Page, selector: Selector | null = null, handle:ElementHandle | null = null): Triad => 
+                selector === null
+                        ? {page, selector, handle: null}
+                        : {page, selector, handle}
+}
+
+type Finder = (s: Selector) => ConfiguredFinder 
+type ConfiguredFinder = (f: Triad) => Promise<Triad>
+export const doFindOne = (log: LogFunction) => (reason: Reason): Finder => 
+        (selector: Selector) => ({page}: Triad) => 
+        log(`Find one element with selector ${selector} ${reason}`)(async () => {
+        const found = await page.$(selector)
+        return {page, selector, handle: found}
+})
+
+export const doClickOrFailOn = (log: LogFunction) =>
+        (reason: Reason) => 
+        ({page, selector, handle}: Triad) => 
+        log(`Click or fail on element with selector ${selector} ${reason}`)(async () => {
+        if (handle === null) {
+                throw new Error(`The selector ${selector} was expected not to be found or to be hidden but was found`)
+        }
+        await handle.click()
+        return {page, selector, handle}
+})
+
+export const cleanHandle = async ({page}: Triad): Promise<Triad> => ({page, selector: null, handle: null})
+
+export const doWaitForNetworkIdle = (timeout: Milliseconds) => async (triad: Triad): Promise<Triad> => {
+    await triad.page.waitForNetworkIdle({timeout})
+    return triad
+}
+export const tap = (fn: (...args: any[]) => any) => (x: any) => {
+        fn(x)
+        return x
+}
+export const trace = (...args: string[]) => (x: any) => {
+        console.log(...args)
+        return x
+}
+export type Predicate = (t: Triad) => Promise<boolean>
+export const doScrollUntil = (log: LogFunction, timeout: Milliseconds) => (reason: Reason) => (predicate: Predicate) => (triad: Triad) => {
+        let step = 1
+        const action = async () => {
+                const result = 
+                        await doActions(log)('to do scroll step number ' + step++)(
+                                doPressKey(log)('to go at the end of the content')('End'),
+                                doWaitForNetworkIdle(timeout),
+                        )(triad)
+                if (!await predicate(result)) {
+                        await action()
+                }
+                return triad
+        }
+        return log(`Scroll down until selector "${triad.selector}" is present ${reason}`)(action)
+}
+
+export const doPressKey = (log: LogFunction) => (reason: Reason) => (key: KeyInput) => async (triad: Triad) =>
+        log(reason)(async () => {
+                await triad.page.keyboard.press(key)
+                return triad
+        })
+
 
 export const findOne = (log: LogFunction) => 
         async (reason: Reason, selector: Selector, handle: Handle) => 

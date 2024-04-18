@@ -5,7 +5,7 @@ import testConfigData from './google.config.json' assert {type: 'json'}
 import { TestConfig, avoidExternalRequests, getAbsoluteFilePathWithLanguageSuffix, parseTestConfig, writeWebContentToFile } from '../helpers.js'
 import { createLog, noLogLogger } from '../../src/logger.js'
 import { getSelectors, loadAllReviews, rejectCookies, scrapeReview } from '../../src/google.js'
-import { clickOrFailOnTagContainingText, findAll, findAllAndExecute, getFirstClassOfElementWithSelector } from '../../src/puppeteer-actions.js'
+import { Triad, clickOrFailOnTagContainingText, doActions, findAll, findAllAndExecute, getFirstClassOfElementWithSelector } from '../../src/puppeteer-actions.js'
 
 const browserLanguage = 'es-ES'
 const cookiesPageName = 'google-cookies-page'
@@ -27,8 +27,10 @@ const getGoogleCodeContent = async () => {
         config,
         getPagePath(reviewsPageName),
         async page => {
-            await rejectCookies(log, config.puppeteer.getContentTimeout)(rejectCookiesButtonText, page)
-            await loadAllReviews(log, config.puppeteer.getContentTimeout)(page, config.web.known)
+            doActions(log)('')(
+                rejectCookies(log, config.puppeteer.getContentTimeout)(rejectCookiesButtonText),
+                loadAllReviews(log, config.puppeteer.getContentTimeout)(config.web.known)
+            )(Triad.of(page))
         })
 }
 
@@ -47,7 +49,7 @@ describe('given google scraper', async () => {
         then it knows how to find the button to reject the cookies', async () => {
         const cookiesHtml = getPagePath(cookiesPageName).toString()
         await page.goto(cookiesHtml)
-        const rejectCookiesButton = await rejectCookies(log, config.puppeteer.timeout)(rejectCookiesButtonText, page)
+        const {handle: rejectCookiesButton} = await rejectCookies(log, config.puppeteer.timeout)(rejectCookiesButtonText)(Triad.of(page))
         assert(rejectCookiesButton instanceof ElementHandle, 'an element handle must be found')
         assert(rejectCookiesButton.click, 'the handle must be clickable')
     })
