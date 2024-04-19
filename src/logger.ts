@@ -6,11 +6,11 @@ type ActionDescription = string
 
 export const createLog = 
 	(logger: Logger) => (actionName: ActionDescription) => <T>(f: Action<T>): Promise<T> => {
-	logger.logStart(`Start "${actionName.trim()}" started`)
+	logger.logStart(`Start "${actionName.trim()}"`)
 	try {
 		const result = f()
 		logger.logFinish(
-			`Finish "${actionName.trim()}" succesfully` +
+			`Finish "${actionName.trim()}" successfully` +
 			(['string', 'number'].includes(typeof result) 
 				? ' with result ' + result
 				: '')
