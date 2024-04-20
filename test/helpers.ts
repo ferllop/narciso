@@ -8,6 +8,9 @@ export type TestConfig = {
     web: Omit<WebConfig, 'provider' | 'activate'>
 }
 
+export const doNothing = () => {}
+export const doNothingAsync = async () => {}
+
 export const parseTestConfig = (testConfig: any): TestConfig => {
     return {
         puppeteer: {
