@@ -71,7 +71,7 @@ export const doClickIfPresent = (log: LogFunction) =>
         (triad: Triad) =>
         log(`Click on selector ${triad.selector} if is present ${reason}`)(async () => {
         if (triad.handle !== null) {
-                await triad.handle.evaluate(h => h.click())
+                await triad.handle.evaluate(h => (h as HTMLElement).click())
         }
         return triad
 })

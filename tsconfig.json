@@ -1,7 +1,7 @@
 {
   "include": ["src/**/*", "test/**/*", "./config.json", "./.eslintrc.cjs"],
   "compilerOptions": {
-    "lib": ["es2023"],
+    "lib": ["es2023", "DOM"],
     "noEmit": true,
     "strict": true,
     "esModuleInterop": true,

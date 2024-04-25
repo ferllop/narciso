@@ -32,8 +32,12 @@ describe('given google scraper', async () => {
             const {handle: rejectCookiesButton} = await findRejectCookiesButton(log, knownTexts)(Triad.of(page))
             assert(rejectCookiesButton instanceof ElementHandle, 'an element handle must be found')
             assert(rejectCookiesButton.click, 'the handle must be clickable')
-            assert.strictEqual(await rejectCookiesButton.evaluate(e => e.parentNode.localName), 'button', 'is a button')
-            assert.strictEqual(await rejectCookiesButton.evaluate(e => e.innerText), knownTexts.rejectCookiesButtonText, 'has the expected text')
+            assert.strictEqual(
+                await rejectCookiesButton.evaluate(e => (e as HTMLElement).parentNode?.nodeName), 
+                'BUTTON', 'is a button')
+            assert.strictEqual(
+                await rejectCookiesButton.evaluate(e => (e as HTMLElement).innerText), 
+                knownTexts.rejectCookiesButtonText, 'has the expected text')
         })
     })
 
@@ -68,9 +72,9 @@ describe('given google scraper', async () => {
         after(async () => await page.close())
 
         it('then it knows how to get all the review elements', async () => {
-            const lastReview = await reviewElements[reviewElements.length -1].handle?.evaluate(e => e.innerText)
+            const lastReview = await reviewElements[reviewElements.length -1].handle?.evaluate(e => (e as HTMLElement).innerText)
             assert.ok(reviewElements.length > 0, 'some elements are found')
-            assert.ok(lastReview.includes(config.web.known.oldestReviewAuthorName, 'some elements are found'))
+            assert.ok(lastReview!.includes(config.web.known.oldestReviewAuthorName), 'some elements are found')
         })
 
         it('then it knows how to find the button to view the entire content', async () => {
@@ -78,7 +82,9 @@ describe('given google scraper', async () => {
             assert.ok(viewMoreButton instanceof ElementHandle, 'an element handle must be found')
             assert.ok(viewMoreButton.click, 'the handle must be clickable')
             assert.strictEqual(await viewMoreButton.evaluate(e => e.localName), 'button', 'is a button')
-            assert.strictEqual(await viewMoreButton.evaluate(e => e.innerText), knownTexts.viewMoreButtonText, 'has the expected text')
+            assert.strictEqual(
+                await viewMoreButton.evaluate(e => (e as HTMLElement).innerText), 
+                knownTexts.viewMoreButtonText, 'has the expected text')
         })
 
         it('then it knows how to find the button to view the untranslated content', async () => {
@@ -86,20 +92,28 @@ describe('given google scraper', async () => {
                 await findViewUntranslatedClickableElement(log, knownTexts)(reviewElements[5])
             assert.ok(viewUntranslatedContentButton instanceof ElementHandle, 'an element handle must be found')
             assert.ok(viewUntranslatedContentButton.click, 'the handle must be clickable')
-            assert.strictEqual(await viewUntranslatedContentButton.evaluate(e => e.parentNode.localName), 'button', 'is a button')
-            assert.ok((await viewUntranslatedContentButton.evaluate(e => e.innerText)).includes(knownTexts.viewUntranslatedContentButtonText), 'has the expected text')
+            assert.strictEqual(
+                await viewUntranslatedContentButton.evaluate(e => (e as HTMLElement).parentNode?.nodeName),
+                'BUTTON', 'is a button')
+            assert.ok((await viewUntranslatedContentButton
+                .evaluate(e => (e as HTMLElement).innerText))
+                .includes(knownTexts.viewUntranslatedContentButtonText), 'has the expected text')
         })
 
         it('then it knows how to find the content', async () => {
             const scrapedKnownReview = reviewElements.toReversed()[config.web.known.review.positionFromOldestBeingZero]
             const {handle: content} = await findContentElement(log, inferedSelectors)(scrapedKnownReview)
-            assert.strictEqual(await content?.evaluate(e => e.innerText), knownReview.content, 'has the expected content')
+            assert.strictEqual(
+                await content?.evaluate(e => (e as HTMLElement).innerText),
+                knownReview.content, 'has the expected content')
         })
 
         it('then it knows how to find the author name', async () => {
             const scrapedKnownReview = reviewElements.toReversed()[config.web.known.review.positionFromOldestBeingZero]
             const {handle: content} = await findAuthorNameElement(log, inferedSelectors)(scrapedKnownReview)
-            assert.strictEqual(await content?.evaluate(e => e.innerText), knownReview.authorName, 'has the expected content')
+            assert.strictEqual(
+                await content?.evaluate(e => (e as HTMLElement).innerText),
+                knownReview.authorName, 'has the expected content')
         })
 
         it('when it scrapes a reviews page it includes the first and the last reviews', async () => {

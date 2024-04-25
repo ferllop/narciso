@@ -99,18 +99,23 @@ export const loadEntireContent = (log: LogFunction, inferedSelectors: InferedSel
         findContentElement(log, inferedSelectors))
 export const scrapeReview = (log: LogFunction) => 
     (inferedSelectors: InferedSelectors, knownTexts: KnownTexts) => 
-    async (triad: Triad): Promise<Review> => 
-    ({ 
+    async (triad: Triad): Promise<Review> => ({
         provider: PROVIDER_NAME, 
-        rating: await Triad.getOrElse(rating => rating.getAttribute('aria-label').replace(/\D/g, ''), () => '')
-                    (await findRatingElement(log, knownTexts)(triad)),
+        rating: parseInt(
+            await Triad.getOrElse(rating => {
+                const value = rating.getAttribute('aria-label')
+                return value === null ? '0' : value.replace(/\D/g, '')
+            }, () => '0')
+                (await findRatingElement(log, knownTexts)(triad))
+        ),
         authorName: await Triad.getOrElse(
-                    el => el.innerText
-                        .toLowerCase()
-                        .split(' ')
-                        .map((s: string) => s.charAt(0).toUpperCase() + s.substring(1))
-                        .join(' '),
-                    () => '')(await findAuthorNameElement(log, inferedSelectors)(triad)),
+            el => (el as HTMLElement).innerText
+            .toLowerCase()
+            .split(' ')
+            .map((s: string) => s.charAt(0).toUpperCase() + s.substring(1))
+            .join(' '), () => '')
+                (await findAuthorNameElement(log, inferedSelectors)(triad)
+        ),
         content: await Triad.getOrElse(el => el.innerHTML, () => '')
             (await loadEntireContent(log, inferedSelectors, knownTexts)(triad))
     })
