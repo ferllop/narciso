@@ -24,15 +24,15 @@ export const getGoogleCodeContent = async () => {
         config,
         getPagePath(profilePageName),
         async (page) => {
-            await rejectCookies(log, config.puppeteer.getContentTimeout)(config.web.known.rejectCookiesButtonText)(Triad.of(page));
+            await rejectCookies(log, config.puppeteer.getContentTimeout)(config.web.known.texts)(Triad.of(page));
         });
     await writeWebContentToFile(
         config,
         getPagePath(initialReviewsPageName),
         async (page) => {
             await doActions(log)('')(
-                rejectCookies(log, config.puppeteer.getContentTimeout)(config.web.known.rejectCookiesButtonText),
-                findReviewsTab(log, config.web.known),
+                rejectCookies(log, config.puppeteer.getContentTimeout)(config.web.known.texts),
+                findReviewsTab(log, config.web.known.texts),
                 doClickOrFailOn(log)('')
             )(Triad.of(page));
         });
@@ -41,8 +41,8 @@ export const getGoogleCodeContent = async () => {
         getPagePath(allReviewsPageName),
         async (page) => {
             await doActions(log)('')(
-                rejectCookies(log, config.puppeteer.getContentTimeout)(config.web.known.rejectCookiesButtonText),
-                loadAllReviews(log, config.puppeteer.getContentTimeout)(config.web.known)
+                rejectCookies(log, config.puppeteer.getContentTimeout)(config.web.known.texts),
+                loadAllReviews(log, config.puppeteer.getContentTimeout)(config.web.known.texts, config.web.known.oldestReviewAuthorName)
             )(Triad.of(page));
         });
 };

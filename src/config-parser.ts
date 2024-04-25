@@ -10,14 +10,19 @@ export type KnownReview = {
 	content: string
 }
 
-export type KnownConfig = {
-	review: KnownReview
+export type KnownTexts = {
 	rejectCookiesButtonText: string
 	viewMoreButtonText: string
 	viewUntranslatedContentButtonText: string
 	reviewsSectionButtonText: string
 	sortingButtonText: string
 	byNewestOptionButtonText: string
+	stars: string
+}
+
+export type KnownConfig = {
+	review: KnownReview
+	texts: KnownTexts
 	oldestReviewAuthorName: string
 }
 
