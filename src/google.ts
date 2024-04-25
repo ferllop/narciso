@@ -41,7 +41,10 @@ export const rejectCookies = (log: LogFunction, timeout: Milliseconds) =>
 
 export const findReviewsTab = (log: LogFunction, knownTexts: KnownTexts) => 
     doFindOne(log)('to find the reviews tab')(selectorByText('button', knownTexts.reviewsSectionButtonText))
-
+export const findOrderingOptionsButton = (log: LogFunction, knownTexts: KnownTexts) =>
+    doFindOne(log)('to find the sorting options button')(selectorByText('button', knownTexts.sortingButtonText))
+export const findByNewestOrderingOption = (log: LogFunction, knownTexts: KnownTexts) =>
+    doFindOne(log)('to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText))
 export const loadAllReviews = (log: LogFunction, timeout: Milliseconds) => 
     (knownTexts: KnownTexts, oldestReviewAuthorName: string) =>
     doActions(log)('Load all the reviews')(
@@ -52,11 +55,11 @@ export const loadAllReviews = (log: LogFunction, timeout: Milliseconds) =>
         ),
         doActions(log)('Order by newest')(
             doActions(log)('to open ordering options')(
-                doFindOne(log)('to find the sorting options button')(selectorByText('button', knownTexts.sortingButtonText)),
+                findOrderingOptionsButton(log, knownTexts),
                 doClickOrFailOn(log)('to open the sorting options menu'),
             ),
             doActions(log)('Select order by newest')(
-                doFindOne(log)('to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText)),
+                findByNewestOrderingOption(log, knownTexts),
                 doClickOrFailOn(log)('to select the order by newest option'),
             ),
             doWaitForNetworkIdle(timeout)
@@ -65,9 +68,8 @@ export const loadAllReviews = (log: LogFunction, timeout: Milliseconds) =>
             doPressKey(log)('to focus on reviews list')('Tab'),
             doScrollUntil(log, timeout)('to keep scrolling')(
                 async triad => {
-                    const {handle: element} = await doFindOne
-                        (log)
-                        ('to check if the have arrived to the last review')
+                    const {handle: element} = await doFindOne(log)
+                        ('to check if have arrived to the last review')
                         (selectorByText('', oldestReviewAuthorName))(triad)
                     return element !== null
                 }
