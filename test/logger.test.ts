@@ -21,8 +21,8 @@ describe('Given a logger', () => {
         await log('A')(async () => await log('B')(async () => ''))
 
         assert.strictEqual(mem[0], 'A', 'row 1')
-        assert.strictEqual(mem[1], '  B', 'row 2')
-        assert.strictEqual(mem[2], '  B', 'row 3')
+        assert.strictEqual(mem[1], 'B', 'row 2')
+        assert.strictEqual(mem[2], 'B', 'row 3')
         assert.strictEqual(mem[0], 'A', 'row 4')
     })
 

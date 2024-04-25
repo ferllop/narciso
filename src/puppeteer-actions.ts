@@ -1,13 +1,12 @@
 import { Page, ElementHandle, Browser, NodeFor, KeyInput } from "puppeteer"
 import { LogFunction } from "./logger.js"
-
+export { Page, Browser }
 
 export type Reason = string
 export type Tag = string
 export type Selector = string
 export type Milliseconds = number
 export type Handle = ElementHandle | Page
-export { Page, Browser }
 
 type Do<T> = (x: T) => Promise<T>
 export const pipeAsync = 
@@ -26,6 +25,19 @@ type TriadB = {
         handle: null
 }
 export type Triad = TriadA | TriadB
+export const Triad = {
+        of: (page: Page, selector: Selector | null = null, handle:ElementHandle | null = null): Triad => 
+                selector === null
+                        ? {page, selector, handle: null}
+                        : {page, selector, handle},
+        getOrElse: <T>(onFound: (x: NodeFor<Selector>) => T, onNotFound: () => T) => async ({handle}: Triad) => 
+                handle === null ? onNotFound() : await handle.evaluate(onFound),
+
+        withHandle: (selector: Selector, handle: ElementHandle) => ({page}: TriadA): Triad => ({page, selector, handle})
+}
+
+export const selectorByText = (cssSelector: Selector, rejectCookiesText: string) => `${cssSelector} ::-p-text(${rejectCookiesText})`
+
 export const doActions = 
         (log: LogFunction) => 
         (reason: Reason) => 
@@ -33,20 +45,35 @@ export const doActions =
         (x: Triad) => 
         log(reason)(async () => await pipeAsync<Triad>(...fns)(x))
 
-export const Triad = {
-        of: (page: Page, selector: Selector | null = null, handle:ElementHandle | null = null): Triad => 
-                selector === null
-                        ? {page, selector, handle: null}
-                        : {page, selector, handle}
-}
-
-type Finder = (s: Selector) => ConfiguredFinder 
-type ConfiguredFinder = (f: Triad) => Promise<Triad>
-export const doFindOne = (log: LogFunction) => (reason: Reason): Finder => 
-        (selector: Selector) => ({page}: Triad) => 
+export const doFindOne = (log: LogFunction) => (reason: Reason) => (selector: Selector) => ({page}: Triad) => 
         log(`Find one element with selector ${selector} ${reason}`)(async () => {
         const found = await page.$(selector)
         return {page, selector, handle: found}
+})
+
+export const doFindAll = (log: LogFunction) => (reason: Reason) => (selector: Selector) => ({page}: Triad): Promise<Triad[]> =>
+        log(`Find all elements with selector ${selector} ${reason}`)(async () => {
+        const findings = await page.$$(selector)
+        return findings.map(f => ({page, selector, handle: f}))
+})
+
+export const doFindOneInHandle = (log: LogFunction) => (reason: Reason) => (selector: Selector) => ({page, handle}: Triad) => 
+        log(`Find one element with selector ${selector} ${reason}`)(async () => {
+        if (handle === null) {
+                return {page, selector, handle}
+        }
+        const found = await handle.$(selector)
+        return {page, selector, handle: found}
+})
+
+export const doClickIfPresent = (log: LogFunction) => 
+        (reason: Reason) => 
+        (triad: Triad) =>
+        log(`Click on selector ${triad.selector} if is present ${reason}`)(async () => {
+        if (triad.handle !== null) {
+                await triad.handle.evaluate(h => h.click())
+        }
+        return triad
 })
 
 export const doClickOrFailOn = (log: LogFunction) =>
@@ -60,20 +87,11 @@ export const doClickOrFailOn = (log: LogFunction) =>
         return {page, selector, handle}
 })
 
-export const cleanHandle = async ({page}: Triad): Promise<Triad> => ({page, selector: null, handle: null})
-
 export const doWaitForNetworkIdle = (timeout: Milliseconds) => async (triad: Triad): Promise<Triad> => {
     await triad.page.waitForNetworkIdle({timeout})
     return triad
 }
-export const tap = (fn: (...args: any[]) => any) => (x: any) => {
-        fn(x)
-        return x
-}
-export const trace = (...args: string[]) => (x: any) => {
-        console.log(...args)
-        return x
-}
+
 export type Predicate = (t: Triad) => Promise<boolean>
 export const doScrollUntil = (log: LogFunction, timeout: Milliseconds) => (reason: Reason) => (predicate: Predicate) => (triad: Triad) => {
         let step = 1
@@ -96,70 +114,6 @@ export const doPressKey = (log: LogFunction) => (reason: Reason) => (key: KeyInp
                 await triad.page.keyboard.press(key)
                 return triad
         })
-
-
-export const findOne = (log: LogFunction) => 
-        async (reason: Reason, selector: Selector, handle: Handle) => 
-        log(`Find one element with selector ${selector} ${reason}`)(async () => 
-        await handle.$(selector))
-
-export const clickOrFail = (log: LogFunction, timeout: Milliseconds) => 
-        async (reason: Reason, selector: Selector, handle: Handle) => 
-        log(`Mandatory click on selector ${selector} ${reason}`)(async () => {
-        const element = await handle.waitForSelector(selector, { timeout })
-        if (element === null) {
-                throw new Error(`The selector ${selector} was expected not to be found or to be hidden but was found`)
-        }
-        await element.click()
-        return element
-})
-
-export const scrollDownUntilTextIsLoaded = (log: LogFunction, timeout: Milliseconds) => 
-        async (reason: Reason, text: string, page: Page) => {
-        const action = async () => {
-                await page.keyboard.press('End')
-                await page.waitForNetworkIdle({timeout})
-                const element = await findOne(log)(reason, `::-p-text(${text})`, page)
-                if (!element) {
-                        await action()
-                }
-        }
-        return log(`Scroll down until text ${text} is present ${reason}`)(action)
-}
-
-export const findAll = (log: LogFunction) => 
-        async (reason: Reason, selector: Selector, handle: Handle) =>
-        log(`Find all elements with selector ${selector} ${reason}`)(async () => await handle.$$(selector))
-
-export const findOneAndEval = (log: LogFunction) => 
-        async <T>(reason: Reason, selector: Selector, onFound: (x: NodeFor<Selector>) => T, onNotFound: () => T, handle: Handle) =>
-        log(`Find selector and eval ${selector} ${reason}`)(async () => {
-                const element = await handle.$(selector)
-                return element 
-                        ? await element.evaluate(onFound)
-                        : onNotFound()
-        })
-
-export const findAllAndExecute = (log: LogFunction) => 
-        async <OUT>(reason: Reason, selector: Selector, onEach: (x: ElementHandle) => Promise<OUT>, handle: Handle) =>
-        log(`Find all with selector ${selector} and execute ${reason}`)(async () => {
-        const elements = await handle.$$(selector)
-        return await Promise.all(elements.map(onEach))
-})
-
-export const clickIfPresent = (log: LogFunction) => 
-        async (reason: Reason, selector: Selector, handle: Handle) =>
-        log(`Click on selector ${selector} if is present ${reason}`)(async () => {
-        const element = await handle.$(selector)
-        if (element) {
-                await element.evaluate(b => b.click())
-        }
-        return element
-})
-
-export const clickOrFailOnTagContainingText = (log: LogFunction, timeout: Milliseconds) =>
-        async (reason: Reason, tag: Tag, text: string, handle: Handle) =>
-        clickOrFail(log, timeout)(reason, `${tag} ::-p-text(${text})`, handle)
 
 export const getFirstClassOfElementWithText = (log: LogFunction) => 
         async (reason: Reason, text: string, handle: Handle) => 

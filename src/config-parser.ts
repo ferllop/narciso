@@ -4,11 +4,14 @@ export type IgnoreReviewsConfig = {
 	byMinimumRating: number
 }
 
+export type KnownReview = {
+	positionFromOldestBeingZero: number
+	authorName: string 
+	content: string
+}
+
 export type KnownConfig = {
-	review: {
-		authorName: string 
-		content: string
-	}
+	review: KnownReview
 	rejectCookiesButtonText: string
 	viewMoreButtonText: string
 	viewUntranslatedContentButtonText: string

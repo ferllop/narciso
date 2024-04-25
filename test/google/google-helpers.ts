@@ -1,7 +1,22 @@
-import { writeWebContentToFile } from '../helpers.js';
+import testConfigData from './google.config.json' assert {type: 'json'}
+import { TestConfig, getAbsoluteFilePathWithLanguageSuffix, parseTestConfig, writeWebContentToFile } from '../helpers.js';
 import { findReviewsTab, loadAllReviews, rejectCookies } from '../../src/google.js';
 import { Triad, doActions, doClickOrFailOn } from '../../src/puppeteer-actions.js';
-import { config, getPagePath, cookiesPageName, profilePageName, log, initialReviewsPageName, allReviewsPageName } from './google.test.js';
+import { createLog, noLogLogger } from '../../src/logger.js';
+
+const browserLanguage = 'es-ES'
+export const getPagePath = getAbsoluteFilePathWithLanguageSuffix(browserLanguage, new URL(import.meta.url))
+export const cookiesPageName = 'google-cookies-page'
+export const profilePageName = 'google-profile-page'
+export const initialReviewsPageName = 'google-initial-reviews-page'
+export const allReviewsPageName = 'google-all-reviews-loaded-page'
+export const cookiesFileUrl = getPagePath(cookiesPageName).toString()
+export const profileFileUrl = getPagePath(profilePageName).toString()
+export const initialReviewsFileUrl = getPagePath(initialReviewsPageName).toString()
+export const allReviewsFileUrl = getPagePath(allReviewsPageName).toString()
+export const config: TestConfig = parseTestConfig(testConfigData)
+export const log = createLog(noLogLogger)
+export const onLoopLog = createLog(noLogLogger)
 
 export const getGoogleCodeContent = async () => {
     await writeWebContentToFile(config, getPagePath(cookiesPageName));

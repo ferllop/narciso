@@ -1,87 +1,113 @@
 import assert from 'node:assert'
-import { describe, it, before, beforeEach, after, afterEach} from 'node:test'
-import { ElementHandle, Page, launch } from 'puppeteer'
-import testConfigData from './google.config.json' assert {type: 'json'}
-import { TestConfig, avoidExternalRequests, getAbsoluteFilePathWithLanguageSuffix, parseTestConfig, writeWebContentToFile } from '../helpers.js'
-import { createLog, noLogLogger } from '../../src/logger.js'
-import { getSelectors, loadAllReviews, rejectCookies, scrapeReview } from '../../src/google.js'
-import { Triad, clickOrFailOnTagContainingText, doActions, findAll, findAllAndExecute, getFirstClassOfElementWithSelector } from '../../src/puppeteer-actions.js'
-
-const browserLanguage = 'es-ES'
-const cookiesPageName = 'google-cookies-page'
-const reviewsPageName = 'google-reviews-page'
-const config: TestConfig = parseTestConfig(testConfigData)
-
-const {
-    rejectCookiesButtonText, 
-    viewMoreButtonText, 
-    viewUntranslatedContentButtonText, 
-    review: knownReview,
-} = config.web.known
-const log = createLog(noLogLogger)
-const onLoopLog = createLog(noLogLogger)
-const getPagePath = getAbsoluteFilePathWithLanguageSuffix(browserLanguage, new URL(import.meta.url))
-const getGoogleCodeContent = async () => {
-    await writeWebContentToFile(config, getPagePath(cookiesPageName))
-    await writeWebContentToFile(
-        config,
-        getPagePath(reviewsPageName),
-        async page => {
-            doActions(log)('')(
-                rejectCookies(log, config.puppeteer.getContentTimeout)(rejectCookiesButtonText),
-                loadAllReviews(log, config.puppeteer.getContentTimeout)(config.web.known)
-            )(Triad.of(page))
-        })
-}
+import { describe, it, before, after } from 'node:test'
+import { Browser, ElementHandle, Page, launch } from 'puppeteer'
+import { permitRequestsTo } from '../helpers.js'
+import { findAllTheReviews, findAuthorNameElement, findContentElement, findRejectCookiesButton, findViewMoreButton, findViewUntranslatedClickableElement, inferAuthorNameSelector, inferContentSelector, inferReviewSelector, scrapeAllReviews } from '../../src/google.js'
+import { Triad } from '../../src/puppeteer-actions.js'
+import { allReviewsFileUrl, config, cookiesFileUrl, getGoogleCodeContent, initialReviewsFileUrl, log, onLoopLog, profileFileUrl } from './google-helpers.js'
 
 describe('given google scraper', async () => {
-    const browser = await launch(config.puppeteer)
+    let browser: Browser
     let page: Page
-    before(getGoogleCodeContent) 
-    beforeEach(async () => {
-        page = await browser.newPage()
-        await avoidExternalRequests(page)
+    before(async () => {
+        browser = await launch(config.puppeteer)
+        await getGoogleCodeContent()
     })
-    afterEach(async () => await page.close())
-    after(async () => browser.close())
-
-    it('when it arrives to google cookies consent page \
-        then it knows how to find the button to reject the cookies', async () => {
-        const cookiesHtml = getPagePath(cookiesPageName).toString()
-        await page.goto(cookiesHtml)
-        const {handle: rejectCookiesButton} = await rejectCookies(log, config.puppeteer.timeout)(rejectCookiesButtonText)(Triad.of(page))
-        assert(rejectCookiesButton instanceof ElementHandle, 'an element handle must be found')
-        assert(rejectCookiesButton.click, 'the handle must be clickable')
+    after(async () => {
+        await browser.close()
     })
 
-    it('when it scrapes a review \
-        then it knows how to find the button to view the entire content', async () => {
-        await page.goto(getPagePath(reviewsPageName).toString())
-        const reviewSelector = await getFirstClassOfElementWithSelector(log)('', `[aria-label="${knownReview.authorName}"]`, page)
-        const reviews = await findAll(log)('', reviewSelector, page)
-        const moreButton = await clickOrFailOnTagContainingText(log, config.puppeteer.timeout)('', '', viewMoreButtonText, reviews[0])
-        assert(moreButton instanceof ElementHandle, 'an element handle must be found')
-        assert(moreButton.click, 'the handle must be clickable')
+    describe('being on cookies page', async () => {
+        before(async () => {
+            page = await browser.newPage()
+            await permitRequestsTo(page, cookiesFileUrl)
+            await page.goto(cookiesFileUrl)
+        })
+        after(async () => await page.close())
+
+        it('then it knows how to find the button to reject the cookies', async () => {
+            const {handle: rejectCookiesButton} = await findRejectCookiesButton(log, config.web.known.rejectCookiesButtonText)(Triad.of(page))
+            assert(rejectCookiesButton instanceof ElementHandle, 'an element handle must be found')
+            assert(rejectCookiesButton.click, 'the handle must be clickable')
+            assert.strictEqual(await rejectCookiesButton.evaluate(e => e.parentNode.localName), 'button', 'is a button')
+            assert.strictEqual(await rejectCookiesButton.evaluate(e => e.innerText), config.web.known.rejectCookiesButtonText, 'has the expected text')
+        })
     })
 
-    it('when it scrapes a review \
-        then it knows how to find the button to view the untranslated content', async () => {
-        await page.goto(getPagePath(reviewsPageName).toString())
-        const reviewSelector = await getFirstClassOfElementWithSelector(log)('', `[aria-label="${knownReview.authorName}"]`, page)
-        const reviews = await findAll(log)('', reviewSelector, page)
-        const seeOriginalButton = await clickOrFailOnTagContainingText(log, config.puppeteer.timeout)('', '', viewUntranslatedContentButtonText, reviews[5])
-        assert(seeOriginalButton instanceof ElementHandle, 'an element handle must be found')
-        assert(seeOriginalButton.click, 'the handle must be clickable')
+    describe('on profile page in its starting state', async () => {
+        before(async () => {
+            page = await browser.newPage()
+            await permitRequestsTo(page, profileFileUrl)
+            await page.goto(profileFileUrl)
+        })
+        after(async () => await page.close())
     })
 
-    it('when it scrapes a reviews page it scrapes the first and the last reviews', async () => {
-        await page.goto(getPagePath(reviewsPageName).toString())
-        const reviewSelector = await getFirstClassOfElementWithSelector(log)('', `[aria-label="${knownReview.authorName}"]`, page)
-        const selectors = await getSelectors(log)(page, knownReview)
-        const reviews = await findAllAndExecute(log)('', reviewSelector, 
-            scrapeReview(onLoopLog)(selectors, viewMoreButtonText, viewUntranslatedContentButtonText), page)
-        assert(reviews.some(({authorName}) => authorName === 'Q- Beat'))
-        assert(reviews.some(({authorName}) => authorName === 'Lorena Antúnez'))
+    describe('on reviews page in its starting state', async () => {
+        before(async () => {
+            page = await browser.newPage()
+            await permitRequestsTo(page, initialReviewsFileUrl)
+            await page.goto(initialReviewsFileUrl)
+        })
+        after(async () => await page.close())
+    })
+
+    describe('on reviews page with all the reviews already loaded', async () => {
+        let reviewSelector: string
+        let authorNameSelector: string
+        let contentSelector: string
+        let reviewElements: Triad[]
+        before(async () => {
+            page = await browser.newPage()
+            await permitRequestsTo(page, allReviewsFileUrl)
+            await page.goto(allReviewsFileUrl)
+            reviewSelector = await inferReviewSelector(log, config.web.known.review)(Triad.of(page))
+            authorNameSelector = await inferAuthorNameSelector(log, config.web.known.review)(Triad.of(page))
+            contentSelector = await inferContentSelector(log, config.web.known.review)(Triad.of(page))
+            reviewElements = await findAllTheReviews(log, reviewSelector)(Triad.of(page))
+        })
+        after(async () => await page.close())
+
+        it('then it knows how to get all the review elements', async () => {
+            const lastReview = await reviewElements[reviewElements.length -1].handle?.evaluate(e => e.innerText)
+            assert.ok(reviewElements.length > 0, 'some elements are found')
+            assert.ok(lastReview.includes(config.web.known.oldestReviewAuthorName, 'some elements are found'))
+        })
+
+        it('then it knows how to find the button to view the entire content', async () => {
+            const {handle: viewMoreButton} = await findViewMoreButton(log, config.web.known.viewMoreButtonText)(reviewElements[5])
+            assert.ok(viewMoreButton instanceof ElementHandle, 'an element handle must be found')
+            assert.ok(viewMoreButton.click, 'the handle must be clickable')
+            assert.strictEqual(await viewMoreButton.evaluate(e => e.localName), 'button', 'is a button')
+            assert.strictEqual(await viewMoreButton.evaluate(e => e.innerText), config.web.known.viewMoreButtonText, 'has the expected text')
+        })
+
+        it('then it knows how to find the button to view the untranslated content', async () => {
+            const {handle: viewUntranslatedContentButton} = 
+                await findViewUntranslatedClickableElement(log, config.web.known.viewUntranslatedContentButtonText)(reviewElements[5])
+            assert.ok(viewUntranslatedContentButton instanceof ElementHandle, 'an element handle must be found')
+            assert.ok(viewUntranslatedContentButton.click, 'the handle must be clickable')
+            assert.strictEqual(await viewUntranslatedContentButton.evaluate(e => e.parentNode.localName), 'button', 'is a button')
+            assert.ok((await viewUntranslatedContentButton.evaluate(e => e.innerText)).includes(config.web.known.viewUntranslatedContentButtonText), 'has the expected text')
+        })
+
+        it('then it knows how to find the content', async () => {
+            const knownReview = reviewElements.toReversed()[config.web.known.review.positionFromOldestBeingZero]
+            const {handle: content} = await findContentElement(log, contentSelector)(knownReview)
+            assert.strictEqual(await content?.evaluate(e => e.innerText), config.web.known.review.content, 'has the expected content')
+        })
+
+        it('then it knows how to find the author name', async () => {
+            const knownReview = reviewElements.toReversed()[config.web.known.review.positionFromOldestBeingZero]
+            const {handle: content} = await findAuthorNameElement(log, authorNameSelector)(knownReview)
+            assert.strictEqual(await content?.evaluate(e => e.innerText), config.web.known.review.authorName, 'has the expected content')
+        })
+
+        it('when it scrapes a reviews page it includes the first and the last reviews', async () => {
+            const reviews = await scrapeAllReviews(log, onLoopLog)(config.web.known)(Triad.of(page))
+            assert(reviews.some(({authorName}) => authorName === 'Q- Beat'))
+            assert(reviews.some(({authorName}) => authorName === 'Lorena Antúnez'))
+        })
     })
 })
 
