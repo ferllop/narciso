@@ -42,7 +42,7 @@ export const getGoogleCodeContent = async () => {
         async (page) => {
             await doActions(log)('')(
                 rejectCookies(log, config.puppeteer.getContentTimeout)(config.web.known.texts),
-                loadAllReviews(log, config.puppeteer.getContentTimeout)(config.web.known.texts, config.web.known.oldestReviewAuthorName)
+                loadAllReviews(log, config.puppeteer.getContentTimeout)(config.web.known)
             )(Triad.of(page));
         });
 };

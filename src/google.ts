@@ -46,7 +46,7 @@ export const findOrderingOptionsButton = (log: LogFunction, knownTexts: KnownTex
 export const findByNewestOrderingOption = (log: LogFunction, knownTexts: KnownTexts) =>
     doFindOne(log)('to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText))
 export const loadAllReviews = (log: LogFunction, timeout: Milliseconds) => 
-    (knownTexts: KnownTexts, oldestReviewAuthorName: string) =>
+    ({texts: knownTexts, oldestReviewAuthorName}: KnownConfig) =>
     doActions(log)('Load all the reviews')(
         doActions(log)('Go to reviews tab')(
             findReviewsTab(log, knownTexts),
@@ -138,7 +138,7 @@ export const createGoogleReviewsScraper =
     await page.goto(webConfig.url)
     await doActions(log)('')(
         rejectCookies(log, timeout)(webConfig.known.texts),
-        loadAllReviews(log, timeout)(webConfig.known.texts, webConfig.known.oldestReviewAuthorName)
+        loadAllReviews(log, timeout)(webConfig.known)
     )(Triad.of(page))
     const reviews = await scrapeAllReviews(log, logOnLoop)(webConfig.known)(Triad.of(page))
     return reviews.filter(isValidReview)
