@@ -31,6 +31,7 @@ export const getAbsoluteFilePathWithLanguageSuffix =
 export const writeWebContentToFile = 
     async (config: TestConfig, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<void> = async () => {}) => {
     if (!fs.existsSync(absoluteFilePath)) {
+        console.log(`\n# The html file ${absoluteFilePath} is not found. Generating with a headless browser. Please be patinent...`)
         const browser = await launch(config.puppeteer)
         const page = await browser.newPage()
         await page.goto(config.web.url)
@@ -40,17 +41,18 @@ export const writeWebContentToFile =
         fs.writeFileSync(absoluteFilePath, content)
         await page.close()
         await browser.close()
+        console.log(`# Html file ${absoluteFilePath} has been generated. You can generate again by deleting it.\n`)
     }
 }
 
-export const avoidExternalRequests = async (page: Page) => {
+export const permitRequestsTo = async (page: Page, ...urls: string[]) => {
     await page.setRequestInterception(true)
     page.on('request', request => {
         if (request.isInterceptResolutionHandled()) {
             return
         }
 
-        if (page.url() === request.url() || page.url() === 'about:blank') {
+        if (page.url() === request.url() || page.url() === 'about:blank' || urls.includes(page.url())) {
             request.continue()
             return
         }
