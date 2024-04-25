@@ -2,7 +2,7 @@ import assert from 'node:assert'
 import { describe, it, before, after } from 'node:test'
 import { Browser, ElementHandle, Page, launch } from 'puppeteer'
 import { permitRequestsTo } from '../helpers.js'
-import { findAllTheReviews, findAuthorNameElement, findContentElement, findRejectCookiesButton, findViewMoreButton, findViewUntranslatedClickableElement, inferAuthorNameSelector, inferContentSelector, inferReviewSelector, scrapeAllReviews } from '../../src/google.js'
+import { InferedSelectors, findAllTheReviews, findAuthorNameElement, findContentElement, findRejectCookiesButton, findViewMoreButton, findViewUntranslatedClickableElement, inferSelectors, scrapeAllReviews } from '../../src/google.js'
 import { Triad } from '../../src/puppeteer-actions.js'
 import { allReviewsFileUrl, config, cookiesFileUrl, getGoogleCodeContent, initialReviewsFileUrl, log, onLoopLog, profileFileUrl } from './google-helpers.js'
 
@@ -56,18 +56,14 @@ describe('given google scraper', async () => {
     })
 
     describe('on reviews page with all the reviews already loaded', async () => {
-        let reviewSelector: string
-        let authorNameSelector: string
-        let contentSelector: string
         let reviewElements: Triad[]
+        let inferedSelectors: InferedSelectors
         before(async () => {
             page = await browser.newPage()
             await permitRequestsTo(page, allReviewsFileUrl)
             await page.goto(allReviewsFileUrl)
-            reviewSelector = await inferReviewSelector(log, knownReview)(Triad.of(page))
-            authorNameSelector = await inferAuthorNameSelector(log, knownReview)(Triad.of(page))
-            contentSelector = await inferContentSelector(log, knownReview)(Triad.of(page))
-            reviewElements = await findAllTheReviews(log, reviewSelector)(Triad.of(page))
+            inferedSelectors = await inferSelectors(log, knownReview, page)
+            reviewElements = await findAllTheReviews(log, inferedSelectors)(Triad.of(page))
         })
         after(async () => await page.close())
 
@@ -96,13 +92,13 @@ describe('given google scraper', async () => {
 
         it('then it knows how to find the content', async () => {
             const scrapedKnownReview = reviewElements.toReversed()[config.web.known.review.positionFromOldestBeingZero]
-            const {handle: content} = await findContentElement(log, contentSelector)(scrapedKnownReview)
+            const {handle: content} = await findContentElement(log, inferedSelectors)(scrapedKnownReview)
             assert.strictEqual(await content?.evaluate(e => e.innerText), knownReview.content, 'has the expected content')
         })
 
         it('then it knows how to find the author name', async () => {
             const scrapedKnownReview = reviewElements.toReversed()[config.web.known.review.positionFromOldestBeingZero]
-            const {handle: content} = await findAuthorNameElement(log, authorNameSelector)(scrapedKnownReview)
+            const {handle: content} = await findAuthorNameElement(log, inferedSelectors)(scrapedKnownReview)
             assert.strictEqual(await content?.evaluate(e => e.innerText), knownReview.authorName, 'has the expected content')
         })
 

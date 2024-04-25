@@ -3,7 +3,6 @@ import { Review, createReviewValidator } from "./review.js"
 import { LogFunction } from "./logger.js"
 import { 
     Milliseconds, 
-    Selector, 
     Browser, 
     getFirstClassOfElementWithSelector, 
     getFirstClassOfElementWithText, 
@@ -18,18 +17,18 @@ import {
     doFindOneInHandle,
     doFindAll,
     selectorByText,
+    Page,
 } from "./puppeteer-actions.js"
 
 const PROVIDER_NAME = 'google'
 
-export const inferContentSelector = (log: LogFunction, knownReview: KnownReview) => ({page}: Triad) =>
-    getFirstClassOfElementWithText(log)('to get the class to get the content', knownReview.content, page)
-
-export const inferAuthorNameSelector = (log: LogFunction, knownReview: KnownReview) => ({page}: Triad): Promise<string> =>
-    getFirstClassOfElementWithText(log)('to get the class to get the author name', knownReview.authorName, page)
-
-export const inferReviewSelector = (log: LogFunction, knownReview: KnownReview) => ({page}: Triad): Promise<string> =>
-    getFirstClassOfElementWithSelector(log)('to get the class to find each review', `[aria-label="${knownReview.authorName}"]`, page)
+export type InferedSelectors = Awaited<ReturnType<typeof inferSelectors>>
+export const inferSelectors = async (log: LogFunction, knownReview: KnownReview, page: Page) => ({
+    content: await getFirstClassOfElementWithText(log)('to get the class to get the content', knownReview.content, page),
+    authorName: await getFirstClassOfElementWithText(log)('to get the class to get the author name', knownReview.authorName, page),
+    review: await getFirstClassOfElementWithSelector(log)
+        ('to get the class to find each review', `[aria-label="${knownReview.authorName}"]`, page)
+}) 
 
 export const findRejectCookiesButton = (log: LogFunction, knownTexts: KnownTexts) => 
     doFindOne(log)('to get the reject cookies button')(selectorByText('button', knownTexts.rejectCookiesButtonText))
@@ -76,54 +75,52 @@ export const loadAllReviews = (log: LogFunction, timeout: Milliseconds) =>
         ),
      )
 
-export const findAllTheReviews = (log: LogFunction, reviewSelector: Selector) =>
-    doFindAll(log)('to find all the reviews elements')(reviewSelector)
+export const findAllTheReviews = (log: LogFunction, inferedSelectors: InferedSelectors) =>
+    doFindAll(log)('to find all the reviews elements')(inferedSelectors.review)
 
 export const findRatingElement = (log: LogFunction, {stars}: KnownTexts) => 
     doFindOneInHandle(log)('to get the rating')(`[aria-label~="${stars}"]`)
-export const findAuthorNameElement = (log: LogFunction, authorNameSelector: Selector) => 
-    doFindOneInHandle(log)('to get the author name')(authorNameSelector)
+export const findAuthorNameElement = (log: LogFunction, inferedSelectors: InferedSelectors) =>
+    doFindOneInHandle(log)('to get the author name')(inferedSelectors.authorName)
 export const findViewMoreButton = (log: LogFunction, {viewMoreButtonText}: KnownTexts) => 
     doFindOneInHandle(log)('to get the clickable element to view the entire content')
         (selectorByText('button', viewMoreButtonText))
 export const findViewUntranslatedClickableElement = (log: LogFunction, {viewUntranslatedContentButtonText}: KnownTexts) =>
     doFindOneInHandle(log)('to get the clickable element to view the untranslated content')
         (selectorByText('span', viewUntranslatedContentButtonText))
-export const findContentElement = (log: LogFunction, contentSelector: Selector) => 
-    doFindOneInHandle(log)('to get the content')(contentSelector)
-export const loadEntireContent = (log: LogFunction, contentSelector: string, knownTexts: KnownTexts) => 
+export const findContentElement = (log: LogFunction, inferedSelectors: InferedSelectors) => 
+    doFindOneInHandle(log)('to get the content')(inferedSelectors.content)
+export const loadEntireContent = (log: LogFunction, inferedSelectors: InferedSelectors, knownTexts: KnownTexts) => 
     doActions(log)('to get the full and untranslated content of the review')(
         findViewMoreButton(log, knownTexts),
         doClickIfPresent(log)('to click to view the entire content'),
         findViewUntranslatedClickableElement(log, knownTexts),
         doClickIfPresent(log)('to click to view the untranslated content'),
-        findContentElement(log, contentSelector))
+        findContentElement(log, inferedSelectors))
 export const scrapeReview = (log: LogFunction) => 
-    (authorNameSelector: string, contentSelector: string, knownTexts: KnownTexts) => 
+    (inferedSelectors: InferedSelectors, knownTexts: KnownTexts) => 
     async (triad: Triad): Promise<Review> => 
     ({ 
         provider: PROVIDER_NAME, 
         rating: await Triad.getOrElse(rating => rating.getAttribute('aria-label').replace(/\D/g, ''), () => '')
-                        (await findRatingElement(log, knownTexts)(triad)),
+                    (await findRatingElement(log, knownTexts)(triad)),
         authorName: await Triad.getOrElse(
                     el => el.innerText
                         .toLowerCase()
                         .split(' ')
                         .map((s: string) => s.charAt(0).toUpperCase() + s.substring(1))
                         .join(' '),
-                    () => '')(await findAuthorNameElement(log, authorNameSelector)(triad)),
+                    () => '')(await findAuthorNameElement(log, inferedSelectors)(triad)),
         content: await Triad.getOrElse(el => el.innerHTML, () => '')
-            (await loadEntireContent(log, contentSelector, knownTexts)(triad))
+            (await loadEntireContent(log, inferedSelectors, knownTexts)(triad))
     })
 
 export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction) => (known: KnownConfig) => async (triad: Triad): Promise<Review[]> => {
-    const reviewEls = await findAllTheReviews(log, await inferReviewSelector(log, known.review)(triad))(Triad.of(triad.page))
+    const inferedSelectors = await inferSelectors(log, known.review, triad.page)
+    const reviewEls = await findAllTheReviews(log, inferedSelectors)(Triad.of(triad.page))
     return Promise.all(
         reviewEls.map(
-            scrapeReview(logOnLoop)(
-                await inferAuthorNameSelector(log, known.review)(triad),
-                await inferContentSelector(log, known.review)(triad),
-                known.texts)))
+            scrapeReview(logOnLoop)(inferedSelectors, known.texts)))
 }
 
 export const createGoogleReviewsScraper = 
