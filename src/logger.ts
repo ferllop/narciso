@@ -1,31 +1,67 @@
-export type LogStart = (actionDescription: ActionDescription) => void
-export type LogFinish = (actionDescription: ActionDescription, result: any) => void
-export type LogError = (actionDescription: ActionDescription, error: any) => void
-export type Logger = {logStart: LogStart, logFinish: LogFinish, logError: LogError}
-export type LogFunction = (s: string) => <T>(a: Action<T>) => Promise<T>
-type Action<T> = (...args: any[]) => Promise<T>
+export type FormatLog = (str: string, ...thing: unknown[]) => string | null
+export type LogFormatter = {formatStart: FormatLog, formatFinish: FormatLog, formatError: FormatLog}
+
 type ActionDescription = string
+type Action<T> = (...args: any[]) => Promise<T>
+export type LogFunction = {
+	(actionDescription: ActionDescription): <T>(a: Action<T>) => Promise<T>
+	getLog: () => string[]
+}
 
-export const createLog = 
-	(logger: Logger) => (actionDescription: ActionDescription) => async <T>(f: Action<T>): Promise<T> => {
-	logger.logStart(actionDescription)
-	try {
-		const result = await f()
-		logger.logFinish(actionDescription, result)
-		return result
-	} catch (error: any) {
-		logger.logError(actionDescription, error)
-		throw error
+export const createLogFunction = 
+	(logger: LogFormatter, memory: string[] = []): LogFunction => {
+
+	const addLine = (str: string | null) => {
+		if (str !== null) 
+			memory.push(str)
 	}
+
+	const logFunction = (actionDescription: ActionDescription) => async <T>(f: Action<T>): Promise<T> => {
+		addLine(logger.formatStart(actionDescription))
+		try {
+			const result = await f()
+			addLine(logger.formatFinish(actionDescription, result))
+			return result
+		} catch (error: any) {
+			addLine(logger.formatError(actionDescription, error))
+			throw error
+		}
+	}
+	logFunction.getLog = () => structuredClone(memory)
+	return logFunction
 }
 
-const doNothing = () => {}
-export const noLogLogger: Logger = {logStart: doNothing, logFinish: doNothing, logError: doNothing}
-export const onlyOnErrorLogger: Logger = {...noLogLogger, logError: console.error}
-export const consoleLogger: Logger = {
-	logStart: (...msgs: string[]) => console.log('Start:', ...msgs),
-	logFinish: (...msgs: string[]) => {
-		console.log('Finish:', ...msgs.filter(msg => ['number', 'string'].includes(typeof msg)))
+export const tap = (f: (...args: any[]) => any) => (logger: LogFormatter): LogFormatter => ({
+	formatStart: (actionDescription: ActionDescription) => {
+		const formattedLog = logger.formatStart(actionDescription)
+		formattedLog !== null && f(formattedLog)
+		return formattedLog
 	},
-	logError: console.error,
+	formatFinish: (actionDescription: ActionDescription, result: any) => {
+		const formattedLog = logger.formatFinish(actionDescription, result)
+		formattedLog !== null && f(formattedLog)
+		return formattedLog
+	},	
+	formatError: (actionDescription: ActionDescription, error: any) => {
+		const formattedLog = logger.formatError(actionDescription, error)
+		formattedLog !== null && f(formattedLog)
+		return formattedLog
+	}	
+})
+
+export const toConsole = tap(console.log)
+
+export const simpleLogFormatter: LogFormatter = {
+	formatStart: (actionDescription: string) => 
+		'Start: ' + actionDescription,
+
+	formatFinish: (actionDescription: string, result: any) => 
+		'Finish: ' + actionDescription + 
+		(['number', 'string'].includes(typeof result) 
+			? ` with result ${result}` 
+			: ''),
+
+	formatError: (actionDescription: string, error: any) => 
+		'ERROR: ' + actionDescription + `failed with error "${error instanceof Error ? error.message : error}"`
 }
+export const onlyErrorLogFormatter : LogFormatter = {...simpleLogFormatter, formatStart: () => null, formatFinish: () => null}

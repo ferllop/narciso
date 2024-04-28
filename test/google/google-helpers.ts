@@ -1,7 +1,7 @@
 import testConfigData from './google.config.json' assert {type: 'json'}
 import { TestConfig, getAbsoluteFilePathWithLanguageSuffix, parseTestConfig, writeWebContentToFile } from '../helpers.js';
 import { findReviewsTab, loadAllReviews, rejectCookies } from '../../src/google.js';
-import { createLog, noLogLogger } from '../../src/logger.js';
+import { createLogFunction, onlyErrorLogFormatter, simpleLogFormatter, toConsole } from '../../src/logger.js';
 import { clickOrFail } from '../../src/puppeteer-actions.js';
 
 const browserLanguage = 'es-ES'
@@ -15,8 +15,10 @@ export const profileFileUrl = getPagePath(profilePageName).toString()
 export const initialReviewsFileUrl = getPagePath(initialReviewsPageName).toString()
 export const allReviewsFileUrl = getPagePath(allReviewsPageName).toString()
 export const config: TestConfig = parseTestConfig(testConfigData)
-export const log = createLog(noLogLogger)
-export const onLoopLog = createLog(noLogLogger)
+
+export const logMem: string[] = []
+export const log = createLogFunction(toConsole(simpleLogFormatter), logMem)
+export const onlyOnErrorLog = createLogFunction(toConsole(onlyErrorLogFormatter), logMem)
 
 export const getGoogleCodeContent = async () => {
     await writeWebContentToFile(config, getPagePath(cookiesPageName));

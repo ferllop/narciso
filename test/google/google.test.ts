@@ -3,7 +3,7 @@ import { describe, it, before, after } from 'node:test'
 import { Browser, ElementHandle, Page, launch } from 'puppeteer'
 import { assertIsClickableElementWithExactText, assertIsClickableElementWithIncludingText, permitRequestsTo } from '../helpers.js'
 import { InferedSelectors, findAllTheReviews, findAuthorNameElement, findContentElement, findOrderingOptionsButton, findRejectCookiesButton, findReviewsTab, findViewMoreButton, findViewUntranslatedClickableElement, inferSelectors, scrapeAllReviews } from '../../src/google.js'
-import { allReviewsFileUrl, config, cookiesFileUrl, getGoogleCodeContent, initialReviewsFileUrl, log, onLoopLog, profileFileUrl } from './google-helpers.js'
+import { allReviewsFileUrl, config, cookiesFileUrl, getGoogleCodeContent, initialReviewsFileUrl, log, onlyOnErrorLog, profileFileUrl } from './google-helpers.js'
 
 const knownTexts = config.web.known.texts
 const knownReview = config.web.known.review
@@ -114,7 +114,7 @@ describe('given google scraper', async () => {
         })
 
         it('when it scrapes a reviews page it includes the first and the last reviews', async () => {
-            const reviews = await scrapeAllReviews(log, onLoopLog, config.web.known)(page)
+            const reviews = await scrapeAllReviews(log, onlyOnErrorLog, config.web.known)(page)
             assert(reviews.some(({authorName}) => authorName === 'Q- Beat'))
             assert(reviews.some(({authorName}) => authorName === 'Lorena Antúnez'))
         })
