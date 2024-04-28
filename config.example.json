@@ -23,12 +23,15 @@
           "authorName": "Jane Foo",
           "content": "The experience was amazing"
         },
-        "rejectCookiesButtonText": "Rechazar todo",
-        "viewMoreButtonText": "Más",
-        "viewUntranslatedContentButtonText": "Ver original",
-        "reviewsSectionButtonText": "Reseñas",
-        "sortingButtonText": "Ordenar",
-        "byNewestOptionButtonText": "Más recientes",
+        "texts": {
+          "rejectCookiesButtonText": "Rechazar todo",
+          "viewMoreButtonText": "Más",
+          "viewUntranslatedContentButtonText": "Ver original",
+          "reviewsSectionButtonText": "Reseñas",
+          "sortingButtonText": "Ordenar",
+          "byNewestOptionButtonText": "Más recientes",
+          "stars": "estrellas"
+        },
         "oldestReviewAuthorName": "Mr. T"
       }
     },

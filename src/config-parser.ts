@@ -60,20 +60,12 @@ export const parsePuppeteerConfig = (rawPuppeteerConfig: any): PuppeteerConfig =
 })
 
 export const parseWebConfig = (rawWebConfig: any) => ({
+	...rawWebConfig,
 	provider: rawWebConfig.provider ?? new URL(rawWebConfig.url).hostname,
-	activate: rawWebConfig.activate,
-	url: rawWebConfig.url, 
 	ignoreReviews: {
 		byAuthorName: rawWebConfig.ignoreReviews?.byAuthorName ?? [],
 		byMinimumRating: rawWebConfig.ignoreReviews?.byMinimumRating ?? 0,
 		byMinimumCharactersCountInContent: rawWebConfig.ignoreReviews?.byMinimumCharactersCountInContent ?? 0,
-	},
-	known: { 
-		...rawWebConfig.known, 
-		review: {
-			authorName: rawWebConfig.known?.review?.authorName,
-			content: rawWebConfig.known?.review?.content
-		},
 	},
 })
 
