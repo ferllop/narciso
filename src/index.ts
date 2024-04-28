@@ -2,14 +2,14 @@ import fs from 'node:fs'
 import configData from '../config.json' assert {type: 'json'}
 import { starOfService } from './star-of-service.js'
 import { WebConfig, parseConfig } from './config-parser.js'
-import { createLogFunction, onlyErrorLogFormatter, simpleLogFormatter, toConsole } from './logger.js'
+import { createLogFunction, createParagraphsOnLog, indentLog, onlyErrorLogFormatter, simpleLogFormatter } from './logger.js'
 import { launch } from 'puppeteer'
 import { createGoogleReviewsScraper } from './google.js'
 import { Review } from './review.js'
 
 const logMem: string[] = []
-const log = createLogFunction(toConsole(simpleLogFormatter), logMem)
-const onlyOnErrorLog = createLogFunction(toConsole(onlyErrorLogFormatter), logMem)
+const log = createLogFunction(simpleLogFormatter, logMem)
+const onlyOnErrorLog = createLogFunction(onlyErrorLogFormatter, logMem)
 
 const config = parseConfig(configData)
 const browser = await launch(config.puppeteer)
@@ -34,10 +34,18 @@ for (const webConfig of config.webs) {
     }
 }
 
-fs.writeFile('./reviews.json', JSON.stringify(reviews, null, 2), err => {
-    if (err) {
-        console.error(err)
-        return
-    }
-})
+fs.writeFile('./reviews.last.log', 
+    new Date() + '\n\n' + createParagraphsOnLog(indentLog(logMem)).join('\n'), 
+    () => {}
+)
+
+fs.writeFile('./reviews.json', 
+    JSON.stringify(reviews, null, 2),
+    err => {
+        if (err) {
+            console.error(err)
+            return
+        }
+    })
+
 await browser.close()

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { createLogFunction, simpleLogFormatter } from '../src/logger.js'
+import { createLogFunction, createParagraphsOnLog, indentLog, simpleLogFormatter } from '../src/logger.js'
 import { doNothingAsync } from './helpers.js'
 
 describe('Given a logger', () => {
@@ -17,6 +17,7 @@ describe('Given a logger', () => {
         assert.strictEqual(mem[3], 'Finish: A', 'row 4')
     })
 
+    
     it('when it logs an action then the starting log is independent', async () => {
         const formatStart = (actionName: string) => "Starting log and action name: " + actionName
         const log = createLogFunction({...simpleLogFormatter, formatStart})
@@ -43,4 +44,71 @@ describe('Given a logger', () => {
         assert.strictEqual(mem[2], 'Ending log and action name: B with result C')
         assert.strictEqual(mem[3], 'Ending log and action name: A with result C')
     })
+})
+
+describe('given a log', () => {
+    it('then it knows how to add indentation to it', async () => {
+        const log = [
+            'Start: A',
+            'Start: B',
+            'Start: C',
+            'Finish: C',
+            'Finish: B',
+            'Finish: A',
+        ]
+
+        const mem = indentLog(log)
+        assert.strictEqual(mem[0], 'Start: A', 'row 1')
+        assert.strictEqual(mem[1], '\tStart: B', 'row 2')
+        assert.strictEqual(mem[2], '\t\tStart: C', 'row 3')
+        assert.strictEqual(mem[3], '\t\tFinish: C', 'row 4')
+        assert.strictEqual(mem[4], '\tFinish: B', 'row 5')
+        assert.strictEqual(mem[5], 'Finish: A', 'row 6')
+    })
+
+    it('then it know how to indent it when there are two siblings log blocks', async () => {
+        const log = [
+            'Start: A',
+            'Start: B',
+            'Start: C',
+            'Finish: C',
+            'Start: D',
+            'Finish: D',
+            'Finish: B',
+            'Finish: A',
+        ]
+
+        const mem = indentLog(log, '....')
+        assert.strictEqual(mem[0], 'Start: A', 'row 1')
+        assert.strictEqual(mem[1], '....Start: B', 'row 2')
+        assert.strictEqual(mem[2], '........Start: C', 'row 3')
+        assert.strictEqual(mem[3], '........Finish: C', 'row 4')
+        assert.strictEqual(mem[4], '........Start: D', 'row 5')
+        assert.strictEqual(mem[5], '........Finish: D', 'row 6')
+        assert.strictEqual(mem[6], '....Finish: B', 'row 7')
+        assert.strictEqual(mem[7], 'Finish: A', 'row 8')
+    })
+
+    it('then it know how to add paragraphs to it', async () => {
+        const log = [
+            'Start: A',
+            'Start: B',
+            'Start: C',
+            'Finish: C',
+            'Start: D',
+            'Finish: D',
+            'Finish: B',
+            'Finish: A',
+        ]
+        const mem = createParagraphsOnLog(log)
+        assert.strictEqual(mem[0], 'Start: A', 'row 1')
+        assert.strictEqual(mem[1], 'Start: B', 'row 2')
+        assert.strictEqual(mem[2], 'Start: C', 'row 3')
+        assert.strictEqual(mem[3], 'Finish: C\n', 'row 4')
+        assert.strictEqual(mem[4], 'Start: D', 'row 5')
+        assert.strictEqual(mem[5], 'Finish: D', 'row 6')
+        assert.strictEqual(mem[6], 'Finish: B', 'row 7')
+        assert.strictEqual(mem[7], 'Finish: A', 'row 8')
+    })
+
 })
