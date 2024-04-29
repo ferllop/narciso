@@ -1,4 +1,4 @@
-import { IgnoreReviewsConfig } from "./config-parser.js"
+import type { IgnoreReviewsConfig } from "./config/config.js"
 
 export type Review = {
 	provider: string

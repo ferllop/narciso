@@ -1,11 +1,11 @@
 {
-  "include": ["src/**/*", "test/**/*", "./config.json", "./.eslintrc.cjs"],
+  "include": ["src/**/*", "test/**/*", "./.eslintrc.cjs"],
   "compilerOptions": {
     "lib": ["es2023", "DOM"],
     "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "nodenext",

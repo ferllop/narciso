@@ -1,4 +1,4 @@
-import { KnownConfig, KnownTexts as KnownTexts, KnownReview, WebConfig } from "./config-parser.js"
+import type { WebConfig, GoogleKnownConfig, GoogleKnownTexts, GoogleKnownReview, GoogleSpecificConfig } from "./config/config.js"
 import { Review, createReviewValidator } from "./review.js"
 import { LogFunction } from "./logger.js"
 import { 
@@ -27,7 +27,7 @@ export type InferedSelectors = {
     authorName: string
     review: string
 }
-export const inferSelectors = (log: LogFunction, knownReview: KnownReview) => 
+export const inferSelectors = (log: LogFunction, knownReview: GoogleKnownReview) => 
     async (page: Page) => ({
     content: await getFirstClassOfElementWithText(log)('to get the class to get the content', knownReview.content, page),
     authorName: await getFirstClassOfElementWithText(log)('to get the class to get the author name', knownReview.authorName, page),
@@ -35,33 +35,33 @@ export const inferSelectors = (log: LogFunction, knownReview: KnownReview) =>
         ('to get the class to find each review', `[aria-label="${knownReview.authorName}"]`, page)
 }) 
 
-export const findRejectCookiesButton = (log: LogFunction, knownTexts: KnownTexts) => 
+export const findRejectCookiesButton = (log: LogFunction, knownTexts: GoogleKnownTexts) => 
     findOne(log)('to get the reject cookies button')(selectorByText('button', knownTexts.rejectCookiesButtonText))
-export const rejectCookies = (log: LogFunction, timeout: Milliseconds, knownTexts: KnownTexts) => 
+export const rejectCookies = (log: LogFunction, timeout: Milliseconds, knownTexts: GoogleKnownTexts) => 
     async (page: Page) =>
     log('to reject cookies')(async () => 
         findRejectCookiesButton(log, knownTexts)(page)
             .then(clickOrFail(log)('to reject cookies'))
             .then(waitForNetworkIdle(timeout, page)))
 
-export const findReviewsTab = (log: LogFunction, knownTexts: KnownTexts) => 
+export const findReviewsTab = (log: LogFunction, knownTexts: GoogleKnownTexts) => 
     findOne(log)('to find the reviews tab')(selectorByText('button', knownTexts.reviewsSectionButtonText))
-export const findOrderingOptionsButton = (log: LogFunction, knownTexts: KnownTexts) =>
+export const findOrderingOptionsButton = (log: LogFunction, knownTexts: GoogleKnownTexts) =>
     findOne(log)('to find the sorting options button')(selectorByText('button', knownTexts.sortingButtonText))
-export const findByNewestOrderingOption = (log: LogFunction, knownTexts: KnownTexts) =>
+export const findByNewestOrderingOption = (log: LogFunction, knownTexts: GoogleKnownTexts) =>
     findOne(log)('to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText))
-export const loadAllReviews = (log: LogFunction, timeout: Milliseconds, {texts: knownTexts, oldestReviewAuthorName}: KnownConfig) => 
+export const loadAllReviews = (log: LogFunction, timeout: Milliseconds, {texts, oldestReviewAuthorName}: GoogleKnownConfig) => 
     async (page: Page) =>
     log('Load all the reviews')(async () => { 
         await log('Find the reviews tab')(async () =>
-        findReviewsTab(log, knownTexts)(page)
+        findReviewsTab(log, texts)(page)
             .then(clickOrFail(log)('to click on reviews tab'))
             .then(_ => page.waitForNetworkIdle({timeout})))
 
         await log('Order by newest')(async () =>
-        findOrderingOptionsButton(log, knownTexts)(page)
+        findOrderingOptionsButton(log, texts)(page)
             .then(clickOrFail(log)('to open the sorting options menu'))
-            .then(_ => findByNewestOrderingOption(log, knownTexts)(page))
+            .then(_ => findByNewestOrderingOption(log, texts)(page))
             .then(clickOrFail(log)('to select the order by newest option'))
             .then(_ => page.waitForNetworkIdle({timeout})))
 
@@ -78,19 +78,19 @@ export const loadAllReviews = (log: LogFunction, timeout: Milliseconds, {texts: 
 export const findAllTheReviews = (log: LogFunction, inferedSelectors: InferedSelectors) =>
     findAll(log)('to find all the reviews elements')(inferedSelectors.review)
 
-export const findRatingElement = (log: LogFunction, {stars}: KnownTexts) => 
+export const findRatingElement = (log: LogFunction, {stars}: GoogleKnownTexts) => 
     findOne(log)('to get the rating element')(`[aria-label~="${stars}"]`)
 export const findAuthorNameElement = (log: LogFunction, inferedSelectors: InferedSelectors) =>
     findOne(log)('to get the author name element')(inferedSelectors.authorName)
-export const findViewMoreButton = (log: LogFunction, {viewMoreButtonText}: KnownTexts) => 
+export const findViewMoreButton = (log: LogFunction, {viewMoreButtonText}: GoogleKnownTexts) => 
     findOne(log)('to get the clickable element to expand the content')(selectorByText('button', viewMoreButtonText))
-export const findViewUntranslatedClickableElement = (log: LogFunction, {viewUntranslatedContentButtonText}: KnownTexts) =>
+export const findViewUntranslatedClickableElement = (log: LogFunction, {viewUntranslatedContentButtonText}: GoogleKnownTexts) =>
     findOne(log)('to get the clickable element to view the untranslated content')
         (selectorByText('span', viewUntranslatedContentButtonText))
 export const findContentElement = (log: LogFunction, inferedSelectors: InferedSelectors) => 
     findOne(log)('to get the content')(inferedSelectors.content)
 
-export const loadEntireContent = (log: LogFunction, inferedSelectors: InferedSelectors, knownTexts: KnownTexts) => 
+export const loadEntireContent = (log: LogFunction, inferedSelectors: InferedSelectors, knownTexts: GoogleKnownTexts) => 
     async (review: ElementHandle) => {
     findViewMoreButton(log, knownTexts)(review)
         .then(clickIfPresent(log)('to view the entire content'))
@@ -98,7 +98,7 @@ export const loadEntireContent = (log: LogFunction, inferedSelectors: InferedSel
         .then(clickIfPresent(log)('to view the untranslated content'))
     return await findContentElement(log, inferedSelectors)(review)
 }
-export const scrapeReview = (log: LogFunction, inferedSelectors: InferedSelectors, knownTexts: KnownTexts) => 
+export const scrapeReview = (log: LogFunction, inferedSelectors: InferedSelectors, knownTexts: GoogleKnownTexts) => 
     async (review: ElementHandle): Promise<Review> => ({
         provider: PROVIDER_NAME, 
         rating: await findRatingElement(log, knownTexts)(review)
@@ -120,17 +120,17 @@ export const scrapeReview = (log: LogFunction, inferedSelectors: InferedSelector
             .then(evalOrElse(el => el.innerHTML, () => ''))
     })
 
-export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction, known: KnownConfig) => 
+export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction, {review, texts}: GoogleKnownConfig) => 
     async (page: Page): Promise<Review[]> => {
-    const inferedSelectors = await inferSelectors(log, known.review)(page)
+    const inferedSelectors = await inferSelectors(log, review)(page)
     return Promise.all(
         await findAllTheReviews(log, inferedSelectors)(page)
-            .then(reviewEls => reviewEls.map(scrapeReview(logOnLoop, inferedSelectors, known.texts))))
+            .then(reviewEls => reviewEls.map(scrapeReview(logOnLoop, inferedSelectors, texts))))
 }
 
 export const createGoogleReviewsScraper = 
     (log: LogFunction, logOnLoop: LogFunction, timeout: Milliseconds, browser: Browser) => 
-    async (webConfig: WebConfig) => {
+    async (webConfig: WebConfig<GoogleSpecificConfig>) => {
     const reviews = await browser.newPage()
         .then(goto(webConfig.url))
         .then(rejectCookies(log, timeout, webConfig.known.texts))

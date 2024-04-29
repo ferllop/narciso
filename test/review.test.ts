@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import { Review, createReviewValidator } from '../src/review.js'
-import { IgnoreReviewsConfig } from '../src/config-parser.js'
+import type { IgnoreReviewsConfig } from '../src/config/config.js'
 import { assertNotOk } from './custom-asserts.js'
 
 const reviewTemplate: Review = {

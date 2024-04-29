@@ -1,19 +1,25 @@
 import fs from 'node:fs'
 import { ElementHandle, Page, launch } from 'puppeteer'
-import { PuppeteerConfig, WebConfig, parsePuppeteerConfig } from '../src/config-parser.js'
 import { Milliseconds } from '../src/puppeteer-actions.js'
 import assert from 'node:assert'
+import { PuppeteerConfig, RawPuppeteerConfig, RawWebConfig, SpecificWebConfig } from '../src/config/config.js'
+import { parsePuppeteerConfig } from '../src/config/config-parser.js'
 
-export type TestConfig = {
-    puppeteer: PuppeteerConfig & { getContentTimeout: Milliseconds },
-    web: Omit<WebConfig, 'provider' | 'activate'>
+export type TestRawConfig<T extends SpecificWebConfig = SpecificWebConfig> = {
+    puppeteer: RawPuppeteerConfig & { getContentTimeout: Milliseconds },
+    web: Omit<RawWebConfig<T>, 'provider' | 'activate'>
+}
+
+export type ParsedTestConfig<T extends SpecificWebConfig = SpecificWebConfig> = TestRawConfig<T> & {
+    puppeteer: PuppeteerConfig
 }
 
 export const doNothing = () => {}
 export const doNothingAsync = async () => {}
 
-export const parseTestConfig = (testConfig: any): TestConfig => {
+export const parseTestConfig = <T extends SpecificWebConfig>(testConfig: TestRawConfig<T>): ParsedTestConfig<T> => {
     return {
+        ...testConfig,
         puppeteer: {
             ...parsePuppeteerConfig(testConfig.puppeteer),
             getContentTimeout: testConfig.puppeteer?.getContentTimeout
@@ -30,7 +36,7 @@ export const getAbsoluteFilePathWithLanguageSuffix =
     (browserLanguage: string, importMetaUrl: URL) => getAbsoluteFilePath('', `-${browserLanguage}.html`, importMetaUrl)
 
 export const writeWebContentToFile = 
-    async (config: TestConfig, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<any> = async () => {}) => {
+    async (config: ParsedTestConfig, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<any> = async () => {}) => {
     if (!fs.existsSync(absoluteFilePath)) {
         console.log(`\n# The html file ${absoluteFilePath} is not found. Generating with a headless browser. Please be patinent...`)
         const browser = await launch(config.puppeteer)

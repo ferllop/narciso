@@ -98,7 +98,7 @@ describe('given google scraper', async () => {
         })
 
         it('then it knows how to find the content', async () => {
-            const scrapedKnownReview = reviewElements.toReversed()[config.web.known.review.positionFromOldestBeingZero]
+            const scrapedKnownReview = reviewElements.toReversed()[knownReview.positionFromOldestBeingZero]
             const content = await findContentElement(log, inferedSelectors)(scrapedKnownReview)
             assert.strictEqual(
                 await content?.evaluate(e => (e as HTMLElement).innerText),
@@ -106,7 +106,7 @@ describe('given google scraper', async () => {
         })
 
         it('then it knows how to find the author name', async () => {
-            const scrapedKnownReview = reviewElements.toReversed()[config.web.known.review.positionFromOldestBeingZero]
+            const scrapedKnownReview = reviewElements.toReversed()[knownReview.positionFromOldestBeingZero]
             const content = await findAuthorNameElement(log, inferedSelectors)(scrapedKnownReview)
             assert.strictEqual(
                 await content?.evaluate(e => (e as HTMLElement).innerText),

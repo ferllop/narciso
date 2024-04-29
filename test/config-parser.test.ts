@@ -1,13 +1,14 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { Config, parseConfig } from "../src/config-parser.js"
-import configDataTemplate from '../config.example.json' assert { type: 'json' }
+import { parseConfig } from "../src/config/config-parser.js"
+import configDataTemplate from '../config.example.js'
 import { assertArrayContains, assertArrayNotContains } from './custom-asserts.js'
+import { RawConfig } from '../src/config/config.js'
 
-const assertArgsContains = (argToContain: any) => (message: string, configData: Config) => 
+const assertArgsContains = (argToContain: any) => (message: string, configData: RawConfig) => 
     assertArrayContains(parseConfig(configData).puppeteer.args, argToContain, message)
 
-const assertArgsNotContains = (argToContain: any) => (message: string, configData: Config) => 
+const assertArgsNotContains = (argToContain: any) => (message: string, configData: RawConfig) => 
     assertArrayNotContains(parseConfig(configData).puppeteer.args, argToContain, message)
 
 const assertConfigWithData = (configData: any) => ({
@@ -135,12 +136,6 @@ describe('given config parser', () => {
 })
 
 describe('given the config parser', () => {
-    it('when parsing the provider of the web then if the provider is absent it gets it from the url', () => {
-        assertPath('webs', 0, 'provider')
-            .inConfigWithData({ webs: [ { url: 'https://google.com/some-uri'}]})
-            .hasValue('google.com', 'when is absent')
-    })
-
     it('when parsing the provider of the web then if the provider is present it gets it from there', () => {
         assertPath('webs', 0, 'provider')
             .inConfigWithData({ webs: [ { url: 'https://google.com/some-uri', provider: 'Explicit Provider'}]})

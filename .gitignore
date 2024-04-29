@@ -1,6 +1,6 @@
 node_modules
 reviews.json
-config.json
+config.ts
 .env
 build
 *.html
