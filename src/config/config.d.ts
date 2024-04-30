@@ -16,6 +16,7 @@ export type RawPuppeteerConfig = {
 }
 export type PuppeteerConfig = Omit<RawPuppeteerConfig, 'browserLanguage' | 'sandboxBrowser' | 'disableSetuidSandbox'> & {
 	args: string[]
+	executablePath: string
 }
 
 export type RawWebConfig<T extends SpecificWebConfig> = RawCommonWebConfig & T 
