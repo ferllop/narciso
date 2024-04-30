@@ -35,6 +35,8 @@ const config: GoogleTestConfig = {
             },
             reviewPositionFromOldestBeingZero: {
                 knownReview: 2,
+                withMoreButton: 8,
+                withViewUntransalatedButton: 4,
             },
             oldestReviewAuthorName: 'Q- Beat',
         }

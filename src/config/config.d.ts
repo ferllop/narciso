@@ -51,6 +51,8 @@ export type GoogleKnownConfig = {
 	oldestReviewAuthorName: string
 	reviewPositionFromOldestBeingZero: {
 		knownReview: number
+		withMoreButton: number
+		withViewUntransalatedButton: number
 	}
 }
 

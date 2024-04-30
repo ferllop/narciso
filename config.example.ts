@@ -35,6 +35,8 @@ const rawConfig: RawConfig = {
         },
         reviewPositionFromOldestBeingZero: {
           knownReview: 3,
+          withMoreButton: 8,
+          withViewUntransalatedButton: 4,
         },
         oldestReviewAuthorName: 'Mr. T',
       }

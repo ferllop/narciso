@@ -82,7 +82,7 @@ describe('given google scraper', async () => {
         })
 
         it('then it knows how to find the button to view the entire content', async () => {
-            const viewMoreButton = await findViewMoreButton(log, knownTexts)(reviewElements[5])
+            const viewMoreButton = await findViewMoreButton(log, knownTexts)(reviewElements.toReversed()[positions.withMoreButton])
             assert.ok(viewMoreButton instanceof ElementHandle, 'an element handle must be found')
             assert.ok(viewMoreButton.click, 'the handle must be clickable')
             assert.strictEqual(await viewMoreButton.evaluate(e => e.localName), 'button', 'is a button')
@@ -93,7 +93,7 @@ describe('given google scraper', async () => {
 
         it('then it knows how to find the button to view the untranslated content', async () => {
             const viewUntranslatedContentButton = 
-                await findViewUntranslatedClickableElement(log, knownTexts)(reviewElements[5])
+                await findViewUntranslatedClickableElement(log, knownTexts)(reviewElements.toReversed()[positions.withViewUntransalatedButton])
             await assertIsClickableElementWithIncludingText(
                 viewUntranslatedContentButton, knownTexts.viewUntranslatedContentButtonText, 'BUTTON')
         })
