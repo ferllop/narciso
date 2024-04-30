@@ -29,3 +29,5 @@ export const parseConfig = (rawConfig: RawConfig): Config => ({
 	webs: parseWebsConfig(rawConfig.webs),
 })
 
+export const hasSilentArgument = () => process.argv.some(arg => arg === 'silent')
+

@@ -1,16 +1,17 @@
 import fs from 'node:fs'
 import configData from '../config.js'
 import { starOfService } from './star-of-service.js'
-import { parseConfig } from './config/config-parser.js'
-import { createLogFunction, createParagraphsOnLog, indentLog, onlyErrorLogFormatter, simpleLogFormatter, tap } from './logger.js'
+import { hasSilentArgument, parseConfig } from './config/config-parser.js'
+import { createLogFunction, createParagraphsOnLog, indentLog, onlyErrorLogFormatter, simpleLogFormatter, toConsole } from './logger.js'
 import { launch } from 'puppeteer'
 import { createGoogleReviewsScraper } from './google.js'
 import { Review } from './review.js'
 import { GoogleSpecificConfig, SpecificWebConfig, WebConfig } from './config/config.js'
 
+
 const logMem: string[] = []
-const log = createLogFunction(tap(console.log)(simpleLogFormatter), logMem)
-const onlyOnErrorLog = createLogFunction(tap(console.log)(onlyErrorLogFormatter), logMem)
+const log = createLogFunction(hasSilentArgument() ? simpleLogFormatter : toConsole(simpleLogFormatter), logMem)
+const onlyOnErrorLog = createLogFunction(hasSilentArgument() ? onlyErrorLogFormatter : toConsole(onlyErrorLogFormatter), logMem)
 
 const config = parseConfig(configData)
 const browser = await launch(config.puppeteer)
