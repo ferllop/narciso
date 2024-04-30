@@ -49,10 +49,12 @@ export type GoogleKnownConfig = {
 	review: GoogleKnownReview
 	texts: GoogleKnownTexts
 	oldestReviewAuthorName: string
+	reviewPositionFromOldestBeingZero: {
+		knownReview: number
+	}
 }
 
 export type GoogleKnownReview = {
-	positionFromOldestBeingZero: number
 	authorName: string 
 	content: string
 }

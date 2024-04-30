@@ -23,7 +23,6 @@ const rawConfig: RawConfig = {
         review: {
           authorName: 'Jane Foo',
           content: 'The experience was amazing',
-          positionFromOldestBeingZero: 3,
         },
         texts: {
           rejectCookiesButtonText: 'Rechazar todo',
@@ -33,6 +32,9 @@ const rawConfig: RawConfig = {
           sortingButtonText: 'Ordenar',
           byNewestOptionButtonText: 'Más recientes',
           stars: 'estrellas',
+        },
+        reviewPositionFromOldestBeingZero: {
+          knownReview: 3,
         },
         oldestReviewAuthorName: 'Mr. T',
       }

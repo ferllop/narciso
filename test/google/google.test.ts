@@ -7,6 +7,7 @@ import { allReviewsFileUrl, config, cookiesFileUrl, getGoogleCodeContent, initia
 
 const knownTexts = config.web.known.texts
 const knownReview = config.web.known.review
+const positions = config.web.known.reviewPositionFromOldestBeingZero
 
 describe('given google scraper', async () => {
     let browser: Browser
@@ -98,7 +99,7 @@ describe('given google scraper', async () => {
         })
 
         it('then it knows how to find the content', async () => {
-            const scrapedKnownReview = reviewElements.toReversed()[knownReview.positionFromOldestBeingZero]
+            const scrapedKnownReview = reviewElements.toReversed()[positions.knownReview]
             const content = await findContentElement(log, inferedSelectors)(scrapedKnownReview)
             assert.strictEqual(
                 await content?.evaluate(e => (e as HTMLElement).innerText),
@@ -106,7 +107,7 @@ describe('given google scraper', async () => {
         })
 
         it('then it knows how to find the author name', async () => {
-            const scrapedKnownReview = reviewElements.toReversed()[knownReview.positionFromOldestBeingZero]
+            const scrapedKnownReview = reviewElements.toReversed()[positions.knownReview]
             const content = await findAuthorNameElement(log, inferedSelectors)(scrapedKnownReview)
             assert.strictEqual(
                 await content?.evaluate(e => (e as HTMLElement).innerText),
