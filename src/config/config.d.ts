@@ -11,7 +11,6 @@ export type RawPuppeteerConfig = {
 	browserLanguage?: string
 	headless?: boolean
 	dumpio?: boolean
-	timeout: number
 	sandboxBrowser?: true,
 	disableSetuidSandbox?: true,
 }
@@ -30,6 +29,7 @@ export type RawCommonWebConfig = {
 	title: string
 	activate: boolean
 	url: string 
+	timeout: number
 	ignoreReviews?: RawIgnoreReviewsConfig
 }
 

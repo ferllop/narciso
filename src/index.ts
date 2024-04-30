@@ -18,7 +18,7 @@ const browser = await launch(config.puppeteer)
 const createScraper = (webConfig: WebConfig) => {
     switch(webConfig.provider) {
         case 'google': 
-            return () => createGoogleReviewsScraper(log, onlyOnErrorLog, config.puppeteer.timeout, browser)(webConfig as WebConfig<GoogleSpecificConfig>)
+            return () => createGoogleReviewsScraper(log, onlyOnErrorLog, browser)(webConfig as WebConfig<GoogleSpecificConfig>)
         case 'starOfService': 
             return () => starOfService(config)(webConfig.url)
     }

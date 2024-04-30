@@ -4,7 +4,6 @@ const isAbsentOrExplicitlyTrue = (value: any) => [true, undefined].includes(valu
 const isExplicitlyTrue = (value: any) => value === true
 
 export const parsePuppeteerConfig = (rawPuppeteerConfig: RawPuppeteerConfig): PuppeteerConfig => ({
-	timeout: rawPuppeteerConfig.timeout,
 	args: [ `--lang=${rawPuppeteerConfig.browserLanguage ?? 'en-US'}`, 
 		isAbsentOrExplicitlyTrue(rawPuppeteerConfig.sandboxBrowser) ? '' : '--no-sandbox', 
 		isExplicitlyTrue(rawPuppeteerConfig.disableSetuidSandbox) ? '--disable-setuid-sandbox' : ''

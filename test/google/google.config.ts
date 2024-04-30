@@ -9,10 +9,10 @@ const config: GoogleTestConfig = {
         disableSetuidSandbox: true,
         headless: true,
         dumpio: true,
-        timeout: 2000,
         getContentTimeout: 30000
     },
     web:{
+        timeout: 2000,
         url: 'https://www.google.com/maps/place/DJ+MARIAN/@41.2791903,1.9760167,17z/data=!4m6!3m5!1s0x12a482b981b3f765:0x7ca8c3c9b3eadc99!8m2!3d41.2791903!4d1.9760167!16s%2Fg%2F11c61mwhrb?entry=ttu',
             ignoreReviews: {
             byAuthorName: [],

@@ -7,12 +7,12 @@ const rawConfig: RawConfig = {
     disableSetuidSandbox: true,
     headless: false,
     dumpio: true,
-    timeout: 30000,
   },
   webs: [
     {
       title: "Foo en google",
       activate: true,
+      timeout: 30000,
       url : 'https://www.google.com/search?q=some+search+with+opinions#lrd=0x12a482b981b3f765:0x7ca8c3c9b3eadc99,1,,,',
       provider: 'google',
       ignoreReviews: {
