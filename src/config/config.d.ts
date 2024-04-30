@@ -27,6 +27,7 @@ export type CommonWebConfig = RawCommonWebConfig & {
 export type IgnoreReviewsConfig = Required<RawIgnoreReviewsConfig>
 export type Provider = 'google' | 'starOfService'
 export type RawCommonWebConfig = {
+	title: string
 	activate: boolean
 	url: string 
 	ignoreReviews?: RawIgnoreReviewsConfig

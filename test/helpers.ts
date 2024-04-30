@@ -7,7 +7,7 @@ import { parsePuppeteerConfig } from '../src/config/config-parser.js'
 
 export type TestRawConfig<T extends SpecificWebConfig = SpecificWebConfig> = {
     puppeteer: RawPuppeteerConfig & { getContentTimeout: Milliseconds },
-    web: Omit<RawWebConfig<T>, 'provider' | 'activate'>
+    web: Omit<RawWebConfig<T>, 'provider' | 'activate' | 'title'>
 }
 
 export type ParsedTestConfig<T extends SpecificWebConfig = SpecificWebConfig> = TestRawConfig<T> & {

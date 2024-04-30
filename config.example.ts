@@ -11,6 +11,7 @@ const rawConfig: RawConfig = {
   },
   webs: [
     {
+      title: "Foo en google",
       activate: true,
       url : 'https://www.google.com/search?q=some+search+with+opinions#lrd=0x12a482b981b3f765:0x7ca8c3c9b3eadc99,1,,,',
       provider: 'google',

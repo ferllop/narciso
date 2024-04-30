@@ -5,6 +5,7 @@ type ActionDescription = string
 type Action<T> = (...args: any[]) => Promise<T>
 export type LogFunction = {
 	(actionDescription: ActionDescription): <T>(a: Action<T>) => Promise<T>
+	add: (s: string) => void
 	getLog: () => string[]
 }
 
@@ -28,6 +29,7 @@ export const createLogFunction =
 		}
 	}
 	logFunction.getLog = () => structuredClone(memory)
+	logFunction.add = (s: string) => void memory.push(s)
 	return logFunction
 }
 

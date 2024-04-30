@@ -30,6 +30,8 @@ for (const webConfig of config.webs) {
         continue
     }
     try {
+        log.add(`######## ${webConfig.title} ########\n`)
+        log.add(`Starting at: ${new Date()}\n`)
         const providerReviews = await createScraper(webConfig)()
         reviews = [...reviews, ...providerReviews]
     } catch (ex: unknown) {
@@ -41,7 +43,7 @@ for (const webConfig of config.webs) {
 }
 
 fs.writeFile('./reviews.last.log', 
-    new Date() + '\n\n' + createParagraphsOnLog(indentLog(logMem)).join('\n'), 
+    createParagraphsOnLog(indentLog(logMem)).join('\n'), 
     () => {}
 )
 

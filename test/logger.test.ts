@@ -67,7 +67,10 @@ describe('given a log', () => {
     })
 
     it('then it know how to indent it when there are two siblings log blocks', async () => {
+        const date = new Date().toString()
         const log = [
+            '#### some heading ####',
+            date,
             'Start: A',
             'Start: B',
             'Start: C',
@@ -79,18 +82,23 @@ describe('given a log', () => {
         ]
 
         const mem = indentLog(log, '....')
-        assert.strictEqual(mem[0], 'Start: A', 'row 1')
-        assert.strictEqual(mem[1], '....Start: B', 'row 2')
-        assert.strictEqual(mem[2], '........Start: C', 'row 3')
-        assert.strictEqual(mem[3], '........Finish: C', 'row 4')
-        assert.strictEqual(mem[4], '........Start: D', 'row 5')
-        assert.strictEqual(mem[5], '........Finish: D', 'row 6')
-        assert.strictEqual(mem[6], '....Finish: B', 'row 7')
-        assert.strictEqual(mem[7], 'Finish: A', 'row 8')
+        assert.strictEqual(mem[0], '#### some heading ####')
+        assert.strictEqual(mem[1], date)
+        assert.strictEqual(mem[2], 'Start: A', 'row 1')
+        assert.strictEqual(mem[3], '....Start: B', 'row 2')
+        assert.strictEqual(mem[4], '........Start: C', 'row 3')
+        assert.strictEqual(mem[5], '........Finish: C', 'row 4')
+        assert.strictEqual(mem[6], '........Start: D', 'row 5')
+        assert.strictEqual(mem[7], '........Finish: D', 'row 6')
+        assert.strictEqual(mem[8], '....Finish: B', 'row 7')
+        assert.strictEqual(mem[9], 'Finish: A', 'row 8')
     })
 
     it('then it know how to add paragraphs to it', async () => {
+        const date = new Date().toString()
         const log = [
+            '#### some heading ####',
+            date,
             'Start: A',
             'Start: B',
             'Start: C',
@@ -101,14 +109,16 @@ describe('given a log', () => {
             'Finish: A',
         ]
         const mem = createParagraphsOnLog(log)
-        assert.strictEqual(mem[0], 'Start: A', 'row 1')
-        assert.strictEqual(mem[1], 'Start: B', 'row 2')
-        assert.strictEqual(mem[2], 'Start: C', 'row 3')
-        assert.strictEqual(mem[3], 'Finish: C\n', 'row 4')
-        assert.strictEqual(mem[4], 'Start: D', 'row 5')
-        assert.strictEqual(mem[5], 'Finish: D', 'row 6')
-        assert.strictEqual(mem[6], 'Finish: B', 'row 7')
-        assert.strictEqual(mem[7], 'Finish: A', 'row 8')
+        assert.strictEqual(mem[0], '#### some heading ####')
+        assert.strictEqual(mem[1], date)
+        assert.strictEqual(mem[2], 'Start: A', 'row 1')
+        assert.strictEqual(mem[3], 'Start: B', 'row 2')
+        assert.strictEqual(mem[4], 'Start: C', 'row 3')
+        assert.strictEqual(mem[5], 'Finish: C\n', 'row 4')
+        assert.strictEqual(mem[6], 'Start: D', 'row 5')
+        assert.strictEqual(mem[7], 'Finish: D', 'row 6')
+        assert.strictEqual(mem[8], 'Finish: B', 'row 7')
+        assert.strictEqual(mem[9], 'Finish: A', 'row 8')
     })
 
 })
