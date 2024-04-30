@@ -1,4 +1,4 @@
-import { Config, PuppeteerConfig, RawConfig, RawPuppeteerConfig, RawWebConfig, WebConfig } from './config.js'
+import { Config, PuppeteerConfig, RawConfig, RawPuppeteerConfig, RawWebConfig, SpecificWebConfig, WebConfig } from './config.js'
 
 const isAbsentOrExplicitlyTrue = (value: any) => [true, undefined].includes(value)
 const isExplicitlyTrue = (value: any) => value === true
@@ -12,7 +12,7 @@ export const parsePuppeteerConfig = (rawPuppeteerConfig: RawPuppeteerConfig): Pu
 	dumpio : isAbsentOrExplicitlyTrue(rawPuppeteerConfig.dumpio),
 })
 
-export const parseWebConfig = (rawWebConfig: RawWebConfig): WebConfig => ({
+export const parseWebConfig = <T extends SpecificWebConfig>(rawWebConfig: RawWebConfig<T>): WebConfig<T> => ({
 		...rawWebConfig,
 		ignoreReviews: {
 			byAuthorName: rawWebConfig.ignoreReviews?.byAuthorName ?? [],
@@ -21,7 +21,7 @@ export const parseWebConfig = (rawWebConfig: RawWebConfig): WebConfig => ({
 		},
 	})
 
-export const parseWebsConfig = (rawWebsConfig: RawWebConfig[]): WebConfig[] => rawWebsConfig.map(parseWebConfig)
+export const parseWebsConfig = <T extends SpecificWebConfig>(rawWebsConfig: RawWebConfig<T>[]): WebConfig<T>[] => rawWebsConfig.map(parseWebConfig)
 
 export const parseConfig = (rawConfig: RawConfig): Config => ({
 	puppeteer: parsePuppeteerConfig(rawConfig.puppeteer),

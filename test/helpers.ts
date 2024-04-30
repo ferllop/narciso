@@ -1,32 +1,32 @@
 import fs from 'node:fs'
+import fsAsync from 'node:fs/promises'
 import { ElementHandle, Page, launch } from 'puppeteer'
 import { Milliseconds } from '../src/puppeteer-actions.js'
 import assert from 'node:assert'
-import { PuppeteerConfig, RawPuppeteerConfig, RawWebConfig, SpecificWebConfig } from '../src/config/config.js'
-import { parsePuppeteerConfig } from '../src/config/config-parser.js'
+import { Provider, PuppeteerConfig, RawConfig, RawWebConfig, SpecificWebConfig, WebConfig } from '../src/config/config.js'
+import { parsePuppeteerConfig, parseWebConfig } from '../src/config/config-parser.js'
 
-export type TestRawConfig<T extends SpecificWebConfig = SpecificWebConfig> = {
-    puppeteer: RawPuppeteerConfig & { getContentTimeout: Milliseconds },
-    web: Omit<RawWebConfig<T>, 'provider' | 'activate' | 'title'>
-}
-
-export type ParsedTestConfig<T extends SpecificWebConfig = SpecificWebConfig> = TestRawConfig<T> & {
+export type TestConfig<T extends SpecificWebConfig> = {
     puppeteer: PuppeteerConfig
+    web: WebConfig<T> & { getContentTimeout: Milliseconds }
 }
 
 export const doNothing = () => {}
 export const doNothingAsync = async () => {}
 
-export const parseTestConfig = <T extends SpecificWebConfig>(testConfig: TestRawConfig<T>): ParsedTestConfig<T> => {
+export const getTestConfig = <T extends SpecificWebConfig>(provider: Provider, 
+            config: RawConfig, getContentTimeout: Milliseconds): TestConfig<T> => {
+    const providerWebs = config.webs.filter(web => web.provider === provider)
+    const webForTesting = providerWebs.find(web => web.useInTests) || providerWebs[0]
+    if (!webForTesting) throw new Error('There is no web for this provider in the user config')
     return {
-        ...testConfig,
-        puppeteer: {
-            ...parsePuppeteerConfig(testConfig.puppeteer),
-            getContentTimeout: testConfig.puppeteer?.getContentTimeout
-        },
-        web: {...testConfig.web}
+        puppeteer: parsePuppeteerConfig(config.puppeteer),
+        web: {
+            ...parseWebConfig<T>(webForTesting as RawWebConfig<T>),
+            getContentTimeout,
+        }
     }
-}
+} 
 
 export const getAbsoluteFilePath = 
     (prefix: string, suffix: string, importMetaUrl: URL) => (relativeFilePath: string) => 
@@ -36,14 +36,16 @@ export const getAbsoluteFilePathWithLanguageSuffix =
     (browserLanguage: string, importMetaUrl: URL) => getAbsoluteFilePath('', `-${browserLanguage}.html`, importMetaUrl)
 
 export const writeWebContentToFile = 
-    async (config: ParsedTestConfig, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<any> = async () => {}) => {
+    async <T extends SpecificWebConfig>(config: TestConfig<T>, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<any> = async () => {}) => {
     if (!fs.existsSync(absoluteFilePath)) {
         console.log(`\n# The html file ${absoluteFilePath} is not found. Generating with a headless browser. Please be patinent...`)
+        const directory = new URL('.', absoluteFilePath)
+        await fsAsync.mkdir(directory, { recursive: true })
         const browser = await launch(config.puppeteer)
         const page = await browser.newPage()
         await page.goto(config.web.url)
         await doBeforeGetContent(page)
-        await page.waitForNetworkIdle({timeout: config.puppeteer.getContentTimeout})
+        await page.waitForNetworkIdle({timeout: config.web.getContentTimeout})
         const content = await page.content()
         fs.writeFileSync(absoluteFilePath, content)
         await page.close()

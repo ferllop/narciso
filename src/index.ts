@@ -6,7 +6,7 @@ import { createLogFunction, createParagraphsOnLog, indentLog, onlyErrorLogFormat
 import { launch } from 'puppeteer'
 import { createGoogleReviewsScraper } from './google.js'
 import { Review } from './review.js'
-import { GoogleSpecificConfig, WebConfig } from './config/config.js'
+import { GoogleSpecificConfig, SpecificWebConfig, WebConfig } from './config/config.js'
 
 const logMem: string[] = []
 const log = createLogFunction(simpleLogFormatter, logMem)
@@ -15,7 +15,7 @@ const onlyOnErrorLog = createLogFunction(onlyErrorLogFormatter, logMem)
 const config = parseConfig(configData)
 const browser = await launch(config.puppeteer)
 
-const createScraper = (webConfig: WebConfig) => {
+const createScraper = (webConfig: WebConfig<SpecificWebConfig>) => {
     switch(webConfig.provider) {
         case 'google': 
             return () => createGoogleReviewsScraper(log, onlyOnErrorLog, browser)(webConfig as WebConfig<GoogleSpecificConfig>)

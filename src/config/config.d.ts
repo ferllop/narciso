@@ -18,8 +18,8 @@ export type PuppeteerConfig = Omit<RawPuppeteerConfig, 'browserLanguage' | 'sand
 	args: string[]
 }
 
-export type RawWebConfig<T extends SpecificWebConfig = SpecificWebConfig> = RawCommonWebConfig & T 
-export type WebConfig<T extends SpecificWebConfig = SpecificWebConfig> = CommonWebConfig & T
+export type RawWebConfig<T extends SpecificWebConfig> = RawCommonWebConfig & T 
+export type WebConfig<T extends SpecificWebConfig> = CommonWebConfig & T
 export type CommonWebConfig = RawCommonWebConfig & {
 	ignoreReviews: IgnoreReviewsConfig
 }
@@ -28,6 +28,7 @@ export type Provider = 'google' | 'starOfService'
 export type RawCommonWebConfig = {
 	title: string
 	activate: boolean
+	useInTests?: boolean
 	url: string 
 	timeout: number
 	ignoreReviews?: RawIgnoreReviewsConfig

@@ -1,12 +1,13 @@
-import testConfigData from './google.config.js'
-import { getAbsoluteFilePathWithLanguageSuffix, parseTestConfig, writeWebContentToFile } from '../helpers.js';
+import userConfigData from '../../config.js'
+import { getAbsoluteFilePathWithLanguageSuffix, getTestConfig, writeWebContentToFile } from '../helpers.js';
 import { findReviewsTab, loadAllReviews, rejectCookies } from '../../src/google.js';
 import { createLogFunction, onlyErrorLogFormatter, simpleLogFormatter } from '../../src/logger.js';
 import { clickOrFail } from '../../src/puppeteer-actions.js';
 import { GoogleSpecificConfig } from '../../src/config/config.js';
 
 const browserLanguage = 'es-ES'
-export const getPagePath = getAbsoluteFilePathWithLanguageSuffix(browserLanguage, new URL(import.meta.url))
+export const getPagePath = (relative: string) => 
+    getAbsoluteFilePathWithLanguageSuffix(browserLanguage, new URL(import.meta.url))('./html/' + relative)
 export const cookiesPageName = 'google-cookies-page'
 export const profilePageName = 'google-profile-page'
 export const initialReviewsPageName = 'google-initial-reviews-page'
@@ -15,7 +16,7 @@ export const cookiesFileUrl = getPagePath(cookiesPageName).toString()
 export const profileFileUrl = getPagePath(profilePageName).toString()
 export const initialReviewsFileUrl = getPagePath(initialReviewsPageName).toString()
 export const allReviewsFileUrl = getPagePath(allReviewsPageName).toString()
-export const config = parseTestConfig<GoogleSpecificConfig>(testConfigData)
+export const config = getTestConfig<GoogleSpecificConfig>('google', userConfigData, 30000)
 
 export const logMem: string[] = []
 export const log = createLogFunction(simpleLogFormatter, logMem)
@@ -26,19 +27,19 @@ export const getGoogleCodeContent = async () => {
     await writeWebContentToFile(
         config,
         getPagePath(profilePageName),
-        page => rejectCookies(log, config.puppeteer.getContentTimeout, config.web.known.texts)(page))
+        page => rejectCookies(log, config.web.getContentTimeout, config.web.known.texts)(page))
 
     await writeWebContentToFile(
         config,
         getPagePath(initialReviewsPageName),
-        page => rejectCookies(log, config.puppeteer.getContentTimeout, config.web.known.texts)(page)
+        page => rejectCookies(log, config.web.getContentTimeout, config.web.known.texts)(page)
                     .then(findReviewsTab(log, config.web.known.texts))
                     .then(clickOrFail(log)('')))
         
     await writeWebContentToFile(
         config,
         getPagePath(allReviewsPageName),
-        page => rejectCookies(log, config.puppeteer.getContentTimeout, config.web.known.texts)(page)
-                    .then(loadAllReviews(log, config.puppeteer.getContentTimeout, config.web.known)))
+        page => rejectCookies(log, config.web.getContentTimeout, config.web.known.texts)(page)
+                    .then(loadAllReviews(log, config.web.getContentTimeout, config.web.known)))
 }
 
