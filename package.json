@@ -5,10 +5,9 @@
   "main": "./build/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "prepare": "npm run build",
-    "tsc:watch": "tsc --noEmit --watch",
     "start": "tsx ./src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "tsc:watch": "tsc --noEmit --watch",
     "\n# TESTING": "",
     "test:args": "tsx --test --test-reporter spec",
     "test:files": "echo './test/**/**/*.test.ts'",
@@ -22,7 +21,6 @@
   },
   "devDependencies": {
     "@types/node": "20.12.7",
-    "@types/puppeteer": "7.0.4",
     "globals": "15.1.0",
     "tsx": "4.7.3",
     "typescript": "5.4.5"
