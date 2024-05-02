@@ -1,6 +1,6 @@
 import type { WebConfig, GoogleKnownConfig, GoogleKnownTexts, GoogleKnownReview, GoogleSpecificConfig } from "../config/config.js"
 import { Review, createReviewValidator } from "../review.js"
-import { LogFunction } from "../logger.js"
+import { LogFunction } from "../logger/logger.js"
 import { 
     Milliseconds, 
     Browser, 

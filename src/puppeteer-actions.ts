@@ -1,5 +1,5 @@
 import { Page, ElementHandle, Browser, KeyInput } from "puppeteer"
-import { LogFunction } from "./logger.js"
+import { LogFunction } from "./logger/logger.js"
 export { Page, ElementHandle, Browser }
 
 export type Reason = string
