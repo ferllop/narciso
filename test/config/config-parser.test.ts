@@ -1,9 +1,9 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { parseConfig } from "../src/config/config-parser.js"
-import configDataTemplate from '../config.example.js'
-import { assertArrayContains, assertArrayNotContains } from './custom-asserts.js'
-import { RawConfig } from '../src/config/config.js'
+import { parseConfig } from "../../src/config/config-parser.js"
+import configDataTemplate from '../../config.example.js'
+import { assertArrayContains, assertArrayNotContains } from '../custom-asserts.js'
+import { RawConfig } from '../../src/config/config.js'
 
 const assertArgsContains = (argToContain: any) => (message: string, configData: RawConfig) => 
     assertArrayContains(parseConfig(configData).puppeteer.args, argToContain, message)

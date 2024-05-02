@@ -1,8 +1,8 @@
 import assert from 'node:assert'
 import { describe, it, before, after } from 'node:test'
 import { Browser, ElementHandle, Page, launch } from 'puppeteer'
-import { assertIsClickableElementWithExactText, assertIsClickableElementWithIncludingText, permitRequestsTo } from '../helpers.js'
-import { InferedSelectors, findAllTheReviews, findAuthorNameElement, findContentElement, findOrderingOptionsButton, findRejectCookiesButton, findReviewsTab, findViewMoreButton, findViewUntranslatedClickableElement, inferSelectors, scrapeAllReviews } from '../../src/providers/google.js'
+import { assertIsClickableElementWithExactText, assertIsClickableElementWithIncludingText, permitRequestsTo } from '../../helpers.js'
+import { InferedSelectors, findAllTheReviews, findAuthorNameElement, findContentElement, findOrderingOptionsButton, findRejectCookiesButton, findReviewsTab, findViewMoreButton, findViewUntranslatedClickableElement, inferSelectors, scrapeAllReviews } from '../../../src/providers/google.js'
 import { allReviewsFileUrl, config, cookiesFileUrl, getGoogleCodeContent, initialReviewsFileUrl, log, onlyOnErrorLog, profileFileUrl } from './google-helpers.js'
 
 const knownTexts = config.web.known.texts

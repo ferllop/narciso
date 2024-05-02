@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { createLogFunction, createParagraphsOnLog, indentLog, simpleLogFormatter } from '../src/logger/logger.js'
-import { doNothingAsync } from './helpers.js'
+import { createLogFunction, createParagraphsOnLog, indentLog, simpleLogFormatter } from '../../src/logger/logger.js'
+import { doNothingAsync } from '../helpers.js'
 
 describe('Given a logger', () => {
 
