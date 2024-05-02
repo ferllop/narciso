@@ -1,10 +1,10 @@
 import fs from 'node:fs'
 import configData from '../config.js'
-import { starOfService } from './star-of-service.js'
+import { starOfService } from './providers/star-of-service.js'
 import { hasSilentArgument, parseConfig } from './config/config-parser.js'
 import { createLogFunction, createParagraphsOnLog, indentLog, onlyErrorLogFormatter, simpleLogFormatter, toConsole } from './logger.js'
 import { launch } from 'puppeteer'
-import { createGoogleReviewsScraper } from './google.js'
+import { createGoogleReviewsScraper } from './providers/google.js'
 import { Review } from './review.js'
 import { GoogleSpecificConfig, SpecificWebConfig, WebConfig } from './config/config.js'
 

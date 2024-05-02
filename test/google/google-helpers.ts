@@ -1,6 +1,6 @@
 import userConfigData from '../../config.js'
 import { getAbsoluteFilePathWithLanguageSuffix, getTestConfig, writeWebContentToFile } from '../helpers.js';
-import { findReviewsTab, loadAllReviews, rejectCookies } from '../../src/google.js';
+import { findReviewsTab, loadAllReviews, rejectCookies } from '../../src/providers/google.js';
 import { createLogFunction, onlyErrorLogFormatter, simpleLogFormatter } from '../../src/logger.js';
 import { clickOrFail } from '../../src/puppeteer-actions.js';
 import { GoogleSpecificConfig } from '../../src/config/config.js';

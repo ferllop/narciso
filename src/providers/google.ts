@@ -1,6 +1,6 @@
-import type { WebConfig, GoogleKnownConfig, GoogleKnownTexts, GoogleKnownReview, GoogleSpecificConfig } from "./config/config.js"
-import { Review, createReviewValidator } from "./review.js"
-import { LogFunction } from "./logger.js"
+import type { WebConfig, GoogleKnownConfig, GoogleKnownTexts, GoogleKnownReview, GoogleSpecificConfig } from "../config/config.js"
+import { Review, createReviewValidator } from "../review.js"
+import { LogFunction } from "../logger.js"
 import { 
     Milliseconds, 
     Browser, 
@@ -18,7 +18,7 @@ import {
     goto,
     pressKey,
     scrollUntil,
-} from "./puppeteer-actions.js"
+} from "../puppeteer-actions.js"
 
 const PROVIDER_NAME = 'google'
 
