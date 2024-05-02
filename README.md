@@ -1,10 +1,12 @@
-# scraping-reviews
+# Narciso
 
-This app scrapes the reviews on google and star of service and put it in a json file called "reviews.json".
+Narciso scrapes the reviews of webs that we call providers. It can be google, star of service, bodas.net... 
+Each provider have its own code to manage puppeteer.
+Then the reviews are stored in a json file called "reviews.json".
 This json will be an array of objects with the next format:
 ```
 {
-  "source": "Star Of Service",   // The service from the review comes  
+  "provider": "starOfService",   // The service from the review comes  
   "rating": 5,   // The rating  
   "authorName": "Jaimito",   // The name of the reviewer  
   "content": "A very great performance and profesional"   // The text of the review  
@@ -12,27 +14,27 @@ This json will be an array of objects with the next format:
 ```
 It also creates the file "reviews.last.log" with the log of the last run.
 
-Feel free to add functions to scrape new services.
+Feel free to add code to scrape new providers.
 
 ## Launching the process
 ### Locally
-To launch the process using your local environment first install the dependencies:
+To launch Narciso using your local environment first install the dependencies:
 ```
 npm ci
 ```
-Then launch the process:
+Then launch Narciso:
 ```
 npm start
 ```
 
-When the process runs, it will print the log to console. To prevent this behaviour add 'silent' to the commands:
+When Narciso runs, it will print the log to console. To prevent this behaviour add 'silent' to the start command:
 ```
 npm start -- silent
 ```
 
 ### Using Docker
-If you prefer to launch the process inside docker you can use the provided script in file run.sh.
-To use it, use the same commands as in the "Locally" section  but prepending them with "./run.sh":
+If you prefer to launch Narciso inside docker you can use the provided script in file run.sh.
+To use it, use the same commands as in the "Locally" section but prepending them with "./run.sh":
 
 ```
 ./run.sh npm ci
@@ -43,8 +45,8 @@ or to avoid printing logs:
 ./run.sh npm start -- silent
 ```
 
-Use a cron in your server to run the app once a month for example. 
-Be careful not to make the services that you scrape angry launching this process very often.
+Use a cron in your server to run Narciso once a month for example. 
+Be careful not to make the services that you scrape angry launching Narciso very often.
 
 ## Configuration
 
