@@ -10,7 +10,6 @@ export const parsePuppeteerConfig = (rawPuppeteerConfig: RawPuppeteerConfig): Pu
 	],
 	headless: isAbsentOrExplicitlyTrue(rawPuppeteerConfig.headless),
 	dumpio : isAbsentOrExplicitlyTrue(rawPuppeteerConfig.dumpio),
-	executablePath: '/usr/bin/google-chrome',
 })
 
 export const parseWebConfig = <T extends SpecificWebConfig>(rawWebConfig: RawWebConfig<T>): WebConfig<T> => ({
