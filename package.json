@@ -10,10 +10,9 @@
     "tsc:watch": "tsc --noEmit --watch",
     "check-config": "tsc --noEmit ./config.ts",
     "\n# TESTING": "",
-    "test:args": "tsx --test --test-reporter spec",
-    "test:files": "echo './test/**/**/*.test.ts'",
-    "test": "npm run test:args $(npm run test:files)",
-    "test:watch": "npm run test:args -- --watch $(npm run test:files)"
+    "test:files": "find . -type f -iname '*.test.ts' -print0 | xargs -0",
+    "test": "npm run test:files -- tsx --test --test-reporter spec",
+    "test:watch": "npm run test -- --watch"
   },
   "author": "",
   "license": "ISC",
