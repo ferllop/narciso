@@ -91,15 +91,29 @@ export const findViewUntranslatedClickableElement = (log: LogFunction, {viewUntr
 export const findContentElement = (log: LogFunction, inferedSelectors: InferedSelectors) => 
     findOne(log)('to get the content')(inferedSelectors.content)
 
-export const loadEntireContent = (log: LogFunction, inferedSelectors: InferedSelectors, knownTexts: GoogleKnownTexts) => 
+export const loadEntireContent = (
+    log: LogFunction, 
+    inferedSelectors: InferedSelectors, 
+    knownTexts: GoogleKnownTexts, 
+    loadTranslatedContent: boolean,
+    page: Page) => 
     async (review: ElementHandle) => {
-    findViewMoreButton(log, knownTexts)(review)
+    await findViewMoreButton(log, knownTexts)(review)
         .then(clickIfPresent(log)('to view the entire content'))
-    findViewUntranslatedClickableElement(log, knownTexts)(review)
+        .then(_ => page.waitForNetworkIdle())
+
+    loadTranslatedContent || await findViewUntranslatedClickableElement(log, knownTexts)(review)
         .then(clickIfPresent(log)('to view the untranslated content'))
+        .then(_ => page.waitForNetworkIdle())
+
     return await findContentElement(log, inferedSelectors)(review)
 }
-export const scrapeReview = (log: LogFunction, inferedSelectors: InferedSelectors, knownTexts: GoogleKnownTexts) => 
+export const scrapeReview = (
+    log: LogFunction, 
+    inferedSelectors: InferedSelectors, 
+    knownTexts: GoogleKnownTexts, 
+    loadTranslatedContent: boolean,
+    page: Page) => 
     async (review: ElementHandle): Promise<Review> => ({
         provider: PROVIDER_NAME, 
         rating: await findRatingElement(log, knownTexts)(review)
@@ -117,16 +131,16 @@ export const scrapeReview = (log: LogFunction, inferedSelectors: InferedSelector
             .map((s: string) => s.charAt(0).toUpperCase() + s.substring(1))
             .join(' '), () => '')),
 
-        content: await loadEntireContent(log, inferedSelectors, knownTexts)(review)
+        content: await loadEntireContent(log, inferedSelectors, knownTexts, loadTranslatedContent, page)(review)
             .then(evalOrElse(el => el.innerHTML, () => ''))
     })
 
-export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction, {review, texts}: GoogleKnownConfig) => 
+export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction, {review, texts}: GoogleKnownConfig, loadTranslatedContent: boolean) => 
     async (page: Page): Promise<Review[]> => {
     const inferedSelectors = await inferSelectors(log, review)(page)
-    return Promise.all(
+    return log(`get the reviews data with ${loadTranslatedContent ? '' : 'un'}translated content`)(async () => Promise.all(
         await findAllTheReviews(log, inferedSelectors)(page)
-            .then(reviewEls => reviewEls.map(scrapeReview(logOnLoop, inferedSelectors, texts))))
+            .then(reviewEls => reviewEls.map(scrapeReview(logOnLoop, inferedSelectors, texts, loadTranslatedContent, page)))))
 }
 
 export const createGoogleReviewsScraper = 
@@ -136,6 +150,6 @@ export const createGoogleReviewsScraper =
         .then(goto(webConfig.url))
         .then(rejectCookies(log, webConfig.timeout, webConfig.known.texts))
         .then(loadAllReviews(log, webConfig.timeout, webConfig.known))
-        .then(scrapeAllReviews(log, logOnLoop, webConfig.known))
+        .then(scrapeAllReviews(log, logOnLoop, webConfig.known, webConfig.translatedContent))
     return reviews.filter(createReviewValidator(webConfig.ignoreReviews))
 }

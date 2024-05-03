@@ -115,7 +115,7 @@ describe('given google scraper', async () => {
         })
 
         it('when it scrapes a reviews page it includes the first and the last reviews', async () => {
-            const reviews = await scrapeAllReviews(log, onlyOnErrorLog, config.web.known)(page)
+            const reviews = await scrapeAllReviews(log, onlyOnErrorLog, config.web.known, true)(page)
             assert(reviews.some(({authorName}) => authorName === 'Q- Beat'))
             assert(reviews.some(({authorName}) => authorName === 'Lorena Antúnez'))
         })

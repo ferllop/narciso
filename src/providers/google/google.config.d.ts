@@ -1,6 +1,7 @@
 export type GoogleSpecificConfig = {
 	provider: 'google'
 	known: GoogleKnownConfig
+	translatedContent: boolean
 }
 
 export type GoogleKnownConfig = {

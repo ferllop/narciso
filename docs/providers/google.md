@@ -2,6 +2,7 @@
 
 The specific configuration of this provider looks like this:
 ```
+translatedContent: true,
 known: {
   review: {
     authorName: 'Jane Foo',
@@ -50,4 +51,4 @@ All the fields are mandatory.
         Used in testing.
 - known.oldestReviewAuthorName: a string with the name of the author of the oldest review.
     Is used to know when to stop scrolling while loading all the reviews.
-
+- translatedContent: google provide reviews with the content automatically translated to the browser language. Setting this config option to false will make show the content in its original language.

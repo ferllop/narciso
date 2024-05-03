@@ -1,4 +1,5 @@
 import type { GoogleSpecificConfig } from '../providers/google/google.config.js'
+import { StarOfServiceSpecificConfig } from '../providers/star-of-service/star-of-service.config.js'
 
 export type RawConfig = {
 	puppeteer: RawPuppeteerConfig
@@ -44,6 +45,8 @@ export type RawIgnoreReviewsConfig = {
 	byMinimumRating?: number
 }
 
-export type SpecificWebConfig = {provider: Provider} | GoogleSpecificConfig 
+export type SpecificWebConfig =  
+	| StarOfServiceSpecificConfig 
+	| GoogleSpecificConfig
 
 

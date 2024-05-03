@@ -20,6 +20,7 @@ const rawConfig: RawConfig = {
         byMinimumRating: 4,
         byMinimumCharactersCountInContent: 10,
       },
+      translatedContent: true,
       known: {
         review: {
           authorName: 'Jane Foo',
