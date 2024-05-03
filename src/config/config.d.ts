@@ -22,6 +22,7 @@ export type PuppeteerConfig = Omit<RawPuppeteerConfig, 'browserLanguage' | 'sand
 export type RawWebConfig<T extends SpecificWebConfig> = RawCommonWebConfig & T 
 export type WebConfig<T extends SpecificWebConfig> = CommonWebConfig & T
 export type CommonWebConfig = RawCommonWebConfig & {
+	timeout: number
 	ignoreReviews: IgnoreReviewsConfig
 }
 export type IgnoreReviewsConfig = Required<RawIgnoreReviewsConfig>
@@ -31,7 +32,7 @@ export type RawCommonWebConfig = {
 	activate: boolean
 	useInTests?: boolean
 	url: string 
-	timeout: number
+	timeout?: number
 	ignoreReviews?: RawIgnoreReviewsConfig
 }
 

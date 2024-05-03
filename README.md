@@ -105,11 +105,11 @@ The common fields are:
 - title: the title of that web config. Will be printed on logs. String. Mandatory 
 - useInTests: To use this web when launching the tests. Optional. Boolean. If not provided, the first web found for the provider will be used.
 - url: The url of the starting point from where to start scraping. String. Mandatory.
-- timeout: Time in milliseconds to wait for a response after some action. Number. Mandatory.
+- timeout: Time in milliseconds to wait for a response after some action. Number. Optional. If not provided the default will be 30000 milliseconds (30 seconds).
 - ignoreReviews: Ignore the reviews that not comply some policy. Object. Optional. If not provided all the reviews will pass the validation.
   It can have the following fields, all optional:
-  -- byAuthorName: exclude reviews with this author names. String Array. Optional.
-  -- byMinimumCharactersCountInContent: exclude reviews with the content shorter than the provided here: Number. Optional.
-  -- byMinimumRating: exclude reviews with the rating lower than the provided. Number. Optional.
+  -- byAuthorName: exclude reviews with this author names. String Array. Optional. If not provided all author names are valid.
+  -- byMinimumCharactersCountInContent: exclude reviews with the content shorter than the provided here: Number. Optional. If not provided even empty content is valid.
+  -- byMinimumRating: exclude reviews with the rating lower than the provided. Number. Optional. If not provided even a rating of 0 is valid.
 
 All this fields will be followed by the specific ones.

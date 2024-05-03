@@ -14,6 +14,7 @@ export const parsePuppeteerConfig = (rawPuppeteerConfig: RawPuppeteerConfig): Pu
 
 export const parseWebConfig = <T extends SpecificWebConfig>(rawWebConfig: RawWebConfig<T>): WebConfig<T> => ({
 		...rawWebConfig,
+		timeout: rawWebConfig.timeout ?? 30_000,
 		ignoreReviews: {
 			byAuthorName: rawWebConfig.ignoreReviews?.byAuthorName ?? [],
 			byMinimumRating: rawWebConfig.ignoreReviews?.byMinimumRating ?? 0,

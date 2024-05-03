@@ -33,7 +33,7 @@ const assertPath = (...path: (string|number)[]) => {
     }
 }
 
-describe('given config parser', () => {
+describe('given puppeteer config parser', () => {
     it('when reading config to set puppeteer browser language but it is absent \
         then sets the language to american english', () => {
         assertConfigWithData({ puppeteer: {}})
@@ -135,11 +135,23 @@ describe('given config parser', () => {
     })
 })
 
-describe('given the config parser', () => {
+describe('given the web config parser', () => {
     it('when parsing the provider of the web then if the provider is present it gets it from there', () => {
         assertPath('webs', 0, 'provider')
             .inConfigWithData({ webs: [ { url: 'https://google.com/some-uri', provider: 'Explicit Provider'}]})
             .hasValue('Explicit Provider', 'when is present')
+    })
+
+    it('when parsing the timeout of the web then if its not provided, the default is 30000', () => {
+        assertPath('webs', 0, 'timeout')
+            .inConfigWithData({ webs: [ { }]})
+            .hasValue(30000, 'when not present')
+    })
+
+    it('when parsing the timeout of the web then get its value when present', () => {
+        assertPath('webs', 0, 'timeout')
+            .inConfigWithData({ webs: [ { timeout: 300 }]})
+            .hasValue(300, 'when not present')
     })
 
     it('when parsing the known review of the web then it parses correctly', () => {
