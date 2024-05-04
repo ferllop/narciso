@@ -44,12 +44,15 @@ for (const webConfig of config.webs) {
     }
 }
 
-fs.writeFile('./reviews.last.log', 
+const directory = new URL('../result', import.meta.url)
+fs.mkdirSync(directory, { recursive: true })
+
+fs.writeFile('./result/reviews.last.log', 
     createParagraphsOnLog(indentLog(logMem)).join('\n'), 
     () => {}
 )
 
-fs.writeFile('./reviews.json', 
+fs.writeFile('./result/reviews.json', 
     JSON.stringify(reviews, null, 2),
     err => {
         if (err) {
