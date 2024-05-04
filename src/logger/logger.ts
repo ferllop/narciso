@@ -64,7 +64,7 @@ export const simpleLogFormatter: LogFormatter = {
 			: ''),
 
 	formatError: (actionDescription: string, error: any) => 
-		'ERROR: ' + actionDescription + `failed with error "${error instanceof Error ? error.message : error}"`
+		`ERROR:  ${actionDescription} failed with error "${error instanceof Error ? error.message : error}"`
 }
 
 export const onlyErrorLogFormatter : LogFormatter = {...simpleLogFormatter, formatStart: () => null, formatFinish: () => null}

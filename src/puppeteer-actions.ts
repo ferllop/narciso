@@ -28,7 +28,8 @@ export const evalOrElse = <T>(onFound: (x: Element) => T, onNotFound: () => T) =
   async (handle: ElementHandle | null) => 
   handle === null ? onNotFound() : await handle.evaluate(onFound)
 
-export const selectorByText = (cssSelector: Selector, rejectCookiesText: string) => `${cssSelector} ::-p-text(${rejectCookiesText})`
+export const selectorByText = (cssSelector: Selector, rejectCookiesText: string) => 
+  `${cssSelector ? cssSelector + ' ' : ''}::-p-text(${rejectCookiesText})`
 
 export const clickIfPresent = (log: LogFunction) => 
   (reason: Reason) => 
@@ -45,7 +46,7 @@ export const clickOrFail = (log: LogFunction) =>
   (handle: ElementHandle | null) => 
   log(`Click or fail on element previously found ${reason}`)(async () => {
   if (handle === null) {
-    throw new Error(`The selector of the element was expected not to be found or to be hidden but was found`)
+    throw new Error(`The element was expected to be found`)
   }
   await handle.evaluate(h => (h as HTMLElement).click())
   return handle
