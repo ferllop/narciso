@@ -135,21 +135,21 @@ export const scrapeReview = (
             .then(evalOrElse(el => el.innerHTML, () => ''))
     })
 
-export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction, {review, texts}: GoogleKnownConfig, loadTranslatedContent: boolean) => 
+export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction, {translatedContent, known: {review, texts}}: GoogleSpecificConfig) => 
     async (page: Page): Promise<Review[]> => {
     const inferedSelectors = await inferSelectors(log, review)(page)
-    return log(`get the reviews data with ${loadTranslatedContent ? '' : 'un'}translated content`)(async () => Promise.all(
+    return log(`get the reviews data with ${translatedContent ? '' : 'un'}translated content`)(async () => Promise.all(
         await findAllTheReviews(log, inferedSelectors)(page)
-            .then(reviewEls => reviewEls.map(scrapeReview(logOnLoop, inferedSelectors, texts, loadTranslatedContent, page)))))
+            .then(reviewEls => reviewEls.map(scrapeReview(logOnLoop, inferedSelectors, texts, translatedContent, page)))))
 }
 
 export const createGoogleReviewsScraper = 
     (log: LogFunction, logOnLoop: LogFunction, browser: Browser) => 
-    async (webConfig: WebConfig<GoogleSpecificConfig>) => {
+    async (webConfig: WebConfig<'google'>) => {
     const reviews = await browser.newPage()
         .then(goto(webConfig.url))
-        .then(rejectCookies(log, webConfig.timeout, webConfig.known.texts))
-        .then(loadAllReviews(log, webConfig.timeout, webConfig.known))
-        .then(scrapeAllReviews(log, logOnLoop, webConfig.known, webConfig.translatedContent))
+        .then(rejectCookies(log, webConfig.timeout, webConfig.specific.known.texts))
+        .then(loadAllReviews(log, webConfig.timeout, webConfig.specific.known))
+        .then(scrapeAllReviews(log, logOnLoop, webConfig.specific))
     return reviews.filter(createReviewValidator(webConfig.ignoreReviews))
 }

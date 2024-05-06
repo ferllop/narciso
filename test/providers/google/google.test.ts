@@ -5,9 +5,9 @@ import { assertIsClickableElementWithExactText, assertIsClickableElementWithIncl
 import { InferedSelectors, findAllTheReviews, findAuthorNameElement, findContentElement, findOrderingOptionsButton, findRejectCookiesButton, findReviewsTab, findViewMoreButton, findViewUntranslatedClickableElement, inferSelectors, scrapeAllReviews } from '../../../src/providers/google/google.js'
 import { allReviewsFileUrl, config, cookiesFileUrl, getGoogleCodeContent, initialReviewsFileUrl, log, onlyOnErrorLog, profileFileUrl } from './google-helpers.js'
 
-const knownTexts = config.web.known.texts
-const knownReview = config.web.known.review
-const positions = config.web.known.reviewPositionFromOldestBeingZero
+const knownTexts = config.web.specific.known.texts
+const knownReview = config.web.specific.known.review
+const positions = config.web.specific.known.reviewPositionFromOldestBeingZero
 
 describe('given google scraper', async () => {
     let browser: Browser
@@ -78,7 +78,7 @@ describe('given google scraper', async () => {
             const lastReview = 
                 await reviewElements[reviewElements.length -1]?.evaluate((e: Element) => (e as HTMLElement).innerText)
             assert.ok(reviewElements.length > 0, 'some elements are found')
-            assert.ok(lastReview!.includes(config.web.known.oldestReviewAuthorName), 'some elements are found')
+            assert.ok(lastReview!.includes(config.web.specific.known.oldestReviewAuthorName), 'some elements are found')
         })
 
         it('then it knows how to find the button to view the entire content', async () => {
@@ -115,7 +115,7 @@ describe('given google scraper', async () => {
         })
 
         it('when it scrapes a reviews page it includes the first and the last reviews', async () => {
-            const reviews = await scrapeAllReviews(log, onlyOnErrorLog, config.web.known, true)(page)
+            const reviews = await scrapeAllReviews(log, onlyOnErrorLog, config.web.specific)(page)
             assert(reviews.some(({authorName}) => authorName === 'Q- Beat'))
             assert(reviews.some(({authorName}) => authorName === 'Lorena Antúnez'))
         })

@@ -1,13 +1,12 @@
 import fs from 'node:fs'
 import configData from '../config.js'
 import { starOfService } from './providers/star-of-service/star-of-service.js'
-import { hasSilentArgument, parseConfig } from './config/config-parser.js'
+import { hasProvider, hasSilentArgument, parseConfig } from './config/config-parser.js'
 import { createLogFunction, createParagraphsOnLog, indentLog, onlyErrorLogFormatter, simpleLogFormatter, toConsole } from './logger/logger.js'
 import { launch } from 'puppeteer'
 import { createGoogleReviewsScraper } from './providers/google/google.js'
 import { Review } from './review.js'
-import { SpecificWebConfig, WebConfig } from './config/config.js'
-import { GoogleSpecificConfig } from './providers/google/google.config.js'
+import { Provider, WebConfig } from './config/config.js'
 
 
 const logMem: string[] = []
@@ -17,13 +16,10 @@ const onlyOnErrorLog = createLogFunction(hasSilentArgument() ? onlyErrorLogForma
 const config = parseConfig(configData)
 const browser = await launch(config.puppeteer)
 
-const createScraper = (webConfig: WebConfig<SpecificWebConfig>) => {
-    switch(webConfig.provider) {
-        case 'google': 
-            return () => createGoogleReviewsScraper(log, onlyOnErrorLog, browser)(webConfig as WebConfig<GoogleSpecificConfig>)
-        case 'starOfService': 
-            return () => starOfService(config)(webConfig.url)
-    }
+const createScraper = (webConfig: WebConfig<Provider>) => {
+    return hasProvider('google')(webConfig) ? () => createGoogleReviewsScraper(log, onlyOnErrorLog, browser)(webConfig)
+        : hasProvider('starOfService')(webConfig) ? starOfService(config)
+        : () => []
 }
 
 let reviews: Review[] = []

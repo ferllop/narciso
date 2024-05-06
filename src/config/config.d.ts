@@ -1,13 +1,12 @@
 import type { GoogleSpecificConfig } from '../providers/google/google.config.js'
-import { StarOfServiceSpecificConfig } from '../providers/star-of-service/star-of-service.config.js'
 
 export type RawConfig = {
 	puppeteer: RawPuppeteerConfig
-	webs: RawWebConfig<SpecificWebConfig>[]
+	webs: RawWebConfig<Provider>[]
 }
 export type Config = {
 	puppeteer: PuppeteerConfig
-	webs: WebConfig<SpecificWebConfig>[]
+	webs: WebConfig<Provider>[]
 }
 
 export type RawPuppeteerConfig = {
@@ -22,22 +21,21 @@ export type PuppeteerConfig = Omit<RawPuppeteerConfig, 'browserLanguage' | 'sand
 	args: string[]
 }
 
-export type RawWebConfig<T extends SpecificWebConfig> = RawCommonWebConfig & T 
-export type WebConfig<T extends SpecificWebConfig> = CommonWebConfig & T
-export type CommonWebConfig = RawCommonWebConfig & {
+export type WebConfig<P extends Provider> = RawWebConfig<P> & {
 	timeout: number
 	ignoreReviews: IgnoreReviewsConfig
 }
 export type IgnoreReviewsConfig = Required<RawIgnoreReviewsConfig>
 export type Provider = 'google' | 'starOfService'
-export type RawCommonWebConfig = {
+export type RawWebConfig<P extends Provider> = {
 	title: string
 	activate: boolean
 	useInTests?: boolean
 	url: string 
 	timeout?: number
-	ignoreReviews?: RawIgnoreReviewsConfig
-}
+	ignoreReviews?: RawIgnoreReviewsConfig 
+	provider: P 
+}  & SpecificConfig<P>
 
 export type RawIgnoreReviewsConfig = {
 	byAuthorName?: string[] 
@@ -45,8 +43,8 @@ export type RawIgnoreReviewsConfig = {
 	byMinimumRating?: number
 }
 
-export type SpecificWebConfig =  
-	| StarOfServiceSpecificConfig 
-	| GoogleSpecificConfig
-
+type SpecificConfig<P extends Provider> = 
+	P extends 'starOfService' ? {} :
+	P extends 'google' ? {specific: GoogleSpecificConfig} :
+	never
 

@@ -1,5 +1,4 @@
 export type GoogleSpecificConfig = {
-	provider: 'google'
 	known: GoogleKnownConfig
 	translatedContent: boolean
 }

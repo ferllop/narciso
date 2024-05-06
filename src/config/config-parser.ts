@@ -1,4 +1,4 @@
-import { Config, PuppeteerConfig, RawConfig, RawPuppeteerConfig, RawWebConfig, SpecificWebConfig, WebConfig } from './config.js'
+import { Config, Provider, PuppeteerConfig, RawConfig, RawPuppeteerConfig, RawWebConfig, WebConfig } from './config.js'
 
 const isAbsentOrExplicitlyTrue = (value: any) => [true, undefined].includes(value)
 const isExplicitlyTrue = (value: any) => value === true
@@ -12,7 +12,7 @@ export const parsePuppeteerConfig = (rawPuppeteerConfig: RawPuppeteerConfig): Pu
 	dumpio : isAbsentOrExplicitlyTrue(rawPuppeteerConfig.dumpio),
 })
 
-export const parseWebConfig = <T extends SpecificWebConfig>(rawWebConfig: RawWebConfig<T>): WebConfig<T> => ({
+export const parseWebConfig = <P extends Provider>(rawWebConfig: RawWebConfig<P>): WebConfig<P> => ({
 		...rawWebConfig,
 		timeout: rawWebConfig.timeout ?? 30_000,
 		ignoreReviews: {
@@ -22,7 +22,7 @@ export const parseWebConfig = <T extends SpecificWebConfig>(rawWebConfig: RawWeb
 		},
 	})
 
-export const parseWebsConfig = <T extends SpecificWebConfig>(rawWebsConfig: RawWebConfig<T>[]): WebConfig<T>[] => rawWebsConfig.map(parseWebConfig)
+export const parseWebsConfig = <P extends Provider>(rawWebsConfig: RawWebConfig<P>[]): WebConfig<P>[] => rawWebsConfig.map(parseWebConfig)
 
 export const parseConfig = (rawConfig: RawConfig): Config => ({
 	puppeteer: parsePuppeteerConfig(rawConfig.puppeteer),
@@ -31,3 +31,6 @@ export const parseConfig = (rawConfig: RawConfig): Config => ({
 
 export const hasSilentArgument = () => process.argv.some(arg => arg === 'silent')
 
+export const hasProvider = <P extends Provider>
+	(provider: P) => (webConfig: {provider: Provider}): webConfig is RawWebConfig<P>|WebConfig<P> => 
+		webConfig.provider === provider

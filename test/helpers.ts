@@ -3,27 +3,27 @@ import fsAsync from 'node:fs/promises'
 import { ElementHandle, Page, launch } from 'puppeteer'
 import { Milliseconds } from '../src/puppeteer-actions.js'
 import assert from 'node:assert'
-import { Provider, PuppeteerConfig, RawConfig, RawWebConfig, SpecificWebConfig, WebConfig } from '../src/config/config.js'
-import { parsePuppeteerConfig, parseWebConfig } from '../src/config/config-parser.js'
+import { Provider, PuppeteerConfig, RawConfig, WebConfig } from '../src/config/config.js'
+import { hasProvider, parsePuppeteerConfig, parseWebConfig } from '../src/config/config-parser.js'
 
-export type TestConfig<T extends SpecificWebConfig> = {
+export type TestConfig<P extends Provider> = {
     puppeteer: PuppeteerConfig
-    web: WebConfig<T> & { getContentTimeout: Milliseconds }
+    web: WebConfig<P> & { getContentTimeout: Milliseconds }
 }
 
 export const doNothing = () => {}
 export const doNothingAsync = async () => {}
 
-export const getTestConfig = <T extends SpecificWebConfig>(provider: Provider, 
-            config: RawConfig, getContentTimeout: Milliseconds): TestConfig<T> => {
-    const providerWebs = config.webs.filter(web => web.provider === provider)
+export const getTestConfig = <P extends Provider>(provider: P, 
+            config: RawConfig, getContentTimeout: Milliseconds): TestConfig<P> => {
+    const providerWebs = config.webs.filter(hasProvider(provider))
     const webForTesting = providerWebs.find(web => web.useInTests) || providerWebs[0]
     if (!webForTesting) throw new Error('There is no web for this provider in the user config')
     return {
         puppeteer: parsePuppeteerConfig(config.puppeteer),
         web: {
-            ...parseWebConfig<T>(webForTesting as RawWebConfig<T>),
             getContentTimeout,
+            ...parseWebConfig(webForTesting),
         }
     }
 } 
@@ -36,7 +36,7 @@ export const getAbsoluteFilePathWithLanguageSuffix =
     (browserLanguage: string, importMetaUrl: URL) => getAbsoluteFilePath('', `-${browserLanguage}.html`, importMetaUrl)
 
 export const writeWebContentToFile = 
-    async <T extends SpecificWebConfig>(config: TestConfig<T>, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<any> = async () => {}) => {
+    async <P extends Provider>(config: TestConfig<P>, absoluteFilePath: URL, doBeforeGetContent: (page: Page) => Promise<any> = async () => {}) => {
     if (!fs.existsSync(absoluteFilePath)) {
         console.log(`\n# The html file ${absoluteFilePath} is not found. Generating with a headless browser. Please be patinent...`)
         const directory = new URL('.', absoluteFilePath)
