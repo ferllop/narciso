@@ -45,7 +45,11 @@ or to avoid printing logs:
 ./run.sh npm start -- silent
 ```
 
-Use a cron in your server to run Narciso once a month for example. 
+With run.sh you can use two environment variables to set the name of the created image and container.
+The purpose of the custom container name is mainly to find which container is causing problems when you have multiple narcisos running in one system.
+The purpose of the custom image name is to be able to create a custom image for some specific narciso or narcisos.
+
+Use a cron in your server to run Narciso once a month for example.
 Be careful not to make the services that you scrape angry launching Narciso very often.
 
 ## Configuration
