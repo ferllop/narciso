@@ -117,3 +117,12 @@ The common fields are:
   -- byMinimumRating: exclude reviews with the rating lower than the provided. Number. Optional. If not provided even a rating of 0 is valid.
 
 All this fields will be followed by the specific ones.
+
+## Generic workflow
+Clone this repository to your local.
+Create a configuration file as previously explained.
+Test in your local system.
+Go to your production system.
+Clone this repo and transfer the configuration from your local.
+Set a cronjob to run monthly
+
