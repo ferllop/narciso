@@ -1,5 +1,12 @@
 # 'google' provider
 
+The url of this provider should include an "hl" query parameter indicating the language for the profile UI. 
+It must be equal to the language used in the known.texts configuration properties explained next.
+For example, the known.texts are in spanish, so the url should have the parameter hl=es:
+```
+https://www.google.com/search?q=some+search+with+opinions#lrd=0x12a482b981b3f765:0x7ca8c3c9b3eadc99,1,,,?hl=es',
+```
+
 The specific configuration of this provider looks like this:
 ```
 translatedContent: true,
