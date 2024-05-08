@@ -1,0 +1,25 @@
+import { Config } from "./config/config.js"
+import { LogFunction } from "./logger/logger.js"
+import { ProviderScraper } from "./providers/provider.js"
+import { Review } from "./review.js"
+
+export const runner = async (log: LogFunction, config: Config, scrape: ProviderScraper) => {
+    let reviews: Review[] = []
+    for (const webConfig of config.webs) {
+        if (!webConfig.activate) {
+            continue
+        }
+        try {
+            log.add(`######## ${webConfig.title} ########\n`)
+            log.add(`Starting at: ${new Date()}\n`)
+            const providerReviews = await scrape(webConfig)
+            reviews = [...reviews, ...providerReviews]
+        } catch (ex: unknown) {
+            if (ex instanceof Error) {
+                console.log(`There was an error scraping the ${webConfig.provider} provider: ` + ex.message)
+            }
+            continue
+        }
+    }
+    return reviews
+}
