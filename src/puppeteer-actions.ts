@@ -76,20 +76,18 @@ export const scrollUntil = (log: LogFunction, timeout: Milliseconds) => (predica
   return await action()
 }
 
-export const getFirstClassOfElementWithText = (log: LogFunction) => 
-  async (reason: Reason, text: string, handle: Handle) => 
-  log(`Get the class name of the element with text ${text} ${reason}`)(async () => {
-  const el = await handle.$(`::-p-text(${text})`)
+export const getFirstClassOfElementWithSelector = (log: LogFunction) =>
+  async (reason: Reason, selector: Selector, handle: Handle) =>
+  log(`Get the first class name of the element with selector ${selector} ${reason}`)(async () => {
+  const el = await handle.$(selector)
+  if (!el) {
+    throw new Error(`The element with selector ${selector} was not found`)
+  }
   const tag = await el?.evaluate(el => el.nodeName.toLowerCase())
   const className = await el?.evaluate(el => el.classList[0])
   return tag + '.' + className
 })
 
-export const getFirstClassOfElementWithSelector = (log: LogFunction) =>
-  async (reason: Reason, selector: Selector, handle: Handle) =>
-  log(`Get the first class name of the element with selector ${selector} ${reason}`)(async () => {
-  const el = await handle.$(selector)
-  const tag = await el?.evaluate(el => el.nodeName.toLowerCase())
-  const className = await el?.evaluate(el => el.classList[0])
-  return tag + '.' + className
-})
+export const getFirstClassOfElementWithText = (log: LogFunction) => 
+  async (reason: Reason, text: string, handle: Handle) => 
+  getFirstClassOfElementWithSelector(log)(reason, `::-p-text(${text})`, handle) 
