@@ -9,7 +9,7 @@ describe('Given a logger', () => {
     it('when it logs an action then it puts the action log in the middle of its start and finish messages', async () => {
         const log = createLogFunction(simpleLogFormatter)
 
-        await log('A')(async () => await log('B')(async () => {}))
+        await log('A', async () => await log('B', async () => {}))
 
         const mem = log.getLog()
         assert.strictEqual(mem[0], 'Start: A', 'row 1')
@@ -23,7 +23,7 @@ describe('Given a logger', () => {
         const formatStart = (actionName: string) => "Starting log and action name: " + actionName
         const log = createLogFunction({...simpleLogFormatter, formatStart})
 
-        await log('A')(async () => await log('B')(doNothingAsync))
+        await log('A', async () => await log('B', doNothingAsync))
 
         const mem = log.getLog()
         assert.strictEqual(mem[0], 'Starting log and action name: A')
@@ -37,7 +37,7 @@ describe('Given a logger', () => {
             'Ending log and action name: ' + actionName + (typeof result === 'string' ?  ' with result ' + result : '')
         const log = createLogFunction({...simpleLogFormatter, formatFinish})
 
-        await log('A')(async () => await log('B')(async () => 'C'))
+        await log('A', async (): Promise<string> => await log('B', async () => 'C'))
 
         const mem = log.getLog()
         assert.strictEqual(mem[0], 'Start: A')

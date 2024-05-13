@@ -13,8 +13,8 @@ export const goto = (url: string) => async (page: Page) => {
   return page
 }
 
-export const pressKey = (log: LogFunction) => (reason: Reason, key: KeyInput) => async (page: Page) =>
-  log(reason)(async () => {
+export const pressKey = (log: LogFunction, reason: Reason, key: KeyInput) => async (page: Page) =>
+  log(reason, async () => {
   await page.keyboard.press(key)
   return page
 })
@@ -31,20 +31,18 @@ export const evalOrElse = <T>(onFound: (x: Element) => T, onNotFound: () => T) =
 export const selectorByText = (cssSelector: Selector, rejectCookiesText: string) => 
   `${cssSelector ? cssSelector + ' ' : ''}::-p-text(${rejectCookiesText})`
 
-export const clickIfPresent = (log: LogFunction) => 
-  (reason: Reason) => 
+export const clickIfPresent = (log: LogFunction, reason: Reason) => 
   (handle: ElementHandle | null) =>
-  log(`Click on element previously found if is present ${reason}`)(async () => {
+  log(`Click on element previously found if is present ${reason}`, async () => {
   if (handle !== null) {
     await handle.evaluate(h => (h as HTMLElement).click())
   }
   return handle
 })
 
-export const clickOrFail = (log: LogFunction) =>
-  (reason: Reason) => 
+export const clickOrFail = (log: LogFunction, reason: Reason) => 
   (handle: ElementHandle | null) => 
-  log(`Click or fail on element previously found ${reason}`)(async () => {
+  log(`Click or fail on element previously found ${reason}`, async () => {
   if (handle === null) {
     throw new Error(`The element was expected to be found`)
   }
@@ -52,12 +50,11 @@ export const clickOrFail = (log: LogFunction) =>
   return handle
 })
 
-export const findOne = (log: LogFunction) => (reason: Reason) => (selector: Selector) => (handle: Handle) => 
-  log(`Find one element with selector ${selector} ${reason}`)
-(async () => await handle.$(selector))
+export const findOne = (log: LogFunction, reason: Reason) => (selector: Selector) => (handle: Handle) => 
+  log(`Find one element with selector ${selector} ${reason}`, async () => await handle.$(selector))
 
-export const findAll = (log: LogFunction) => (reason: Reason) => (selector: Selector) => (page: Handle): Promise<ElementHandle[]> =>
-  log(`Find all elements with selector ${selector} ${reason}`)(async () => {
+export const findAll = (log: LogFunction, reason: Reason) => (selector: Selector) => (page: Handle): Promise<ElementHandle[]> =>
+  log(`Find all elements with selector ${selector} ${reason}`, async () => {
   return await page.$$(selector)
 })
 
@@ -65,8 +62,8 @@ export type Predicate = (t: Handle) => Promise<boolean>
 export const scrollUntil = (log: LogFunction, timeout: Milliseconds) => (predicate: Predicate) => async (page: Page) => {
   let step = 1
   const action = async () => {
-    const result = await log('to do scroll step number ' + step++)(async () => 
-      pressKey(log)('to go at the end of the content', 'End')(page)
+    const result = await log('to do scroll step number ' + step++, async () => 
+      pressKey(log, 'to go at the end of the content', 'End')(page)
         .then(waitForNetworkIdle(timeout, page)))
       if (!await predicate(result)) {
         await action()
@@ -76,9 +73,8 @@ export const scrollUntil = (log: LogFunction, timeout: Milliseconds) => (predica
   return await action()
 }
 
-export const getFirstClassOfElementWithSelector = (log: LogFunction) =>
-  async (reason: Reason, selector: Selector, handle: Handle) =>
-  log(`Get the first class name of the element with selector ${selector} ${reason}`)(async () => {
+export const getFirstClassOfElementWithSelector = (log: LogFunction, reason: Reason, selector: Selector, handle: Handle) =>
+  log(`Get the first class name of the element with selector ${selector} ${reason}`, async () => {
   const el = await handle.$(selector)
   if (!el) {
     throw new Error(`The element with selector ${selector} was not found`)
@@ -88,6 +84,5 @@ export const getFirstClassOfElementWithSelector = (log: LogFunction) =>
   return tag + '.' + className
 })
 
-export const getFirstClassOfElementWithText = (log: LogFunction) => 
-  async (reason: Reason, text: string, handle: Handle) => 
-  getFirstClassOfElementWithSelector(log)(reason, `::-p-text(${text})`, handle) 
+export const getFirstClassOfElementWithText = async (log: LogFunction, reason: Reason, text: string, handle: Handle) => 
+  getFirstClassOfElementWithSelector(log, reason, `::-p-text(${text})`, handle) 

@@ -4,12 +4,12 @@ export type LogFormatter = {formatStart: FormatLog, formatFinish: FormatLog, for
 type ActionDescription = string
 type Action<T> = (...args: any[]) => Promise<T>
 export type LogFunction = {
-	(actionDescription: ActionDescription): <T>(a: Action<T>) => Promise<T>
+	<T>(actionDescription: ActionDescription, a: Action<T>): Promise<T>
 	add: (s: string) => void
 	getLog: () => string[]
 }
 
-export const createLogFunction = 
+export const createLogFunction =
 	(logger: LogFormatter, memory: string[] = []): LogFunction => {
 
 	const addLine = (str: string | null) => {
@@ -17,7 +17,7 @@ export const createLogFunction =
 			memory.push(str)
 	}
 
-	const logFunction = (actionDescription: ActionDescription) => async <T>(f: Action<T>): Promise<T> => {
+	const logFunction = async <T>(actionDescription: ActionDescription, f: Action<T>): Promise<T> => {
 		addLine(logger.formatStart(actionDescription))
 		try {
 			const result = await f()

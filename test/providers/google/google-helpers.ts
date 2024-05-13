@@ -33,7 +33,7 @@ export const getGoogleCodeContent = async () => {
         getPagePath(initialReviewsPageName),
         page => rejectCookies(log, config.web.getContentTimeout, config.web.specific.known.texts)(page)
                     .then(findReviewsTab(log, config.web.specific.known.texts))
-                    .then(clickOrFail(log)('')))
+                    .then(clickOrFail(log, '')))
         
     await writeWebContentToFile(
         config,

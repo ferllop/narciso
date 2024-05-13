@@ -30,46 +30,46 @@ export type InferedSelectors = {
 }
 export const inferSelectors = (log: LogFunction, knownReview: GoogleKnownReview) => 
     async (page: Page) => ({
-    content: await getFirstClassOfElementWithText(log)('to get the class to get the content', knownReview.content, page),
-    authorName: await getFirstClassOfElementWithText(log)('to get the class to get the author name', knownReview.authorName, page),
-    review: await getFirstClassOfElementWithSelector(log)
-        ('to get the class to find each review', `[aria-label="${knownReview.authorName}"]`, page)
+    content: await getFirstClassOfElementWithText(log, 'to get the class to get the content', knownReview.content, page),
+    authorName: await getFirstClassOfElementWithText(log, 'to get the class to get the author name', knownReview.authorName, page),
+    review: await getFirstClassOfElementWithSelector(log, 
+        'to get the class to find each review', `[aria-label="${knownReview.authorName}"]`, page)
 }) 
 
 export const findRejectCookiesButton = (log: LogFunction, knownTexts: GoogleKnownTexts) => 
-    findOne(log)('to get the reject cookies button')(selectorByText('button', knownTexts.rejectCookiesButtonText))
+    findOne(log, 'to get the reject cookies button')(selectorByText('button', knownTexts.rejectCookiesButtonText))
 export const rejectCookies = (log: LogFunction, timeout: Milliseconds, knownTexts: GoogleKnownTexts) => 
     async (page: Page) =>
-    log('to reject cookies')(async () => 
+    log('to reject cookies', async () => 
         findRejectCookiesButton(log, knownTexts)(page)
-            .then(clickOrFail(log)('to reject cookies'))
+            .then(clickOrFail(log, 'to reject cookies'))
             .then(waitForNetworkIdle(timeout, page)))
 
 export const findReviewsTab = (log: LogFunction, knownTexts: GoogleKnownTexts) => 
-    findOne(log)('to find the reviews tab')(selectorByText('button', knownTexts.reviewsSectionButtonText))
+    findOne(log, 'to find the reviews tab')(selectorByText('button', knownTexts.reviewsSectionButtonText))
 export const findOrderingOptionsButton = (log: LogFunction, knownTexts: GoogleKnownTexts) =>
-    findOne(log)('to find the sorting options button')(selectorByText('button', knownTexts.sortingButtonText))
+    findOne(log, 'to find the sorting options button')(selectorByText('button', knownTexts.sortingButtonText))
 export const findByNewestOrderingOption = (log: LogFunction, knownTexts: GoogleKnownTexts) =>
-    findOne(log)('to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText))
+    findOne(log, 'to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText))
 export const loadAllReviews = (log: LogFunction, timeout: Milliseconds, {texts, oldestReviewAuthorName}: GoogleKnownConfig) => 
     async (page: Page) =>
-    log('Load all the reviews')(async () => { 
-        await log('Find the reviews tab')(async () =>
+    log('Load all the reviews', async () => { 
+        await log('Find the reviews tab', async () =>
         findReviewsTab(log, texts)(page)
-            .then(clickOrFail(log)('to click on reviews tab'))
+            .then(clickOrFail(log, 'to click on reviews tab'))
             .then(_ => page.waitForNetworkIdle({timeout})))
 
-        await log('Order by newest')(async () =>
+        await log('Order by newest', async () =>
         findOrderingOptionsButton(log, texts)(page)
-            .then(clickOrFail(log)('to open the sorting options menu'))
+            .then(clickOrFail(log, 'to open the sorting options menu'))
             .then(_ => findByNewestOrderingOption(log, texts)(page))
-            .then(clickOrFail(log)('to select the order by newest option'))
+            .then(clickOrFail(log, 'to select the order by newest option'))
             .then(_ => page.waitForNetworkIdle({timeout})))
 
-        return log('Scroll down until all the reviews are loaded')(async () =>
-        pressKey(log)('to focus on reviews list', 'Tab')(page)
+        return log('Scroll down until all the reviews are loaded', async () =>
+        pressKey(log, 'to focus on reviews list', 'Tab')(page)
             .then(scrollUntil(log, timeout)(
-                async handle =>findOne(log)('to check if have arrived to the last review')
+                async handle =>findOne(log, 'to check if have arrived to the last review')
                         (selectorByText('', oldestReviewAuthorName))(handle)
                         .then(found => found !== null) 
         )
@@ -77,19 +77,19 @@ export const loadAllReviews = (log: LogFunction, timeout: Milliseconds, {texts, 
 })
 
 export const findAllTheReviews = (log: LogFunction, inferedSelectors: InferedSelectors) =>
-    findAll(log)('to find all the reviews elements')(inferedSelectors.review)
+    findAll(log, 'to find all the reviews elements')(inferedSelectors.review)
 
 export const findRatingElement = (log: LogFunction, {stars}: GoogleKnownTexts) => 
-    findOne(log)('to get the rating element')(`[aria-label~="${stars}"]`)
+    findOne(log, 'to get the rating element')(`[aria-label~="${stars}"]`)
 export const findAuthorNameElement = (log: LogFunction, inferedSelectors: InferedSelectors) =>
-    findOne(log)('to get the author name element')(inferedSelectors.authorName)
+    findOne(log, 'to get the author name element')(inferedSelectors.authorName)
 export const findViewMoreButton = (log: LogFunction, {viewMoreButtonText}: GoogleKnownTexts) => 
-    findOne(log)('to get the clickable element to expand the content')(selectorByText('button', viewMoreButtonText))
+    findOne(log, 'to get the clickable element to expand the content')(selectorByText('button', viewMoreButtonText))
 export const findViewUntranslatedClickableElement = (log: LogFunction, {viewUntranslatedContentButtonText}: GoogleKnownTexts) =>
-    findOne(log)('to get the clickable element to view the untranslated content')
+    findOne(log, 'to get the clickable element to view the untranslated content')
         (selectorByText('span', viewUntranslatedContentButtonText))
 export const findContentElement = (log: LogFunction, inferedSelectors: InferedSelectors) => 
-    findOne(log)('to get the content')(inferedSelectors.content)
+    findOne(log, 'to get the content')(inferedSelectors.content)
 
 export const loadEntireContent = (
     log: LogFunction, 
@@ -99,11 +99,11 @@ export const loadEntireContent = (
     page: Page) => 
     async (review: ElementHandle) => {
     await findViewMoreButton(log, knownTexts)(review)
-        .then(clickIfPresent(log)('to view the entire content'))
+        .then(clickIfPresent(log, 'to view the entire content'))
         .then(_ => page.waitForNetworkIdle())
 
     loadTranslatedContent || await findViewUntranslatedClickableElement(log, knownTexts)(review)
-        .then(clickIfPresent(log)('to view the untranslated content'))
+        .then(clickIfPresent(log, 'to view the untranslated content'))
         .then(_ => page.waitForNetworkIdle())
 
     return await findContentElement(log, inferedSelectors)(review)
@@ -138,7 +138,7 @@ export const scrapeReview = (
 export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction, {translatedContent, known: {review, texts}}: GoogleSpecificConfig) => 
     async (page: Page): Promise<Review[]> => {
     const inferedSelectors = await inferSelectors(log, review)(page)
-    return log(`get the reviews data with ${translatedContent ? '' : 'un'}translated content`)(async () => Promise.all(
+    return log(`get the reviews data with ${translatedContent ? '' : 'un'}translated content`, async () => Promise.all(
         await findAllTheReviews(log, inferedSelectors)(page)
             .then(reviewEls => reviewEls.map(scrapeReview(logOnLoop, inferedSelectors, texts, translatedContent, page)))))
 }
