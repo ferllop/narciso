@@ -29,7 +29,7 @@ export const parseConfig = (rawConfig: RawConfig): Config => ({
 	webs: parseWebsConfig(rawConfig.webs),
 })
 
-export const hasSilentArgument = () => process.argv.some(arg => arg === 'silent')
+export const hasFinalLogArgument = () => process.argv.some(arg => arg === 'final-log')
 
 export const hasProvider = <P extends Provider>
 	(provider: P) => (webConfig: {provider: Provider}): webConfig is RawWebConfig<P>|WebConfig<P> => 

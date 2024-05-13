@@ -27,9 +27,9 @@ Then launch Narciso:
 npm start
 ```
 
-When Narciso runs, it will print the log to console. To prevent this behaviour add 'silent' to the start command:
+When Narciso runs, it will print the log in realtime to console in a flat format. To get the formatted final log add 'final-log' to the start command:
 ```
-npm start -- silent
+npm start -- final-log
 ```
 
 ### Using Docker
@@ -42,7 +42,7 @@ To use it, use the same commands as in the "Locally" section but prepending them
 ```
 or to avoid printing logs:
 ```
-./run.sh npm start -- silent
+./run.sh npm start -- final-log
 ```
 
 With run.sh you can use two environment variables to set the name of the created image and container.

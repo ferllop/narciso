@@ -1,3 +1,5 @@
+export const standardFormat = (log: string[]) => createParagraphsOnLog(indentLog(log))
+
 export const indentLog = (logLines: string[], indentUnit = '\t') => 
 	logLines.map((line, currentIndex) => {
 		const testCount = (regex: RegExp, lines: string[]) => 

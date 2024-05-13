@@ -1,9 +1,7 @@
 import fs from 'node:fs/promises'
 import { LogFunction } from "./logger/logger.js";
 import { Review } from "./review.js";
-import { createParagraphsOnLog, indentLog } from './logger/log-formatter.js';
-
-const standardFormat = (log: string[]) => createParagraphsOnLog(indentLog(log))
+import { standardFormat } from './logger/log-formatter.js';
 
 export const resultWriter = async (log: LogFunction, reviews: Review[]) => {
     const directory = new URL('../result', import.meta.url)
