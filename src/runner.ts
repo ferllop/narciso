@@ -16,7 +16,9 @@ export const runner = async (log: LogFunction, config: Config, scrape: ProviderS
             reviews = [...reviews, ...providerReviews]
         } catch (ex: unknown) {
             if (ex instanceof Error) {
-                console.log(`There was an error scraping the ${webConfig.provider} provider: ` + ex.message)
+                log.add(`There was an error scraping the ${webConfig.provider} provider: ${ex.message}`)
+            } else {
+                log.add(`Something wrong happened: ${ex}`)
             }
             continue
         }
