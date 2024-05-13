@@ -29,7 +29,7 @@ npm start
 
 When Narciso runs, it will print the log in realtime to console in a flat format. To get the formatted final log add 'final-log' to the start command:
 ```
-npm start -- final-log
+npm start final-log
 ```
 
 ### Using Docker
@@ -42,7 +42,7 @@ To use it, use the same commands as in the "Locally" section but prepending them
 ```
 or to avoid printing logs:
 ```
-./run.sh npm start -- final-log
+./run.sh npm start final-log
 ```
 
 With run.sh you can use two environment variables to set the name of the created image and container.
@@ -124,5 +124,8 @@ Create a configuration file as previously explained.
 Test in your local system.
 Go to your production system.
 Clone this repo and transfer the configuration from your local.
-Set a cronjob to run monthly
+Set a cronjob to run monthly with final-log and pipe the output to mail command, for example:
+```
+/narciso/location/run.sh npm start final-log | docker exec -i mailserver mail -s "Narciso log" mary@example.com
+```
 
