@@ -20,7 +20,7 @@ export const runner = async (log: LogFunction, config: Config, scrape: ProviderS
             } else {
                 log.add(`Something wrong happened: ${ex}`)
             }
-            continue
+            return []
         }
     }
     return reviews

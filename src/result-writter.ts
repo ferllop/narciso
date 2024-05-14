@@ -8,6 +8,6 @@ export const resultWriter = async (log: LogFunction, reviews: Review[]) => {
     await fs.mkdir(directory, { recursive: true })
     const formattedLog = standardFormat(log.getLog()).join('\n')
     await fs.writeFile('./result/reviews.last.log', formattedLog)
-    await fs.writeFile('./result/reviews.json', JSON.stringify(reviews, null, 2))
+    reviews.length && await fs.writeFile('./result/reviews.json', JSON.stringify(reviews, null, 2))
         .catch(err => err && console.error(err))
 }
