@@ -1,5 +1,5 @@
 export type FormatLog = (str: string, ...thing: unknown[]) => string | null
-export type LogFormatter = {formatStart: FormatLog, formatFinish: FormatLog, formatError: FormatLog}
+export type LogFormatter = Record<'formatStart' | 'formatFinish' | 'formatError' | 'formatOther', FormatLog>
 
 type ActionDescription = string
 type Action<T> = (...args: any[]) => Promise<T>
@@ -29,7 +29,10 @@ export const createLogFunction =
 		}
 	}
 	logFunction.getLog = () => structuredClone(memory)
-	logFunction.add = (s: string) => void memory.push(s)
+	logFunction.add = (s: string) => {
+		const str = logger.formatOther(s)
+		str && memory.push(str)
+	}
 	return logFunction
 }
 
@@ -48,7 +51,12 @@ export const tap = (f: (...args: any[]) => any) => (logger: LogFormatter): LogFo
 		const formattedLog = logger.formatError(actionDescription, error)
 		formattedLog !== null && f(formattedLog)
 		return formattedLog
-	}	
+	},
+	formatOther: (actionDescription: ActionDescription) => {
+		const formattedLog = logger.formatOther(actionDescription)
+		formattedLog !== null && f(formattedLog)
+		return formattedLog
+	},
 })
 
 export const toConsole = tap(console.log)
@@ -64,7 +72,9 @@ export const simpleLogFormatter: LogFormatter = {
 			: ''),
 
 	formatError: (actionDescription: string, error: any) => 
-		`ERROR:  ${actionDescription} failed with error "${error instanceof Error ? error.message : error}"`
+		`ERROR:  ${actionDescription} failed with error "${error instanceof Error ? error.message : error}"`,
+
+	formatOther: (actionDescription: string) => actionDescription,
 }
 
 export const onlyErrorLogFormatter : LogFormatter = {...simpleLogFormatter, formatStart: () => null, formatFinish: () => null}
