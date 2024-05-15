@@ -10,10 +10,13 @@ export const runner = async (log: LogFunction, config: Config, scrape: ProviderS
             continue
         }
         try {
-            log.add(`######## Start ${webConfig.title} ########\n`)
-            log.add(`Starting at: ${new Date()}\n`)
+            const start = new Date()
+            log.add(`######## Start ${webConfig.title} ########`)
+            log.add(`Starting at: ${start}\n`)
             const providerReviews = await scrape(webConfig)
-            log.add(`Finished at: ${new Date()}\n`)
+            const finish = new Date()
+            log.add(`\nFinished at: ${finish}`)
+            log.add(`\nDuration: ${(finish.getTime() - start.getTime()) / 1000} seconds`)
             log.add(`######## Finish ${webConfig.title} ########\n\n`)
             reviews = [...reviews, ...providerReviews]
         } catch (ex: unknown) {
