@@ -26,7 +26,7 @@ export type WebConfig<P extends Provider> = RawWebConfig<P> & {
 	ignoreReviews: IgnoreReviewsConfig
 }
 export type IgnoreReviewsConfig = Required<RawIgnoreReviewsConfig>
-export type Provider = 'google' | 'starOfService'
+export type Provider = 'google' | 'bodasnet'
 export type RawWebConfig<P extends Provider> = {
 	title: string
 	activate: boolean
@@ -44,7 +44,6 @@ export type RawIgnoreReviewsConfig = {
 }
 
 type SpecificConfig<P extends Provider> = 
-	P extends 'starOfService' ? {} :
-	P extends 'google' ? {specific: GoogleSpecificConfig} :
-	never
+	P extends 'google' ? { specific: GoogleSpecificConfig } :
+	{}
 

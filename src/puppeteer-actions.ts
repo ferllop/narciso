@@ -19,7 +19,7 @@ export const pressKey = (log: LogFunction, reason: Reason, key: KeyInput) => asy
   return page
 })
 
-export const waitForNetworkIdle = (timeout: Milliseconds, page: Page) => async () => {
+export const waitForNetworkIdle = (timeout: Milliseconds) => async (page: Page) => {
   await page.waitForNetworkIdle({timeout})
   return page
 }
@@ -54,22 +54,21 @@ export const findOne = (log: LogFunction, reason: Reason) => (selector: Selector
   log(`Find one element with selector ${selector} ${reason}`, async () => await handle.$(selector))
 
 export const findAll = (log: LogFunction, reason: Reason) => (selector: Selector) => (page: Handle): Promise<ElementHandle[]> =>
-  log(`Find all elements with selector ${selector} ${reason}`, async () => {
-  return await page.$$(selector)
-})
+  log(`Find all elements with selector ${selector} ${reason}`, async () => await page.$$(selector))
 
 export type Predicate = (t: Handle) => Promise<boolean>
 export const scrollUntil = (log: LogFunction, timeout: Milliseconds) => (predicate: Predicate) => async (page: Page) => {
   let step = 1
   const action = async () => {
-    const result = await log('to do scroll step number ' + step++, async () => 
+    await log('to do scroll step number ' + step++, async () => 
       pressKey(log, 'to go at the end of the content', 'End')(page)
-        .then(waitForNetworkIdle(timeout, page)))
-      if (!await predicate(result)) {
-        await action()
-      }
-      return page
+        .then(waitForNetworkIdle(timeout)))
+    if (!await predicate(page)) {
+      await action()
     }
+    return page
+  }
+
   return await action()
 }
 
@@ -86,3 +85,12 @@ export const getFirstClassOfElementWithSelector = (log: LogFunction, reason: Rea
 
 export const getFirstClassOfElementWithText = async (log: LogFunction, reason: Reason, text: string, handle: Handle) => 
   getFirstClassOfElementWithSelector(log, reason, `::-p-text(${text})`, handle) 
+
+export const consoleToConsole = (page: Page) => {
+  page
+    .on('console', message => console.log(`${message.type().substring(0, 3).toUpperCase()} ${message.text()}`))
+    .on('pageerror', ({ message }) => console.log(message))
+    .on('response', response => console.log(`${response.status()} ${response.url()}`))
+    .on('requestfailed', request => console.log(`${request.failure()?.errorText} ${request.url()}`))
+  return page
+}

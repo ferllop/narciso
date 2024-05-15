@@ -43,7 +43,7 @@ export const rejectCookies = (log: LogFunction, timeout: Milliseconds, knownText
     log('to reject cookies', async () => 
         findRejectCookiesButton(log, knownTexts)(page)
             .then(clickOrFail(log, 'to reject cookies'))
-            .then(waitForNetworkIdle(timeout, page)))
+            .then(_ => waitForNetworkIdle(timeout)(page)))
 
 export const findReviewsTab = (log: LogFunction, knownTexts: GoogleKnownTexts) => 
     findOne(log, 'to find the reviews tab')(selectorByText('button', knownTexts.reviewsSectionButtonText))

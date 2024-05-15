@@ -6,7 +6,7 @@ Then the reviews are stored in a json file called "reviews.json".
 This json will be an array of objects with the next format:
 ```
 {
-  "provider": "starOfService",   // The service from the review comes  
+  "provider": "google",   // The service from the review comes  
   "rating": 5,   // The rating  
   "authorName": "Jaimito",   // The name of the reviewer  
   "content": "A very great performance and profesional"   // The text of the review  
