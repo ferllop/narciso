@@ -19,7 +19,7 @@ if [ -z "$(docker ps -q -f name=$CONTAINER_NAME 2> /dev/null)" ]; then
     --name $CONTAINER_NAME \
     --restart no \
     --rm \
-    -ti \
+    -t \
     $IMAGE_NAME "$@"
 else
   docker exec -it $CONTAINER_NAME "$@"
