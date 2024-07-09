@@ -98,12 +98,12 @@ export const loadEntireContent = (
     loadTranslatedContent: boolean,
     page: Page) => 
     async (review: ElementHandle) => {
+    loadTranslatedContent || await findViewUntranslatedClickableElement(log, knownTexts)(review)
+            .then(clickIfPresent(log, 'to view the untranslated content'))
+            .then(_ => page.waitForNetworkIdle())
+
     await findViewMoreButton(log, knownTexts)(review)
         .then(clickIfPresent(log, 'to view the entire content'))
-        .then(_ => page.waitForNetworkIdle())
-
-    loadTranslatedContent || await findViewUntranslatedClickableElement(log, knownTexts)(review)
-        .then(clickIfPresent(log, 'to view the untranslated content'))
         .then(_ => page.waitForNetworkIdle())
 
     return await findContentElement(log, inferedSelectors)(review)
