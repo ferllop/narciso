@@ -19,6 +19,7 @@ import {
     goto,
     pressKey,
     scrollUntil,
+    findOneOrFail,
 } from "../../puppeteer-actions.js"
 
 const PROVIDER_NAME = 'google'
@@ -37,7 +38,7 @@ export const inferSelectors = (log: LogFunction, knownReview: GoogleKnownReview)
 }) 
 
 export const findRejectCookiesButton = (log: LogFunction, knownTexts: GoogleKnownTexts) => 
-    findOne(log, 'to get the reject cookies button')(selectorByText('button', knownTexts.rejectCookiesButtonText))
+    findOneOrFail(log, 'to get the reject cookies button')(selectorByText('button', knownTexts.rejectCookiesButtonText))
 export const rejectCookies = (log: LogFunction, timeout: Milliseconds, knownTexts: GoogleKnownTexts) => 
     async (page: Page) =>
     log('to reject cookies', async () => 

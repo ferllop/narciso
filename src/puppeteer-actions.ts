@@ -7,6 +7,11 @@ export type Tag = string
 export type Selector = string
 export type Milliseconds = number
 export type Handle = ElementHandle | Page
+export class ErrorWithCode extends Error {
+  constructor(public readonly content: string, message: string) {
+    super(message)
+  }
+}
 
 export const goto = (url: string) => async (page: Page) => {
   await page.goto(url) 
@@ -52,6 +57,18 @@ export const clickOrFail = (log: LogFunction, reason: Reason) =>
 
 export const findOne = (log: LogFunction, reason: Reason) => (selector: Selector) => (handle: Handle) => 
   log(`Find one element with selector ${selector} ${reason}`, async () => await handle.$(selector))
+
+export const findOneOrFail = (log: LogFunction, reason: Reason) => (selector: Selector) => (handle: Handle) => 
+  log(`Find or fail one element with selector ${selector} ${reason}`, async () => {
+    const found = await handle.$(selector)
+    if (found === null) {
+      let content: string = handle instanceof Page 
+        ? await handle.content()
+        : await handle.evaluate(el => el.outerHTML)
+      throw new ErrorWithCode(content, `The element was expected to be found`)
+    }
+    return found
+})
 
 export const findAll = (log: LogFunction, reason: Reason) => (selector: Selector) => (page: Handle): Promise<ElementHandle[]> =>
   log(`Find all elements with selector ${selector} ${reason}`, async () => await page.$$(selector))

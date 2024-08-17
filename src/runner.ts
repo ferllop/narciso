@@ -1,6 +1,7 @@
 import { Config } from "./config/config.js"
 import { LogFunction } from "./logger/logger.js"
 import { ProviderScraper } from "./providers/provider.js"
+import { ErrorWithCode } from "./puppeteer-actions.js"
 import { Review } from "./review.js"
 
 export const runner = async (log: LogFunction, config: Config, scrape: ProviderScraper) => {
@@ -20,7 +21,10 @@ export const runner = async (log: LogFunction, config: Config, scrape: ProviderS
             log.add(`######## Finish ${webConfig.title} ########\n\n`)
             reviews = [...reviews, ...providerReviews]
         } catch (ex: unknown) {
-            if (ex instanceof Error) {
+            if (ex instanceof ErrorWithCode) {
+                log.add(`There was an error scraping the ${webConfig.provider} provider: ${ex.message} and the content of the page is this:`)
+                log.add(ex.content)
+            } else if (ex instanceof Error) {
                 log.add(`There was an error scraping the ${webConfig.provider} provider: ${ex.message}`)
             } else {
                 log.add(`Something wrong happened: ${ex}`)
