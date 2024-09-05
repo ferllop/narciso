@@ -47,11 +47,11 @@ export const rejectCookies = (log: LogFunction, timeout: Milliseconds, knownText
             .then(_ => waitForNetworkIdle(timeout)(page)))
 
 export const findReviewsTab = (log: LogFunction, knownTexts: GoogleKnownTexts) => 
-    findOne(log, 'to find the reviews tab')(selectorByText('button', knownTexts.reviewsSectionButtonText))
+    findOneOrFail(log, 'to find the reviews tab')(selectorByText('button', knownTexts.reviewsSectionButtonText))
 export const findOrderingOptionsButton = (log: LogFunction, knownTexts: GoogleKnownTexts) =>
-    findOne(log, 'to find the sorting options button')(selectorByText('button', knownTexts.sortingButtonText))
+    findOneOrFail(log, 'to find the sorting options button')(selectorByText('button', knownTexts.sortingButtonText))
 export const findByNewestOrderingOption = (log: LogFunction, knownTexts: GoogleKnownTexts) =>
-    findOne(log, 'to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText))
+    findOneOrFail(log, 'to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText))
 export const loadAllReviews = (log: LogFunction, timeout: Milliseconds, {texts, oldestReviewAuthorName}: GoogleKnownConfig) => 
     async (page: Page) =>
     log('Load all the reviews', async () => { 
@@ -63,6 +63,7 @@ export const loadAllReviews = (log: LogFunction, timeout: Milliseconds, {texts, 
         await log('Order by newest', async () =>
         findOrderingOptionsButton(log, texts)(page)
             .then(clickOrFail(log, 'to open the sorting options menu'))
+            .then(_ => page.waitForNetworkIdle({timeout}))
             .then(_ => findByNewestOrderingOption(log, texts)(page))
             .then(clickOrFail(log, 'to select the order by newest option'))
             .then(_ => page.waitForNetworkIdle({timeout})))
