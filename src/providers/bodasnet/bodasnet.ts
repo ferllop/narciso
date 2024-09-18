@@ -64,7 +64,7 @@ export const findContentElement = (log: LogFunction, reviewDataSelectors: Review
     findOne(log, 'to get the content')(reviewDataSelectors.contentSelector())
 
 export const createBodasNetReviewsScraper = 
-    (log: LogFunction, logOnLoop: LogFunction, browser: Browser) => 
+    (log: LogFunction, logInLoop: LogFunction, browser: Browser) => 
     async (webConfig: WebConfig<'bodasnet'>): Promise<Review[]> => {
     const reviews = await browser.newPage()
         .then(page => {
@@ -78,6 +78,6 @@ export const createBodasNetReviewsScraper =
         })
         .then(goto(webConfig.url))
         .then(loadAllReviews(log, webConfig.timeout))
-        .then(scrapeAllReviews(log, logOnLoop, reviewSelector(), reviewDataSelectors))
+        .then(scrapeAllReviews(log, logInLoop, reviewSelector(), reviewDataSelectors))
     return reviews.filter(createReviewValidator(webConfig.ignoreReviews))
 }

@@ -146,12 +146,12 @@ export const scrapeAllReviews = (log: LogFunction, logOnLoop: LogFunction, {tran
 }
 
 export const createGoogleReviewsScraper = 
-    (log: LogFunction, logOnLoop: LogFunction, browser: Browser) => 
+    (log: LogFunction, logInLoop: LogFunction, browser: Browser) => 
     async (webConfig: WebConfig<'google'>) => {
     const reviews = await browser.newPage()
         .then(goto(webConfig.url))
         .then(rejectCookies(log, webConfig.timeout, webConfig.specific.known.texts))
         .then(loadAllReviews(log, webConfig.timeout, webConfig.specific.known))
-        .then(scrapeAllReviews(log, logOnLoop, webConfig.specific))
+        .then(scrapeAllReviews(log, logInLoop, webConfig.specific))
     return reviews.filter(createReviewValidator(webConfig.ignoreReviews))
 }
