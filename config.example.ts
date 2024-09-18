@@ -13,8 +13,8 @@ const rawConfig: RawConfig = {
       title: "Foo en google",
       activate: true,
       timeout: 30000,
-      url : 'https://www.google.com/search?q=some+search+with+opinions#lrd=0x12a482b981b3f765:0x7ca8c3c9b3eadc99,1,,,',
-        provider: 'google',
+      url: 'https://www.google.com/maps/place/MY+compsny/@33.333,1.555, 15a/data=l0ts0f6u1ber15h?hl=en',
+      provider: 'google',
       ignoreReviews: {
         byAuthorName: ['John Doe', 'Foo Bar'],
         byMinimumRating: 4,

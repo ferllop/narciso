@@ -2,19 +2,19 @@
 
 Narciso scrapes the reviews of webs that we call providers. It can be google, star of service, bodas.net... 
 Each provider have its own code to manage puppeteer.
-Then the reviews are stored in a json file called "reviews.json".
-This json will be an array of objects with the next format:
+If the scrape execution is successful, then the reviews are stored in a json file called `.result/reviews.json`. If not it will do nothing regarding this file.
+The json file will be an array of objects with the next format:
 ```
 {
   "provider": "google",   // The service from the review comes  
   "rating": 5,   // The rating  
-  "authorName": "Jaimito",   // The name of the reviewer  
+  "authorName": "Jane",   // The name of the reviewer  
   "content": "A very great performance and profesional"   // The text of the review  
 }
 ```
-It also creates the file "reviews.last.log" with the log of the last run.
+Also, it always creates the file `./result/reviews.last.log` with the log of the last run.
 
-Feel free to add code to scrape new providers.
+Feel free to add code to scrape new providers in `./src/providers/`.
 
 ## Launching the process
 ### Locally
@@ -27,7 +27,7 @@ Then launch Narciso:
 npm start
 ```
 
-When Narciso runs, it will print the log in realtime to console in a flat format. To get the formatted final log add 'final-log' to the start command:
+When Narciso runs, it will print the log in realtime to console in a flat format. To get the formatted final log at the end of the execution, add 'final-log' to the start command:
 ```
 npm start final-log
 ```
@@ -49,13 +49,12 @@ With run.sh you can use two environment variables to set the name of the created
 The purpose of the custom container name is mainly to find which container is causing problems when you have multiple narcisos running in one system.
 The purpose of the custom image name is to be able to create a custom image for some specific narciso or narcisos.
 
-Use a cron in your server to run Narciso once a month for example.
-Be careful not to make the services that you scrape angry launching Narciso very often.
+**Be careful not to make the services that you scrape angry launching Narciso very often.**
 
 ## Configuration
 
-The configuration is done through the file "config.ts".
-There is an example config file named config.example.ts .
+The configuration is done through the file `./config.ts`.
+There is an example config file named `./config.example.ts`.
 
 There is a command to check that the config is ok:
 ```
@@ -76,13 +75,13 @@ That's how a configuration looks like:
   webs: [
     {
       activate: true,
-      title: "Foo en google",
+      title: "Foo in google",
       activate: true,
       timeout: 30000,
       url : 'https://www.google.com/search?q=some+search+with+opinions#lrd=0x12a482b981b3f765:0x7ca8c3c9b3eadc99,1,,,',
       provider: 'google',
       ignoreReviews: {
-        byAuthorName: ['John Doe', 'Foo Bar'],
+        byAuthorName: ['Jane Smith', 'John Doe'],
         byMinimumRating: 4,
         byMinimumCharactersCountInContent: 10,
       },
@@ -90,19 +89,23 @@ That's how a configuration looks like:
   ]
 }
 ```
+
 As you can see it is divided in two main parts. 
-One to configure the puppeteer process and the other to configure from which webs you want to get the reviews.
-In the puppeteer section:
+
+### Puppeteer section
+Its purpose is to configure the puppeteer process and the other to configure from which webs you want to get the reviews.
 - browserLanguage: the language of the browser. The webs will get this language as the main one. String. Optional. 'en-US' if not provided.
 - sandboxBrowser: open the browser in a sandboxed environment. Boolean. Optional. True if not provided.
 - disableSetuidSandbox: disables the setuid sandbox of the browser. Boolean. Optional. True if not provided.
 - headless: run browser without showing any kind of graphical window. Boolean. Optional. True if not provided.
 - dumpio: show browser logs into console.Boolean. Optional. True if not provided.
 
-The webs section is an array of web configurations. 
-Each web configuration have some fields that are common for all the web configurations and then 
-another fields that are specific for each provider.
-That provider specific configuration should be documented inside docs/providers.
+
+### Webs section
+
+Its purpose is to configure from which webs you want to get the reviews.
+Is an array of web configurations and on the root of each web configuration object are the fields that are common for all the providers type and inside the `specific` field you can put the configurations which are specific for the provider. Those provider specific configurations should be documented inside `./docs/providers/`.
+
 The common fields are:
 - provider: Tells the scraper how to scrape the web. Each provider must provide (pun intended :D) its own code to scrape its kind of web. String. Mandatory
 - activate: To activate the scraping on this web or not. Mandatory. Boolean,
@@ -116,7 +119,7 @@ The common fields are:
   -- byMinimumCharactersCountInContent: exclude reviews with the content shorter than the provided here: Number. Optional. If not provided even empty content is valid.
   -- byMinimumRating: exclude reviews with the rating lower than the provided. Number. Optional. If not provided even a rating of 0 is valid.
 
-All this fields will be followed by the specific ones.
+As a convention, all this fields will be followed by the specific ones.
 
 ## Generic workflow
 Clone this repository to your local.
@@ -124,8 +127,8 @@ Create a configuration file as previously explained.
 Test in your local system.
 Go to your production system.
 Clone this repo and transfer the configuration from your local.
-Set a cronjob to run monthly with final-log and pipe the output to mail command, for example:
+Then, for instance, you can set a monthly cron job with final-log argument nd pipe the output to mail command, for example:
 ```
-/narciso/location/run.sh npm start final-log | docker exec -i mailserver mail -s "Narciso log" mary@example.com
+/narciso/location/run.sh npm start final-log | docker exec -i mymailserver mail -s "Narciso log" me@example.com
 ```
 
