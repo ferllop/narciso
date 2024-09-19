@@ -9,7 +9,9 @@ import { createBodasNetReviewsScraper } from "./bodasnet/bodasnet.js"
 
 export type ProviderScraper = (webConfig: WebConfig<Provider>) => Promise<Review[]>
 
-export const createScraper = (log: LogFunction, logInLoop: LogFunction, browser: Browser): ProviderScraper => (webConfig: WebConfig<Provider>) => {
+export const createScraper = 
+    (log: LogFunction, logInLoop: LogFunction, browser: Browser): ProviderScraper => 
+    (webConfig: WebConfig<Provider>) => {
     return hasProvider('google')(webConfig) ? createGoogleReviewsScraper(log, logInLoop, browser)(webConfig)
         : hasProvider('bodasnet')(webConfig) ? createBodasNetReviewsScraper(log, logInLoop, browser)(webConfig)
         : Promise.resolve([])

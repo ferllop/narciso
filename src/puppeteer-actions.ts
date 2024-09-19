@@ -13,6 +13,11 @@ export class ErrorWithCode extends Error {
   }
 }
 
+export const tap = <T>(f: (x: T) => Promise<any>) => async (x: T): Promise<T> => {
+  await f(x)
+  return x
+}
+
 export const goto = (url: string) => async (page: Page) => {
   await page.goto(url) 
   return page
@@ -35,6 +40,13 @@ export const evalOrElse = <T>(onFound: (x: Element) => T, onNotFound: () => T) =
 
 export const selectorByText = (cssSelector: Selector, rejectCookiesText: string) => 
   `${cssSelector ? cssSelector + ' ' : ''}::-p-text(${rejectCookiesText})`
+
+export const click = (log: LogFunction, reason: Reason) => 
+  (handle: ElementHandle) =>
+  log(`Click on element previously found ${reason}`, async () => {
+    await handle.evaluate(h => (h as HTMLElement).click())
+    return handle
+})
 
 export const clickIfPresent = (log: LogFunction, reason: Reason) => 
   (handle: ElementHandle | null) =>
