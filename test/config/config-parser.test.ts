@@ -5,19 +5,21 @@ import configDataTemplate from '../../config.example.js'
 import { assertArrayContains, assertArrayNotContains } from '../custom-asserts.js'
 import { RawConfig } from '../../src/config/config.js'
 
-const assertArgsContains = (argToContain: any) => (message: string, configData: RawConfig) => 
+const assertArgsContains = (argToContain: string) => (message: string, configData: RawConfig) => 
     assertArrayContains(parseConfig(configData).puppeteer.args, argToContain, message)
 
-const assertArgsNotContains = (argToContain: any) => (message: string, configData: RawConfig) => 
+const assertArgsNotContains = (argToContain: string) => (message: string, configData: RawConfig) => 
     assertArrayNotContains(parseConfig(configData).puppeteer.args, argToContain, message)
 
 const assertConfigWithData = (configData: any) => ({
-    containsArgument: (argument: any, message = '') => assertArgsContains(argument)(message, {...configDataTemplate, ...configData}),
-    notContainsArgument: (argument: any, message = '') => assertArgsNotContains(argument)(message, {...configDataTemplate, ...configData})
+    containsArgument: (argument: string, message = '') => 
+        assertArgsContains(argument)(message, {...configDataTemplate, ...configData}),
+    notContainsArgument: (argument: string, message = '') => 
+        assertArgsNotContains(argument)(message, {...configDataTemplate, ...configData})
 })
 
 const assertPath = (...path: (string|number)[]) => {
-    const applyPath: any =  (obj: Record<string|number, any>, path: (string|number)[]) => {
+    const applyPath =  <T extends Record<PropertyKey, any>, K extends PropertyKey>(obj: T, path: K[]): T | T[K] => {
         if (path.length === 0) {
             return obj
         }
