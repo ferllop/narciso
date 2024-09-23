@@ -146,6 +146,33 @@ describe('given indentLog function, when it receives a log as input', () => {
 
         assertArraysAreEqual(indentLog(log, '> '), expectedLog)
     })
+
+    it('when a line contains "start" or "finish" but not start with that word, it is not considered a new block', async () => {
+        const log = [
+            'start: A',
+            'start: B',
+            'some start',
+            'finish: B',
+            'start: C',
+            'some finish',
+            'finish: C',
+            'finish: A',
+        ]
+
+        const expectedLog = [
+            'start: A',
+            '> start: B',
+            '> > some start',
+            '> finish: B',
+            '> start: C',
+            '> > some finish',
+            '> finish: C',
+            'finish: A',
+        ]
+
+        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
+    })
+
 })
 
 
