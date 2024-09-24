@@ -1,25 +1,18 @@
-import { Browser } from "puppeteer"
-import { Provider, WebConfig } from "../../config/config.js"
-import { createGoogleReviewsScraper } from "./google/google.js"
-import { LogFunction } from "../../logger/logger.js"
-import { createBodasNetReviewsScraper } from "./bodasnet/bodasnet.js"
-import { Review } from "../review.js"
+import { Provider } from "../../config/config.js"
+import { Steps } from "../scraper.js"
+import { bodasnetSteps } from "./bodasnet/bodasnet.js"
+import { googleSteps } from "./google/google.js"
 
 type ProvidersMap = {
-    [P in Provider]: ProviderScraper<P>
+    [P in Provider]: Steps<P>
 }
-
-type ProviderScraper<T extends Provider>
-    = (log: LogFunction, logInLoop: LogFunction, browser: Browser) 
-    => (webConfig: WebConfig<T>) 
-    => Promise<Review[]>
-
-export const getProvider = <T extends Provider>(provider: T): ProviderScraper<T> =>
+const providers: ProvidersMap = {
+    'google': googleSteps,
+    'bodasnet': bodasnetSteps,
+}
+export const getSteps = <T extends Provider>(provider: T): Steps<T> =>
     providers[provider]
 
-const providers: ProvidersMap = {
-    'google': createGoogleReviewsScraper,
-    'bodasnet': createBodasNetReviewsScraper
-}
+
 
 

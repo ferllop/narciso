@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
-import { Review, createReviewValidator } from '../../../src/domain/scraper/review.js'
 import { IgnoreReviewsConfig } from '../../../src/domain/config/config.js'
 import { assertNotOk } from '../../custom-asserts.js'
+import { Review, createReviewValidator } from '../../../src/domain/scraper/review.js'
 
 const reviewTemplate: Review = {
     provider: '',

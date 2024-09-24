@@ -1,7 +1,5 @@
-import { WebConfig } from "../../../config/config.js"
-import { LogFunction } from "../../../logger/logger.js"
-import { Browser, Page, goto } from "../../puppeteer-actions.js"
-import { Review, createReviewValidator } from "../../review.js"
+import { Page, goto } from "../../puppeteer-actions.js"
+import { Steps } from "../../scraper.js"
 import { loadAllReviews } from "./setps/load-all-reviews.js"
 import { scrapeAllReviews } from "./setps/scrape-all-reviews.js"
 
@@ -14,17 +12,6 @@ export const reviewSelectors = {
 }
 export type ReviewSelectors = typeof reviewSelectors
 
-export const createBodasNetReviewsScraper = 
-    (log: LogFunction, logInLoop: LogFunction, browser: Browser) => 
-    async (webConfig: WebConfig<typeof PROVIDER_NAME>): Promise<Review[]> => {
-    const reviews = await browser.newPage()
-        .then(preparePageToAvoidCookiesBanner)
-        .then(goto(webConfig.url))
-        .then(loadAllReviews(log, webConfig.timeout))
-        .then(scrapeAllReviews(log, logInLoop, reviewSelectors))
-    return reviews.filter(createReviewValidator(webConfig.ignoreReviews))
-}
-
 const preparePageToAvoidCookiesBanner = (page: Page) => {
     page.setExtraHTTPHeaders({
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/115.0',
@@ -34,3 +21,12 @@ const preparePageToAvoidCookiesBanner = (page: Page) => {
     })
     return page
 }
+
+export const bodasnetSteps: Steps<'bodasnet'> = 
+    (log, logInLoop, webConfig) => page => 
+    Promise.resolve(page)
+        .then(preparePageToAvoidCookiesBanner)
+        .then(goto(webConfig.url))
+        .then(loadAllReviews(log, webConfig.timeout))
+        .then(scrapeAllReviews(log, logInLoop, reviewSelectors))
+

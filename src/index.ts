@@ -2,9 +2,9 @@ import configData from '../config.js'
 import { launch } from 'puppeteer'
 import { log, onlyOnErrorLog } from './logger.js'
 import { hasFinalLogArgument, parseConfig } from './domain/config/config-parser.js'
-import { scrapeWebs } from './domain/scraper/scraper.js'
 import { standardFormat } from './domain/logger/final-log-formatter.js'
 import { resultWriter } from './result-writter.js'
+import { scrapeWebs } from './domain/scraper/runner.js'
 
 const config = parseConfig(configData)
 const browser = await launch(config.puppeteer)
