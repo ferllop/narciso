@@ -1,6 +1,6 @@
-export const standardFormat = (log: string[]) => createParagraphsOnLog(indentLog(log))
+export const standardFormat = (log: string[]) => createParagraphsOnLog(indentLog(log, '\t'))
 
-export const indentLog = (logLines: string[], indentUnit = '\t') => {
+export const indentLog = (logLines: string[], indentUnit: string) => {
 
 	const indentLine = (line: string, currentLineIndex: number) => {
 		if (line === '') {
@@ -24,12 +24,12 @@ export const indentLog = (logLines: string[], indentUnit = '\t') => {
 }	
 
 
-export const createParagraphsOnLog = (logLines: string[], indentUnit = '.') => 
+export const createParagraphsOnLog = (logLines: string[]) => 
 	logLines.map((line, currentIndex) => {
-		if (!new RegExp(`${indentUnit}*finish:`, 'i').test(line)) {
+		if (!new RegExp(`.*finish:`, 'i').test(line)) {
 			return line
 		}
-		return new RegExp(`${indentUnit}*start:`, 'i').test(logLines[currentIndex + 1]) 
+		return new RegExp(`.*start:`, 'i').test(logLines[currentIndex + 1]) 
 				? line + '\n' 
 				: line
 	})
