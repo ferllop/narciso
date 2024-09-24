@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "start": "tsx ./src/index.ts",
-    "build": "tsc -p tsconfig.build.json",
     "tsc:watch": "tsc --noEmit --watch",
     "check-config": "tsc --noEmit ./config.ts",
     "\n# TESTING": "",
