@@ -1,4 +1,4 @@
-import { LogFunction } from "../../../logger/logger.js"
+import { LogFunction } from "../../../../logger/logger.js"
 import { ElementHandle, Page, evalOrElse, findAll, findOne } from "../../../puppeteer-actions.js"
 import { Review } from "../../../review.js"
 import { PROVIDER_NAME, ReviewSelectors } from "../bodasnet.js"

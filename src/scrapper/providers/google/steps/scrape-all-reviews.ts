@@ -1,4 +1,4 @@
-import { LogFunction } from "../../../logger/logger.js"
+import { LogFunction } from "../../../../logger/logger.js"
 import { 
 	ElementHandle, 
 	Page, 

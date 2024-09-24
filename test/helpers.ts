@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import fsAsync from 'node:fs/promises'
 import { ElementHandle, Page, launch } from 'puppeteer'
-import { Milliseconds } from '../src/puppeteer-actions.js'
+import { Milliseconds } from '../src/scrapper/puppeteer-actions.js'
 import assert from 'node:assert'
 import { Provider, PuppeteerConfig, RawConfig, WebConfig } from '../src/config/config.js'
 import { hasProvider, parsePuppeteerConfig, parseWebConfig } from '../src/config/config-parser.js'

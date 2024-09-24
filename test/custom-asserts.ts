@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { Page } from "../src/puppeteer-actions.js"
+import { Page } from "../src/scrapper/puppeteer-actions.js"
 
  
 /* assert.deepStrictEqual from node:assert does not show the failing item isolated making hard to find the difference */

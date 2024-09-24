@@ -1,4 +1,4 @@
-import { LogFunction } from "../../../logger/logger.js"
+import { LogFunction } from "../../../../logger/logger.js"
 import { Milliseconds, Page, click, findOneOrFail, selectorByText, waitForNetworkIdle } from "../../../puppeteer-actions.js"
 
 export const goToReviewsTab = 

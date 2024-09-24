@@ -1,4 +1,4 @@
-import { LogFunction } from "../../../logger/logger.js"
+import { LogFunction } from "../../../../logger/logger.js"
 import { Milliseconds, findOne, scrollUntil } from "../../../puppeteer-actions.js"
 
 export const loadAllReviews = (log: LogFunction, timeout: Milliseconds) => 

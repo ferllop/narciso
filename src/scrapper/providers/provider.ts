@@ -1,9 +1,9 @@
 import { Browser } from "puppeteer"
-import { hasProvider } from "../config/config-parser.js"
-import { Provider, WebConfig } from "../config/config.js"
+import { hasProvider } from "../../config/config-parser.js"
+import { Provider, WebConfig } from "../../config/config.js"
 import { createGoogleReviewsScraper } from "./google/google.js"
 import { Review } from "../review.js"
-import { LogFunction } from "../logger/logger.js"
+import { LogFunction } from "../../logger/logger.js"
 import { createBodasNetReviewsScraper } from "./bodasnet/bodasnet.js"
 
 

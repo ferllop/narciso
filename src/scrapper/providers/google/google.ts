@@ -1,6 +1,6 @@
-import type { WebConfig } from "../../config/config.js"
+import type { WebConfig } from "../../../config/config.js"
 import { createReviewValidator } from "../../review.js"
-import { LogFunction } from "../../logger/logger.js"
+import { LogFunction } from "../../../logger/logger.js"
 import { Browser, goto } from "../../puppeteer-actions.js"
 import { rejectCookies } from "./steps/reject-cookies.js"
 import { loadAllReviews } from "./steps/load-all-reviews.js"

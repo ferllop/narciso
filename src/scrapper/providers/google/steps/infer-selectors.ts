@@ -1,4 +1,4 @@
-import { LogFunction } from "../../../logger/logger.js"
+import { LogFunction } from "../../../../logger/logger.js"
 import { Page, Selector, getFirstClassOfElementWithSelector, getFirstClassOfElementWithText } from "../../../puppeteer-actions.js"
 import { GoogleKnownReview } from "../google.config.js"
 

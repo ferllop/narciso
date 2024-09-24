@@ -1,5 +1,5 @@
-import { WebConfig } from "../../config/config.js"
-import { LogFunction } from "../../logger/logger.js"
+import { WebConfig } from "../../../config/config.js"
+import { LogFunction } from "../../../logger/logger.js"
 import { Browser, Page, goto } from "../../puppeteer-actions.js"
 import { Review, createReviewValidator } from "../../review.js"
 import { loadAllReviews } from "./setps/load-all-reviews.js"

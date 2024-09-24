@@ -1,12 +1,12 @@
-import { Config } from "./config/config.js"
-import { LogFunction } from "./logger/logger.js"
+import { Config } from "../config/config.js"
+import { LogFunction } from "../logger/logger.js"
 import { ProviderScraper } from "./providers/provider.js"
 import { ErrorWithCode } from "./puppeteer-actions.js"
 import { Review } from "./review.js"
 
-export const runner = async (log: LogFunction, config: Config, scrape: ProviderScraper) => {
+export const runner = async (log: LogFunction, websConfig: Config['webs'], scrape: ProviderScraper) => {
     let reviews: Review[] = []
-    for (const webConfig of config.webs) {
+    for (const webConfig of websConfig) {
         if (!webConfig.activate) {
             continue
         }
