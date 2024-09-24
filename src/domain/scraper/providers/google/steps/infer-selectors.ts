@@ -1,10 +1,10 @@
-import { LogFunction } from "../../../../logger/logger.js"
+import { Logger } from "../../../../logger/logger.js"
 import { Page, Selector, getFirstClassOfElementWithSelector, getFirstClassOfElementWithText } from "../../../puppeteer-actions.js"
 import { GoogleKnownReview } from "../google.config.js"
 
 export type InferedSelectors = Record<'content' | 'authorName' | 'review', Selector>
 
-export const inferSelectors = (log: LogFunction, knownReview: GoogleKnownReview) => 
+export const inferSelectors = (log: Logger, knownReview: GoogleKnownReview) => 
 	async (page: Page): Promise<[InferedSelectors, Page]> => {
 	const inferedSelectors = {
 		content: await getFirstClassOfElementWithText(

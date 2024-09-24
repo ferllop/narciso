@@ -1,8 +1,8 @@
-import { LogFunction } from "../../../../logger/logger.js"
+import { Logger } from "../../../../logger/logger.js"
 import { Milliseconds, Page, click, findOneOrFail, selectorByText, waitForNetworkIdle } from "../../../puppeteer-actions.js"
 
 export const goToReviewsTab = 
-	(log: LogFunction, timeout: Milliseconds, reviewsSectionButtonText: string) => (page: Page): Promise<Page> =>
+	(log: Logger, timeout: Milliseconds, reviewsSectionButtonText: string) => (page: Page): Promise<Page> =>
 	log('Find the reviews tab', () =>
 		Promise.resolve(page)
 			.then(findOneOrFail(log, 'to find the reviews tab')(selectorByText('button', reviewsSectionButtonText)))

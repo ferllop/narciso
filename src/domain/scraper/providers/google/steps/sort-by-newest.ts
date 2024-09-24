@@ -1,9 +1,9 @@
-import { LogFunction } from "../../../../logger/logger.js"
+import { Logger } from "../../../../logger/logger.js"
 import { Milliseconds, Page, click, findOneOrFail, selectorByText, waitForNetworkIdle } from "../../../puppeteer-actions.js"
 import { GoogleKnownTexts } from "../google.config.js"
 
 export const sortByNewest =	(
-	log: LogFunction, 
+	log: Logger, 
 	timeout: Milliseconds, 
 	knownTexts: GoogleKnownTexts
 ) => (page: Page): Promise<Page> =>

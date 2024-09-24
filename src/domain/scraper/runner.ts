@@ -1,10 +1,10 @@
 import { Provider, WebConfig } from "../config/config.js"
-import { LogFunction } from "../logger/logger.js"
+import { Logger } from "../logger/logger.js"
 import { Browser, ErrorWithCode } from "./puppeteer-actions.js"
 import { Review } from "./review.js"
 import { scrape } from "./scraper.js"
 
-export const scrapeWebs = async (log: LogFunction, logInLoop: LogFunction, browser: Browser, websConfig: WebConfig<Provider>[]) => {
+export const scrapeWebs = async (log: Logger, logInLoop: Logger, browser: Browser, websConfig: WebConfig<Provider>[]) => {
 	let reviews: Review[] = []
 	for (const webConfig of websConfig) {
 		if (!webConfig.activate) {
@@ -17,7 +17,7 @@ export const scrapeWebs = async (log: LogFunction, logInLoop: LogFunction, brows
 }
 
 const scrapeWeb = 
-	async (log: LogFunction, logInLoop: LogFunction, browser: Browser, webConfig: WebConfig<Provider>) => {
+	async (log: Logger, logInLoop: Logger, browser: Browser, webConfig: WebConfig<Provider>) => {
 	try {
 		const start = new Date()
 		log.add(`######## Start ${webConfig.title} ########`)
