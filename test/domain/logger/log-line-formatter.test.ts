@@ -1,6 +1,6 @@
 import { describe, it } from "node:test"
-import { createParagraphsOnLog, indentLog } from "../../src/logger/log-formatter.js"
-import { assertArraysAreEqual } from "../custom-asserts.js"
+import { assertArraysAreEqual } from "../../custom-asserts.js"
+import { indentLog } from "../../../src/domain/logger/final-log-formatter.js"
 
 describe('given indentLog function, when it receives a log as input', () => {
     it('indents child log blocks', async () => {
@@ -173,63 +173,31 @@ describe('given indentLog function, when it receives a log as input', () => {
         assertArraysAreEqual(indentLog(log, '> '), expectedLog)
     })
 
-})
-
-
-describe('given createParagraphsOnLog function, when it receives a log as its input', () => {
-    it('separate sibling log blocks with empty lines', async () => {
+    it('empty lines are not indented', async () => {
         const log = [
-            'Start: A',
-            'Start: B',
-            'Start: C',
-            'Finish: C',
-            'Start: D',
-            'Finish: D',
-            'Start: E',
-            'Finish: E',
-            'Finish: B',
-            'Finish: A',
+            'start: A',
+            '',
+            'start: B',
+            'some start',
+            'finish: B',
+            'start: C',
+            'some finish',
+            'finish: C',
+            'finish: A',
         ]
 
         const expectedLog = [
-            'Start: A',
-            'Start: B',
-            'Start: C',
-            'Finish: C\n',
-            'Start: D',
-            'Finish: D\n',
-            'Start: E',
-            'Finish: E',
-            'Finish: B',
-            'Finish: A',
-        ]
-        
-        assertArraysAreEqual(createParagraphsOnLog(log), expectedLog)
-    })
-
-    it('considers content inside log blocks as not diferent log blocks', async () => {
-        const log = [
-            'Start: A',
-            'Start: B',
-            'content in B',
-            'Finish: B',
-            'Start: C',
-            'content in C',
-            'Finish: C',
-            'Finish: A',
+            'start: A',
+            '',
+            '> start: B',
+            '> > some start',
+            '> finish: B',
+            '> start: C',
+            '> > some finish',
+            '> finish: C',
+            'finish: A',
         ]
 
-        const expectedLog = [
-            'Start: A',
-            'Start: B',
-            'content in B',
-            'Finish: B\n',
-            'Start: C',
-            'content in C',
-            'Finish: C',
-            'Finish: A',
-        ]
-        
-        assertArraysAreEqual(createParagraphsOnLog(log), expectedLog)
+        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
     })
 })

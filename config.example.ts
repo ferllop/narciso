@@ -1,4 +1,4 @@
-import type { RawConfig } from './src/config/config.d.ts'
+import type { RawConfig } from './src/domain/config/config.ts'
 
 const rawConfig: RawConfig = {
   puppeteer: {

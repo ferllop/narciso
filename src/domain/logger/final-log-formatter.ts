@@ -3,9 +3,13 @@ export const standardFormat = (log: string[]) => createParagraphsOnLog(indentLog
 export const indentLog = (logLines: string[], indentUnit = '\t') => {
 
 	const indentLine = (line: string, currentLineIndex: number) => {
+		if (line === '') {
+			return line
+		}
+
 		const startWordCount = countLinesWith(/^start:/i, logLines.slice(0, currentLineIndex + 1))
 		const finishWordCount = countLinesWith(/^finish:/i, logLines.slice(0, currentLineIndex))
-		const indentationSize = /^(start|finish)/i.test(line) 
+		const indentationSize = /^(start:|finish:)/i.test(line) 
 			? startWordCount - finishWordCount - 1
 			: startWordCount - finishWordCount
 		const indentation = Array(indentationSize).fill(indentUnit).join('')
@@ -14,6 +18,7 @@ export const indentLog = (logLines: string[], indentUnit = '\t') => {
 
 	const countLinesWith = (regex: RegExp, lines: string[]) => 
 		lines.reduce((count, line) => regex.test(line) ? count + 1 : count, 0)
+
 
 	return logLines.map(indentLine)
 }	

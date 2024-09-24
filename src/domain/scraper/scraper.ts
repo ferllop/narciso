@@ -1,20 +1,21 @@
-import { Config } from "../config/config.js"
+import { Provider, WebConfig } from "../config/config.js"
 import { LogFunction } from "../logger/logger.js"
-import { ProviderScraper } from "./providers/provider.js"
-import { ErrorWithCode } from "./puppeteer-actions.js"
+import { getProvider } from "./providers/provider.js"
+import { Browser, ErrorWithCode } from "./puppeteer-actions.js"
 import { Review } from "./review.js"
 
-export const runner = async (log: LogFunction, websConfig: Config['webs'], scrape: ProviderScraper) => {
+export const scrapeWebs = async (log: LogFunction, logInLoop: LogFunction, browser: Browser, websConfig: WebConfig<Provider>[]) => {
     let reviews: Review[] = []
     for (const webConfig of websConfig) {
         if (!webConfig.activate) {
             continue
         }
         try {
+            const providerScraper = getProvider(webConfig.provider)(log, logInLoop, browser)
             const start = new Date()
             log.add(`######## Start ${webConfig.title} ########`)
             log.add(`Starting at: ${start}\n`)
-            const providerReviews = await scrape(webConfig)
+            const providerReviews = await providerScraper(webConfig)
             const finish = new Date()
             log.add(`\nFinished at: ${finish}`)
             log.add(`\nDuration: ${(finish.getTime() - start.getTime()) / 1000} seconds`)
