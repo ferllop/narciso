@@ -1,7 +1,8 @@
 import assert from 'node:assert'
 import { describe, it } from 'node:test'
 import { createLogFunction, simpleLogFormatter } from '../../src/logger/logger.js'
-import { doNothingAsync } from '../helpers.js'
+
+const doNothing = async () => {}
 
 describe('Given a logger', () => {
 
@@ -25,7 +26,7 @@ describe('Given a logger', () => {
         const formatStart = (actionName: string) => "Starting log and action name: " + actionName
         const log = createLogFunction({...simpleLogFormatter, formatStart})
 
-        await log('A', () => log('B', doNothingAsync))
+        await log('A', () => log('B', doNothing))
 
         assert.deepStrictEqual(
             log.getLog(),
@@ -42,7 +43,7 @@ describe('Given a logger', () => {
             `Ending log and action name: ${actionName}`
         const log = createLogFunction({...simpleLogFormatter, formatFinish})
 
-        await log('A', () => log('B', doNothingAsync))
+        await log('A', () => log('B', doNothing))
 
         assert.deepStrictEqual(
             log.getLog(),
