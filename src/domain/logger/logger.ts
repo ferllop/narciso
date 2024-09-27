@@ -17,7 +17,7 @@ export class Logger {
 	public log<T>(actionDescription: ActionDescription): void 
 	public async log<T>(actionDescription: ActionDescription, action: Action<T>): Promise<T>
 	public async log<T>(actionDescription: ActionDescription, action?: Action<T>) {
-		if (!action) {
+		if (action === undefined) {
 			this.addLine(this.lineFormatter.formatOther(actionDescription))
 			return
 		}

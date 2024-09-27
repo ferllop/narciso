@@ -38,5 +38,5 @@ const createLogs =
 	const logger = new Logger(selectOutput(standardFormatter), [])
 	const inLoopLog = logger.withFormatter(selectOutput(inLoopFormatter))
 
-	return [logger.log, inLoopLog.log, logger.getLog]
+	return [logger.log.bind(logger), inLoopLog.log.bind(inLoopLog), logger.getLog.bind(logger)]
 }
