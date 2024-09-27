@@ -1,18 +1,20 @@
 import { ActionDescription, LogLineFormatter } from "./log-line-formatter.js"
 
+export type Log = string[]
 type Action<T> = (...args: any[]) => Promise<T>
 export type Logger = {
 	<T>(ad: ActionDescription, a: Action<T>): Promise<T>
 	add: (s: string) => void
-	getLog: () => string[]
+	getLog: () => Log
+	withFormatter: (lf: LogLineFormatter) => Logger
 }
 
 export const createLogger =
-	(lineFormatter: LogLineFormatter, memory: string[]): Logger => {
+	(lineFormatter: LogLineFormatter, log: Log): Logger => {
 
 	const addLine = (str: string | null) => {
 		if (str !== null) 
-			memory.push(str)
+			log.push(str)
 	}
 
 	const logFunction = async <T>(actionDescription: ActionDescription, action: Action<T>): Promise<T> => {
@@ -27,13 +29,14 @@ export const createLogger =
 		}
 	}
 
-	logFunction.getLog = () => structuredClone(memory)
+	logFunction.getLog = () => structuredClone(log)
 
 	logFunction.add = (s: string) => {
 		const str = lineFormatter.formatOther(s)
-		str && memory.push(str)
+		str && log.push(str)
 	}
 
+	logFunction.withFormatter = (lineFormatter: LogLineFormatter) => createLogger(lineFormatter, log)
 
 	return logFunction
 }
