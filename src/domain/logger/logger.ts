@@ -26,11 +26,15 @@ export const createLogger =
 			throw error
 		}
 	}
+
 	logFunction.getLog = () => structuredClone(memory)
+
 	logFunction.add = (s: string) => {
 		const str = lineFormatter.formatOther(s)
 		str && memory.push(str)
 	}
+
+
 	return logFunction
 }
 
