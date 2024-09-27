@@ -2,7 +2,7 @@ import type { GoogleSpecificConfig } from '../scraper/providers/google/google.co
 
 export type RawConfig = {
 	puppeteer: RawPuppeteerConfig
-	webs: RawWebConfig<Provider>[]
+	webs: AddSpecificConfig<RawWebConfig<Provider>>[]
 }
 
 export type RawPuppeteerConfig = {
@@ -14,7 +14,17 @@ export type RawPuppeteerConfig = {
 }
 
 export type Provider = 'google' | 'bodasnet'
-export type RawWebConfig<P extends Provider> = {
+
+export type RawWebConfig<P extends Provider> = AddSpecificConfig<UnespecificRawWebConfig<P>>
+
+type AddSpecificConfig<T extends UnespecificRawWebConfig<Provider>> = 
+	T extends UnespecificRawWebConfig<infer P> 
+		? P extends keyof SpecificsMap 
+			? T & {specific: SpecificsMap[P]} 
+			: T
+		: T
+
+type UnespecificRawWebConfig<P extends Provider> = {
 	title: string
 	activate: boolean
 	useInTests?: boolean
@@ -22,7 +32,7 @@ export type RawWebConfig<P extends Provider> = {
 	timeout?: number
 	ignoreReviews?: RawIgnoreReviewsConfig 
 	provider: P 
-}  & SpecificConfig<P>
+}
 
 export type RawIgnoreReviewsConfig = {
 	byAuthorName?: string[] 
@@ -30,9 +40,9 @@ export type RawIgnoreReviewsConfig = {
 	byMinimumRating?: number
 }
 
-type SpecificConfig<P extends Provider> = 
-	P extends 'google' ? { specific: GoogleSpecificConfig } :
-	{}
+export interface SpecificsMap {
+	google: GoogleSpecificConfig
+}	
 
 export type Config = {
 	puppeteer: PuppeteerConfig
