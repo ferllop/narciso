@@ -13,7 +13,7 @@ export const scrapeWebs =
 		browser: Browser,
 		websConfig: WebConfig<Provider>[]): Promise<[Log, Review[]]> => {
 
-	const [log, logInLoop] = createLogs(standardFormatter, inLoopFormatter)	
+	const [log, logInLoop, getLog] = createLogs(standardFormatter, inLoopFormatter)	
 
 	let reviews: Review[] = []
 	for (const webConfig of websConfig) {
@@ -24,13 +24,13 @@ export const scrapeWebs =
 		reviews = [...reviews, ...providerReviews]
 	}
 
-	return [log.getLog(), reviews] as const
+	return [getLog(), reviews] as const
 }
 
 const createLogs = 
 	(
 		standardFormatter: LogLineFormatter,
-		inLoopFormatter: LogLineFormatter): [standardLogger: Logger, inLoopLogger: Logger] =>{
+		inLoopFormatter: LogLineFormatter): [standardLogger: Logger, inLoopLogger: Logger, () => Log] =>{
 
 	const toConsole = tap(console.log)
 	const selectOutput = (l: LogLineFormatter) => hasFinalLogArgument() ? l : toConsole(l)
@@ -38,5 +38,5 @@ const createLogs =
 	const log = createLogger(selectOutput(standardFormatter), [])
 	const inLoopLog = log.withFormatter(selectOutput(inLoopFormatter))
 
-	return [log, inLoopLog]
+	return [log, inLoopLog, log.getLog]
 }
