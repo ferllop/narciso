@@ -14,6 +14,7 @@ if [ -z "$(docker ps -q -f name=$CONTAINER_NAME 2> /dev/null)" ]; then
     --init \
     --cap-add SYS_ADMIN \
     --workdir /app \
+    -v /etc/timezone:/etc/timezone:ro \
     -v ./:/app \
     -u $(id -u) \
     --name $CONTAINER_NAME \
