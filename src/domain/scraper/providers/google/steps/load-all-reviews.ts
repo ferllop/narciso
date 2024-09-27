@@ -1,4 +1,4 @@
-import { Logger } from "../../../../logger/logger.js"
+import { Log } from "../../../../logger/logger.js"
 import { 
 	Handle, 
 	Milliseconds, 
@@ -10,11 +10,11 @@ import {
 } from "../../../puppeteer-actions.js"
 
 export const loadAllReviews =
-	(log: Logger, timeout: Milliseconds, oldestReviewAuthorName: string) => (page: Page): Promise<Page> => 
+	(log: Log, timeout: Milliseconds, oldestReviewAuthorName: string) => (page: Page): Promise<Page> => 
 	log('Load all the reviews', () => scrollUntilTheEnd(log, timeout, oldestReviewAuthorName, page))
 
 const scrollUntilTheEnd = 
-	(log: Logger, timeout: Milliseconds, oldestReviewAuthorName: string, page: Page): Promise<Page> => {
+	(log: Log, timeout: Milliseconds, oldestReviewAuthorName: string, page: Page): Promise<Page> => {
 	const hasLoadedTheLastReview = (handle: Handle): Promise<boolean> => 
 		Promise.resolve(handle)
 			.then(findOne(log, 'to check if have arrived to the last review')(selectorByText('', oldestReviewAuthorName)))

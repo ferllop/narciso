@@ -1,43 +1,41 @@
 import { ActionDescription, LogLineFormatter } from "./log-line-formatter.js"
 
-export type Log = string[]
 type Action<T> = (...args: any[]) => Promise<T>
-export type Logger = {
-	<T>(ad: ActionDescription, a: Action<T>): Promise<T>
-	add: (s: string) => void
-	getLog: () => Log
-	withFormatter: (lf: LogLineFormatter) => Logger
-}
+export type Entries = string[]
+export type Log = Logger['log']
 
-export const createLogger =
-	(lineFormatter: LogLineFormatter, log: Log): Logger => {
+export class Logger {
 
-	const addLine = (str: string | null) => {
-		if (str !== null) 
-			log.push(str)
+	constructor(private lineFormatter: LogLineFormatter, private memory: Entries) {
 	}
 
-	const logFunction = async <T>(actionDescription: ActionDescription, action: Action<T>): Promise<T> => {
-		addLine(lineFormatter.formatStart(actionDescription))
+	private addLine(str: string | null) {
+		if (str !== null) 
+			this.memory.push(str)
+	}
+
+	public async log<T>(actionDescription: ActionDescription, action: Action<T>): Promise<T> {
+		this.addLine(this.lineFormatter.formatStart(actionDescription))
 		try {
 			const result = await action()
-			addLine(lineFormatter.formatFinish(actionDescription, result))
+			this.addLine(this.lineFormatter.formatFinish(actionDescription, result))
 			return result
 		} catch (error: any) {
-			addLine(lineFormatter.formatError(actionDescription, error))
+			this.addLine(this.lineFormatter.formatError(actionDescription, error))
 			throw error
 		}
 	}
 
-	logFunction.getLog = () => structuredClone(log)
-
-	logFunction.add = (s: string) => {
-		const str = lineFormatter.formatOther(s)
-		str && log.push(str)
+	public getLog() {
+		return structuredClone(this.memory)
 	}
 
-	logFunction.withFormatter = (lineFormatter: LogLineFormatter) => createLogger(lineFormatter, log)
+	public add(s: string) {
+		this.addLine(this.lineFormatter.formatOther(s))
+	}
 
-	return logFunction
+	public withFormatter(lineFormatter: LogLineFormatter) {
+		return new Logger(lineFormatter, this.memory)
+	}
+
 }
-

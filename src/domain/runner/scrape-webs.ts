@@ -1,7 +1,7 @@
 import { hasFinalLogArgument } from "../config/config-parser.js"
 import { Provider, WebConfig } from "../config/config.js"
 import { LogLineFormatter, tap } from "../logger/log-line-formatter.js"
-import { Log, Logger, createLogger } from "../logger/logger.js"
+import { Entries, Logger } from "../logger/logger.js"
 import { Browser } from "../scraper/puppeteer-actions.js"
 import { Review } from "../scraper/review.js"
 import { scrapeWeb } from "./scrape-web.js"
@@ -11,7 +11,7 @@ export const scrapeWebs =
 		standardFormatter: LogLineFormatter,
 		inLoopFormatter: LogLineFormatter,
 		browser: Browser,
-		websConfig: WebConfig<Provider>[]): Promise<[Log, Review[]]> => {
+		websConfig: WebConfig<Provider>[]): Promise<[Entries, Review[]]> => {
 
 	const [log, logInLoop, getLog] = createLogs(standardFormatter, inLoopFormatter)	
 
@@ -30,12 +30,12 @@ export const scrapeWebs =
 const createLogs = 
 	(
 		standardFormatter: LogLineFormatter,
-		inLoopFormatter: LogLineFormatter): [standardLogger: Logger, inLoopLogger: Logger, () => Log] =>{
+		inLoopFormatter: LogLineFormatter): [standardLogger: Logger, inLoopLogger: Logger, () => Entries] =>{
 
 	const toConsole = tap(console.log)
 	const selectOutput = (l: LogLineFormatter) => hasFinalLogArgument() ? l : toConsole(l)
 
-	const log = createLogger(selectOutput(standardFormatter), [])
+	const log = new Logger(selectOutput(standardFormatter), [])
 	const inLoopLog = log.withFormatter(selectOutput(inLoopFormatter))
 
 	return [log, inLoopLog, log.getLog]

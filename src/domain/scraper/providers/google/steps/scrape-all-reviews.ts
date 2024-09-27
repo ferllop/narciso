@@ -1,4 +1,4 @@
-import { Logger } from "../../../../logger/logger.js"
+import { Log } from "../../../../logger/logger.js"
 import { 
 	ElementHandle, 
 	Page, 
@@ -14,8 +14,8 @@ import { InferedSelectors } from "./infer-selectors.js"
 
 
 export const scrapeAllReviews = (
-	log: Logger, 
-	logOnLoop: Logger, 
+	log: Log, 
+	logOnLoop: Log, 
 	{translatedContent, known}: GoogleSpecificConfig,
 	inferedSelectors: InferedSelectors,
 	providerName: string
@@ -32,7 +32,7 @@ export const scrapeAllReviews = (
 			})))
 	))
 
-const scrapeRating = (log: Logger, stars: string, review: ElementHandle): Promise<number> =>  
+const scrapeRating = (log: Log, stars: string, review: ElementHandle): Promise<number> =>  
 	Promise.resolve(review)
 		.then(findOne(log, 'to get the rating element')(`[aria-label~="${stars}"]`))
 		.then(evalOrElse(
@@ -43,7 +43,7 @@ const scrapeRating = (log: Logger, stars: string, review: ElementHandle): Promis
 			() => '0'))
 		.then(parseInt)
 
-const scrapeAuthor = async (log: Logger, authorNameSelector: string, review: ElementHandle): Promise<string> =>  
+const scrapeAuthor = async (log: Log, authorNameSelector: string, review: ElementHandle): Promise<string> =>  
 	Promise.resolve(review)
 		.then(findOne(log, 'to get the author name element')(authorNameSelector))
 		.then(evalOrElse(
@@ -55,7 +55,7 @@ const scrapeAuthor = async (log: Logger, authorNameSelector: string, review: Ele
 			() => ''))
 
 const scrapeContent = async (
-	log: Logger, 
+	log: Log, 
 	contentSelector: string, 
 	knownTexts: GoogleKnownTexts, 
 	loadTranslatedContent: boolean,
@@ -71,14 +71,14 @@ const scrapeContent = async (
 		.then(evalOrElse(el => el.innerHTML, () => ''))
 
 const loadUntranslatedContent = 
-	(log: Logger, viewUntranslatedContentButtonText: string) => (review: ElementHandle) =>  
+	(log: Log, viewUntranslatedContentButtonText: string) => (review: ElementHandle) =>  
 	Promise.resolve(review)
 		.then(findOne(log, 'to get the clickable element to view the untranslated content')
 			  (selectorByText('span', viewUntranslatedContentButtonText)))
 		.then(clickIfPresent(log, 'to view the untranslated content'))
 
 const loadContentEntirely = 
-	(log: Logger, viewMoreButtonText: string) => (review: ElementHandle) => 
+	(log: Log, viewMoreButtonText: string) => (review: ElementHandle) => 
 	Promise.resolve(review)
 		.then(findOne(log, 'to get the clickable element to expand the content')(selectorByText('button', viewMoreButtonText)))
 		.then(clickIfPresent(log, 'to view the entire content'))

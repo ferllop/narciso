@@ -1,11 +1,11 @@
-import { Logger } from "../../../../logger/logger.js"
+import { Log } from "../../../../logger/logger.js"
 import { ElementHandle, Page, evalOrElse, findAll, findOne } from "../../../puppeteer-actions.js"
 import { Review } from "../../../review.js"
 import { PROVIDER_NAME, ReviewSelectors } from "../bodasnet.js"
 
 export const scrapeAllReviews = (
-    log: Logger, 
-    logOnLoop: Logger, 
+    log: Log, 
+    logOnLoop: Log, 
     selectors: ReviewSelectors
 ) => async (page: Page) =>
     log(`get the reviews data`, async () => 
@@ -14,7 +14,7 @@ export const scrapeAllReviews = (
                 .then(reviewEls => reviewEls.map(scrapeReview(logOnLoop, selectors)))))
 
 const scrapeReview = 
-    (log: Logger, selectors: ReviewSelectors) => async (review: ElementHandle): Promise<Review> => ({
+    (log: Log, selectors: ReviewSelectors) => async (review: ElementHandle): Promise<Review> => ({
     provider: PROVIDER_NAME, 
     rating: await scrapeRating(log, selectors.ratingSelector, review),
     authorName: await scrapeAuthorName(log, selectors.authorNameSelector, review),
@@ -22,7 +22,7 @@ const scrapeReview =
 })
 
 const scrapeRating = (
-    log: Logger, ratingSelector: string, review: ElementHandle): Promise<number> =>
+    log: Log, ratingSelector: string, review: ElementHandle): Promise<number> =>
     findOne(log, 'to get the rating element')(ratingSelector)(review)
         .then(evalOrElse(
             rating => Number(rating.textContent ?? 0),
@@ -30,14 +30,14 @@ const scrapeRating = (
         .then(Math.round)
 
 const scrapeAuthorName =
-    (log: Logger, authorNameSelector: string, review: ElementHandle): Promise<string> =>
+    (log: Log, authorNameSelector: string, review: ElementHandle): Promise<string> =>
     findOne(log, 'to get the author name element')(authorNameSelector)(review)
         .then(evalOrElse(
             el => el.firstChild!.textContent!.trim(), 
             () => ''))
 
 const scrapeContent = 
-    (log: Logger, contentSelector: string, review: ElementHandle): Promise<string> => 
+    (log: Log, contentSelector: string, review: ElementHandle): Promise<string> => 
     findOne(log, 'to get the content')(contentSelector)(review)
         .then(evalOrElse(
             el => el.textContent!.trim(), 
