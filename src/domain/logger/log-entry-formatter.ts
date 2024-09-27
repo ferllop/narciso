@@ -1,12 +1,12 @@
 export type ActionDescription = string
-export type LogLineFormatter = {
+export type LogEntryFormatter = {
 	formatStart: (a: ActionDescription) => string | null
 	formatFinish: (a: ActionDescription, result: unknown) => string | null
 	formatError: (a: ActionDescription, error: any) => string | null
 	formatOther: (a: ActionDescription) => string | null
 }
 
-export const tap = (f: (...args: any[]) => any) => (logger: LogLineFormatter): LogLineFormatter => ({
+export const tap = (f: (...args: any[]) => any) => (logger: LogEntryFormatter): LogEntryFormatter => ({
 	formatStart: (actionDescription: ActionDescription) => {
 		const formattedLog = logger.formatStart(actionDescription)
 		formattedLog !== null && f(formattedLog)

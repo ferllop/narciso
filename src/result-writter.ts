@@ -1,10 +1,11 @@
 import fs from 'node:fs/promises'
-import { standardFormat } from "./domain/logger/final-log-formatter.js"
 import { Review } from "./domain/scraper/review.js"
+import { LogEntries } from './domain/logger/logger.js'
+import { formatLogEntries } from './domain/logger/log-entries-formatter.js'
 
-export const resultWriter = async (log: string[], reviews: Review[]) => {
+export const resultWriter = async (entries: LogEntries, reviews: Review[]) => {
     await createDirectory('../result')
-    await writeLogToFile(log)
+    await writeLogEntriesToFile(entries)
     await writeReviewsToFile(reviews)
 }
 
@@ -13,8 +14,8 @@ const createDirectory = async (directory: string) => {
     await fs.mkdir(url, { recursive: true })
 }
 
-const writeLogToFile = async (log: string[]) => {
-    const formattedLog = standardFormat(log).join('\n')
+const writeLogEntriesToFile = async (entries: LogEntries) => {
+    const formattedLog = formatLogEntries(entries).join('\n')
     await fs.writeFile('./result/reviews.last.log', formattedLog)
 }
 

@@ -16,7 +16,9 @@ export const scrapeWeb =
 		log(`\nFinished at: ${finish}`)
 		log(`\nDuration: ${(finish.getTime() - start.getTime()) / 1000} seconds`)
 		log(`######## Finish ${webConfig.title} ########\n\n`)
+
 		return reviews
+
 	} catch (ex: unknown) {
 		if (ex instanceof ErrorWithCode) {
 			log(`There was an error scraping the ${webConfig.provider} provider: ${ex.message} and the content of the page is this:`)

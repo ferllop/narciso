@@ -1,6 +1,6 @@
 import { describe, it } from "node:test"
 import { assertArraysAreEqual } from "../../custom-asserts.js"
-import { createParagraphsOnLog } from "../../../src/domain/logger/final-log-formatter.js"
+import { createParagraphsOnLogEntries } from "../../../src/domain/logger/log-entries-formatter.js"
 
 describe('given createParagraphsOnLog function, when it receives a log as its input', () => {
     it('separate sibling log blocks with empty lines', async () => {
@@ -30,7 +30,7 @@ describe('given createParagraphsOnLog function, when it receives a log as its in
             'Finish: A',
         ]
         
-        assertArraysAreEqual(createParagraphsOnLog(log), expectedLog)
+        assertArraysAreEqual(createParagraphsOnLogEntries(log), expectedLog)
     })
 
     it('considers content inside log blocks as not diferent log blocks', async () => {
@@ -56,6 +56,6 @@ describe('given createParagraphsOnLog function, when it receives a log as its in
             'Finish: A',
         ]
         
-        assertArraysAreEqual(createParagraphsOnLog(log), expectedLog)
+        assertArraysAreEqual(createParagraphsOnLogEntries(log), expectedLog)
     })
 })

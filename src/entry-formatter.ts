@@ -1,6 +1,6 @@
-import { LogLineFormatter } from "./domain/logger/log-line-formatter.js"
+import { LogEntryFormatter } from "./domain/logger/log-entry-formatter.js"
 
-export const simpleLogFormatter: LogLineFormatter = {
+export const standardLogEntryFormatter: LogEntryFormatter = {
     formatStart: (actionDescription: string) => 'Start: ' + actionDescription,
     formatFinish: (actionDescription: string, result: unknown) => 
         'Finish: ' + actionDescription + 
@@ -10,8 +10,8 @@ export const simpleLogFormatter: LogLineFormatter = {
     formatOther: (actionDescription: string) => actionDescription,
 }
 
-export const onlyErrorLogFormatter: LogLineFormatter = {
-    ...simpleLogFormatter,
+export const onlyErrorLogEntryFormatter: LogEntryFormatter = {
+    ...standardLogEntryFormatter,
     formatStart: () => null,
     formatFinish: () => null,
 }

@@ -1,19 +1,19 @@
 import { hasFinalLogArgument } from "../config/config-parser.js"
 import { Provider, WebConfig } from "../config/config.js"
-import { LogLineFormatter, tap } from "../logger/log-line-formatter.js"
-import { Entries, Log, Logger } from "../logger/logger.js"
+import { LogEntryFormatter, tap } from "../logger/log-entry-formatter.js"
+import { LogEntries, Log, Logger } from "../logger/logger.js"
 import { Browser } from "../scraper/puppeteer-actions.js"
 import { Review } from "../scraper/review.js"
 import { scrapeWeb } from "./scrape-web.js"
 
 export const scrapeWebs = 
 	async (
-		standardFormatter: LogLineFormatter,
-		inLoopFormatter: LogLineFormatter,
+		standardFormatter: LogEntryFormatter,
+		inLoopFormatter: LogEntryFormatter,
 		browser: Browser,
-		websConfig: WebConfig<Provider>[]): Promise<[Entries, Review[]]> => {
+		websConfig: WebConfig<Provider>[]): Promise<[LogEntries, Review[]]> => {
 
-	const [log, logInLoop, getLog] = createLogs(standardFormatter, inLoopFormatter)	
+	const [log, logInLoop, getEntries] = createLogs(standardFormatter, inLoopFormatter)	
 
 	let reviews: Review[] = []
 	for (const webConfig of websConfig) {
@@ -24,19 +24,19 @@ export const scrapeWebs =
 		reviews = [...reviews, ...providerReviews]
 	}
 
-	return [getLog(), reviews] as const
+	return [getEntries(), reviews] as const
 }
 
 const createLogs = 
 	(
-		standardFormatter: LogLineFormatter,
-		inLoopFormatter: LogLineFormatter): [standardLog: Log, inLoopLog: Log, () => Entries] =>{
+		standardFormatter: LogEntryFormatter,
+		inLoopFormatter: LogEntryFormatter): [standardLog: Log, inLoopLog: Log, () => LogEntries] =>{
 
 	const toConsole = tap(console.log)
-	const selectOutput = (l: LogLineFormatter) => hasFinalLogArgument() ? l : toConsole(l)
+	const selectOutput = (l: LogEntryFormatter) => hasFinalLogArgument() ? l : toConsole(l)
 
 	const logger = new Logger(selectOutput(standardFormatter), [])
 	const inLoopLog = logger.withFormatter(selectOutput(inLoopFormatter))
 
-	return [logger.log.bind(logger), inLoopLog.log.bind(inLoopLog), logger.getLog.bind(logger)]
+	return [logger.log.bind(logger), inLoopLog.log.bind(inLoopLog), logger.getEntries.bind(logger)]
 }

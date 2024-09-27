@@ -10,8 +10,7 @@ const providers: ProvidersMap = {
     'google': googleSteps,
     'bodasnet': bodasnetSteps,
 }
-export const getSteps = <T extends Provider>(provider: T): Steps<T> =>
-    providers[provider]
+export const getSteps = <T extends Provider>(provider: T): Steps<T> => providers[provider]
 
 
 

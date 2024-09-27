@@ -1,17 +1,17 @@
-import { ActionDescription, LogLineFormatter } from "./log-line-formatter.js"
+import { ActionDescription, LogEntryFormatter } from './log-entry-formatter.js'
 
 type Action<T> = (...args: any[]) => Promise<T>
-export type Entries = string[]
+export type LogEntries = string[]
 export type Log = Logger['log']
 
 export class Logger {
 
-	constructor(private lineFormatter: LogLineFormatter, private memory: Entries) {
+	constructor(private lineFormatter: LogEntryFormatter, private logEntries: LogEntries) {
 	}
 
 	private addLine(str: string | null) {
 		if (str !== null) 
-			this.memory.push(str)
+			this.logEntries.push(str)
 	}
 
 	public log<T>(actionDescription: ActionDescription): void 
@@ -33,12 +33,12 @@ export class Logger {
 		}
 	}
 
-	public getLog() {
-		return structuredClone(this.memory)
+	public getEntries() {
+		return structuredClone(this.logEntries)
 	}
 
-	public withFormatter(lineFormatter: LogLineFormatter) {
-		return new Logger(lineFormatter, this.memory)
+	public withFormatter(lineFormatter: LogEntryFormatter) {
+		return new Logger(lineFormatter, this.logEntries)
 	}
 
 }

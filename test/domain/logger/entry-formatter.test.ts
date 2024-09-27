@@ -1,6 +1,6 @@
 import { describe, it } from "node:test"
 import { assertArraysAreEqual } from "../../custom-asserts.js"
-import { indentLog } from "../../../src/domain/logger/final-log-formatter.js"
+import { indentLogEntries } from "../../../src/domain/logger/log-entries-formatter.js"
 
 describe('given indentLog function, when it receives a log as input', () => {
     it('indents child log blocks', async () => {
@@ -22,7 +22,7 @@ describe('given indentLog function, when it receives a log as input', () => {
             'Finish: A',
         ]
 
-        assertArraysAreEqual(indentLog(inputLog, '> '), expectedLog)
+        assertArraysAreEqual(indentLogEntries(inputLog, '> '), expectedLog)
     })
 
     it('gives same indentation to sibling log blocks', async () => {
@@ -48,7 +48,7 @@ describe('given indentLog function, when it receives a log as input', () => {
             'Finish: A',
         ]
 
-        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
+        assertArraysAreEqual(indentLogEntries(log, '> '), expectedLog)
     })
 
     it('gives same indentation to sibling log blocks deeply nested', async () => {
@@ -82,7 +82,7 @@ describe('given indentLog function, when it receives a log as input', () => {
             'Finish: A',
         ]
 
-        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
+        assertArraysAreEqual(indentLogEntries(log, '> '), expectedLog)
     })
 
     it('does not creates indentation below lines not starting with the words "start" or "finish"', async () => {
@@ -102,7 +102,7 @@ describe('given indentLog function, when it receives a log as input', () => {
             'finish: A',
         ]
 
-        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
+        assertArraysAreEqual(indentLogEntries(log, '> '), expectedLog)
     })
 
     it('puts text belonging to a block indented inside the log block', async () => {
@@ -122,7 +122,7 @@ describe('given indentLog function, when it receives a log as input', () => {
             'finish: A',
         ]
 
-        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
+        assertArraysAreEqual(indentLogEntries(log, '> '), expectedLog)
     })
 
     it('detect words "start" or "finish" in a case insensitive manner', async () => {
@@ -144,7 +144,7 @@ describe('given indentLog function, when it receives a log as input', () => {
             'FInisH: A',
         ]
 
-        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
+        assertArraysAreEqual(indentLogEntries(log, '> '), expectedLog)
     })
 
     it('when a line contains "start" or "finish" but not start with that word, it is not considered a new block', async () => {
@@ -170,7 +170,7 @@ describe('given indentLog function, when it receives a log as input', () => {
             'finish: A',
         ]
 
-        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
+        assertArraysAreEqual(indentLogEntries(log, '> '), expectedLog)
     })
 
     it('empty lines are not indented', async () => {
@@ -198,6 +198,6 @@ describe('given indentLog function, when it receives a log as input', () => {
             'finish: A',
         ]
 
-        assertArraysAreEqual(indentLog(log, '> '), expectedLog)
+        assertArraysAreEqual(indentLogEntries(log, '> '), expectedLog)
     })
 })
