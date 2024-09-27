@@ -1,22 +1,9 @@
 import { Provider, WebConfig } from "../config/config.js"
 import { Logger } from "../logger/logger.js"
-import { Browser, ErrorWithCode } from "./puppeteer-actions.js"
-import { Review } from "./review.js"
-import { scrape } from "./scraper.js"
+import { Browser, ErrorWithCode } from "../scraper/puppeteer-actions.js"
+import { scrape } from "../scraper/scraper.js"
 
-export const scrapeWebs = async (log: Logger, logInLoop: Logger, browser: Browser, websConfig: WebConfig<Provider>[]) => {
-	let reviews: Review[] = []
-	for (const webConfig of websConfig) {
-		if (!webConfig.activate) {
-			continue
-		}
-		const providerReviews = await scrapeWeb(log, logInLoop, browser, webConfig)
-		reviews = [...reviews, ...providerReviews]
-	}
-	return reviews
-}
-
-const scrapeWeb = 
+export const scrapeWeb = 
 	async (log: Logger, logInLoop: Logger, browser: Browser, webConfig: WebConfig<Provider>) => {
 	try {
 		const start = new Date()
