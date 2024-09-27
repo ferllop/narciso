@@ -1,7 +1,7 @@
 import { hasFinalLogArgument } from "../config/config-parser.js"
 import { Provider, WebConfig } from "../config/config.js"
 import { LogLineFormatter, tap } from "../logger/log-line-formatter.js"
-import { Entries, Logger } from "../logger/logger.js"
+import { Entries, Log, Logger } from "../logger/logger.js"
 import { Browser } from "../scraper/puppeteer-actions.js"
 import { Review } from "../scraper/review.js"
 import { scrapeWeb } from "./scrape-web.js"
@@ -30,13 +30,13 @@ export const scrapeWebs =
 const createLogs = 
 	(
 		standardFormatter: LogLineFormatter,
-		inLoopFormatter: LogLineFormatter): [standardLogger: Logger, inLoopLogger: Logger, () => Entries] =>{
+		inLoopFormatter: LogLineFormatter): [standardLog: Log, inLoopLog: Log, () => Entries] =>{
 
 	const toConsole = tap(console.log)
 	const selectOutput = (l: LogLineFormatter) => hasFinalLogArgument() ? l : toConsole(l)
 
-	const log = new Logger(selectOutput(standardFormatter), [])
-	const inLoopLog = log.withFormatter(selectOutput(inLoopFormatter))
+	const logger = new Logger(selectOutput(standardFormatter), [])
+	const inLoopLog = logger.withFormatter(selectOutput(inLoopFormatter))
 
-	return [log, inLoopLog, log.getLog]
+	return [logger.log, inLoopLog.log, logger.getLog]
 }

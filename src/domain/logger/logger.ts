@@ -14,7 +14,14 @@ export class Logger {
 			this.memory.push(str)
 	}
 
-	public async log<T>(actionDescription: ActionDescription, action: Action<T>): Promise<T> {
+	public log<T>(actionDescription: ActionDescription): void 
+	public async log<T>(actionDescription: ActionDescription, action: Action<T>): Promise<T>
+	public async log<T>(actionDescription: ActionDescription, action?: Action<T>) {
+		if (!action) {
+			this.addLine(this.lineFormatter.formatOther(actionDescription))
+			return
+		}
+
 		this.addLine(this.lineFormatter.formatStart(actionDescription))
 		try {
 			const result = await action()
@@ -28,10 +35,6 @@ export class Logger {
 
 	public getLog() {
 		return structuredClone(this.memory)
-	}
-
-	public add(s: string) {
-		this.addLine(this.lineFormatter.formatOther(s))
 	}
 
 	public withFormatter(lineFormatter: LogLineFormatter) {
