@@ -1,6 +1,6 @@
-import { Provider, WebConfig } from "../config/web-config.js"
+import { WebConfig } from "../config/web-config.js"
 import { Log } from "../logger/logger.js"
-import { getSteps } from "./providers/provider.js"
+import { Provider, getSteps } from "./providers/provider.js"
 import { Browser, Page } from "./puppeteer-actions.js"
 import { Review, createReviewValidator } from "./review.js"
 

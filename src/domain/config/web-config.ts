@@ -1,4 +1,4 @@
-export type Provider = 'google' | 'bodasnet'
+import { Provider } from "../scraper/providers/provider.js"
 
 export type RawWebConfig<P extends Provider> = AddSpecificConfig<UnespecificRawWebConfig<P>>
 
