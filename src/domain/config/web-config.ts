@@ -1,5 +1,3 @@
-import { GoogleSpecificConfig } from "../scraper/providers/google/google.config.js"
-
 export type Provider = 'google' | 'bodasnet'
 
 export type RawWebConfig<P extends Provider> = AddSpecificConfig<UnespecificRawWebConfig<P>>
@@ -27,9 +25,7 @@ export type RawIgnoreReviewsConfig = {
 	byMinimumRating?: number
 }
 
-export interface SpecificsMap {
-	google: GoogleSpecificConfig
-}	
+export interface SpecificsMap {}	
 
 export type WebConfig<P extends Provider> = RawWebConfig<P> & {
 	timeout: number

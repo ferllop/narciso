@@ -1,3 +1,9 @@
+declare module "../../../config/web-config.js" {
+	interface SpecificsMap {
+		google: GoogleSpecificConfig
+	}	
+}
+
 export type GoogleSpecificConfig = {
 	known: GoogleKnownConfig
 	translatedContent: boolean
