@@ -1,4 +1,4 @@
-import { Provider } from "../../config/config.js"
+import { Provider } from "../../config/web-config.js"
 import { Steps } from "../scraper.js"
 import { bodasnetSteps } from "./bodasnet/bodasnet.js"
 import { googleSteps } from "./google/google.js"

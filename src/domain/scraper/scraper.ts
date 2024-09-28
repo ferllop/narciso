@@ -1,4 +1,4 @@
-import { Provider, WebConfig } from "../config/config.js"
+import { Provider, WebConfig } from "../config/web-config.js"
 import { Log } from "../logger/logger.js"
 import { getSteps } from "./providers/provider.js"
 import { Browser, Page } from "./puppeteer-actions.js"

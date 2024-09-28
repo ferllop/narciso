@@ -1,4 +1,6 @@
-import { Config, Provider, PuppeteerConfig, RawConfig, RawPuppeteerConfig, RawWebConfig, WebConfig } from './config.js'
+import { Config, RawConfig } from './config.js'
+import { Provider, RawWebConfig, WebConfig } from './web-config.js'
+import { PuppeteerConfig, RawPuppeteerConfig } from './puppeteer-config.js'
 
 const isAbsentOrExplicitlyTrue = (value: any) => [true, undefined].includes(value)
 const isExplicitlyTrue = (value: any) => value === true

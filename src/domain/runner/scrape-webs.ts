@@ -1,5 +1,5 @@
 import { hasFinalLogArgument } from "../config/config-parser.js"
-import { Provider, WebConfig } from "../config/config.js"
+import { Provider, WebConfig } from "../config/web-config.js"
 import { LogEntryFormatter, tap } from "../logger/log-entry-formatter.js"
 import { LogEntries, Log, Logger } from "../logger/logger.js"
 import { Browser } from "../scraper/puppeteer-actions.js"

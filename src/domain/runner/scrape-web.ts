@@ -1,4 +1,4 @@
-import { Provider, WebConfig } from "../config/config.js"
+import { Provider, WebConfig } from "../config/web-config.js"
 import { Log } from "../logger/logger.js"
 import { Browser, ErrorWithCode } from "../scraper/puppeteer-actions.js"
 import { scrape } from "../scraper/scraper.js"

@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test'
-import { IgnoreReviewsConfig } from '../../../src/domain/config/config.js'
+import { IgnoreReviewsConfig } from '../../../src/domain/config/web-config.js'
 import { assertNotOk } from '../../custom-asserts.js'
 import { Review, createReviewValidator } from '../../../src/domain/scraper/review.js'
 
