@@ -2,7 +2,7 @@
 
 Narciso scrapes the reviews of webs that we call providers. It can be google, star of service, bodas.net... 
 Each provider have its own code to manage puppeteer.
-If the scrape execution is successful, then the reviews are stored in a json file called `.result/reviews.json`. If not it will do nothing regarding this file.
+If the scrape execution is successful, then the reviews are stored in a json file called `/result/reviews.json`. If not it will do nothing regarding this file.
 The json file will be an array of objects with the next format:
 ```
 {
@@ -14,7 +14,7 @@ The json file will be an array of objects with the next format:
 ```
 Also, it always creates the file `./result/reviews.last.log` with the log of the last run.
 
-Feel free to add code to scrape new providers in `./src/providers/`.
+Feel free to add code to scrape new providers in `/src/providers/`.
 
 ## Launching the process
 ### Locally
@@ -33,7 +33,7 @@ npm start final-log
 ```
 
 ### Using Docker
-If you prefer to launch Narciso inside docker you can use the provided script in file run.sh.
+If you prefer to launch Narciso inside docker you can use the provided script in file `/run.sh`.
 To use it, use the same commands as in the "Locally" section but prepending them with "./run.sh":
 
 ```
@@ -53,8 +53,8 @@ The purpose of the custom image name is to be able to create a custom image for 
 
 ## Configuration
 
-The configuration is done through the file `./config.ts`.
-There is an example config file named `./config.example.ts`.
+The configuration is done through the file `/config.ts`.
+There is an example config file named `/config.example.ts`.
 
 There is a command to check that the config is ok:
 ```
@@ -104,7 +104,8 @@ Its purpose is to configure the puppeteer process and the other to configure fro
 ### Webs section
 
 Its purpose is to configure from which webs you want to get the reviews.
-Is an array of web configurations and on the root of each web configuration object are the fields that are common for all the providers type and inside the `specific` field you can put the configurations which are specific for the provider. Those provider specific configurations should be documented inside `./docs/providers/`.
+Is an array of web configurations. In the root of each web configuration are the fields that are common for all the providers and inside the `specific` field you can put the configurations which are specific for the provider. 
+[In a following section](./README.md#add-a-new-provider) are explained the steps to add a new provider.
 
 The common fields are:
 - provider: Tells the scraper how to scrape the web. Each provider must provide (pun intended :D) its own code to scrape its kind of web. String. Mandatory
@@ -119,7 +120,7 @@ The common fields are:
   -- byMinimumCharactersCountInContent: exclude reviews with the content shorter than the provided here: Number. Optional. If not provided even empty content is valid.
   -- byMinimumRating: exclude reviews with the rating lower than the provided. Number. Optional. If not provided even a rating of 0 is valid.
 
-As a convention, all this fields will be followed by the specific ones.
+As a convention, all this fields will be followed by the `specific` field with the specific configuration of the provider if applicable.
 
 ## Generic workflow
 Clone this repository to your local.
@@ -132,3 +133,43 @@ Then, for instance, you can set a monthly cron job with final-log argument nd pi
 /narciso/location/run.sh npm start final-log | docker exec -i mymailserver mail -s "Narciso log" me@example.com
 ```
 
+## Add a new provider
+
+For instance suppose that you want to create a provider called 'thereviewhub'.
+
+Create the directory `/src/domain/scraper/providers/thereviewhub`.
+
+There, create a file `thereviewhub.ts` to put the function which executes the steps to get the reviews from the provider. That function must be of type `Steps` and lets say that you call that function `thereviewhubSteps` 
+
+Now, go to `/src/domain/scraper/providers/provider.ts`.
+
+Add the provider to be a new constituent of the Provider union:
+
+```ts
+export type Provider = 
+  | 'google'
+  | 'bodasnet'
+  | 'thereviewhub' // <-- Added by you
+```
+
+And add the provider to the ProvidersMap to link it to the steps function that we created previously:
+
+```ts
+const providersMap: { [P in Provider]: Steps<P>} = {
+    'google': googleSteps,
+    'bodasnet': bodasnetSteps,
+    'thereviewhub': thereviewhubSteps, // <<-- Added by you
+}
+```
+
+In addition, if the provider needs specific configuration, create in the same directory a file called `thereviewhub.config.ts` and put there all the types of your needs and also you have to provide the following to ensure that the main config file is properly type-checked. Being ThereviewhubSpecificConfig the main type of the specific config of `thereviewhub` provider put in `thereviewhub.config.ts`:
+
+```ts
+declare module "../../../config/web-config.js" {
+    interface SpecificsMap {
+        thereviewhub: ThereviewhubSpecificConfig 
+    }	
+}
+```
+
+Aaaaaand finally, document the specific configuration inside `/docs/providers/thereviewhub.ts`.
