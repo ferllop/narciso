@@ -7,8 +7,8 @@ export type Tag = string
 export type Selector = string
 export type Milliseconds = number
 export type Handle = ElementHandle | Page
-export class ErrorWithCode extends Error {
-  constructor(public readonly content: string, message: string) {
+export class ErrorWithHTML extends Error {
+  constructor(public readonly html: string, message: string) {
     super(message)
   }
 }
@@ -74,10 +74,10 @@ export const findOneOrFail = (log: Log, reason: Reason) => (selector: Selector) 
   log(`Find or fail one element with selector ${selector} ${reason}`, async () => {
     const found = await handle.$(selector)
     if (found === null) {
-      let content: string = handle instanceof Page 
+      let html: string = handle instanceof Page 
         ? await handle.content()
         : await handle.evaluate(el => el.outerHTML)
-      throw new ErrorWithCode(content, `The element was expected to be found`)
+      throw new ErrorWithHTML(html, `The element was expected to be found`)
     }
     return found
 })
