@@ -1,15 +1,8 @@
 import assert from 'node:assert'
 import { describe, it } from 'node:test'
 import { Logger } from '../../../src/domain/logger/logger.js'
-import { LogEntryFormatter } from '../../../src/domain/logger/log-entry-formatter.js'
+import { simpleEntryFormatter } from './test-helpers.js'
 
-const id = <T>(x: T) => x
-const simpleEntryFormatter: LogEntryFormatter = {
-    formatStart: (action: string) => `Start: ${action}`,
-    formatFinish: (action: string) => `Finish: ${action}`,
-    formatError: id,
-    formatOther: id,
-}
 const doNothing = async () => {}
 
 describe('Given a logger', () => {
