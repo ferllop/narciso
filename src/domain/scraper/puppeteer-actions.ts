@@ -2,20 +2,16 @@ import { Page, ElementHandle, Browser, KeyInput } from "puppeteer"
 import { Log } from "../logger/logger.js"
 export { Page, ElementHandle, Browser }
 
-export type Reason = string
+export type ActionDescription = string
 export type Tag = string
 export type Selector = string
 export type Milliseconds = number
 export type Handle = ElementHandle | Page
+
 export class ErrorWithHTML extends Error {
   constructor(public readonly html: string, message: string) {
     super(message)
   }
-}
-
-export const tap = <T>(f: (x: T) => Promise<any>) => async (x: T): Promise<T> => {
-  await f(x)
-  return x
 }
 
 export const goto = (url: string) => async (page: Page) => {
@@ -23,8 +19,8 @@ export const goto = (url: string) => async (page: Page) => {
   return page
 }
 
-export const pressKey = (log: Log, reason: Reason, key: KeyInput) => async (page: Page) =>
-  log(reason, async () => {
+export const pressKey = (log: Log, actionDescription: ActionDescription, key: KeyInput) => async (page: Page) =>
+  log(actionDescription, async () => {
   await page.keyboard.press(key)
   return page
 })
@@ -41,37 +37,27 @@ export const evalOrElse = <T>(onFound: (x: Element) => T, onNotFound: () => T) =
 export const selectorByText = (cssSelector: Selector, rejectCookiesText: string) => 
   `${cssSelector ? cssSelector + ' ' : ''}::-p-text(${rejectCookiesText})`
 
-export const click = (log: Log, reason: Reason) => 
+export const click = (log: Log, actionDescription: ActionDescription) => 
   (handle: ElementHandle) =>
-  log(`Click on element previously found ${reason}`, async () => {
+  log(`Click on element previously found ${actionDescription}`, async () => {
     await handle.evaluate(h => (h as HTMLElement).click())
     return handle
 })
 
-export const clickIfPresent = (log: Log, reason: Reason) => 
+export const clickIfPresent = (log: Log, actionDescription: ActionDescription) => 
   (handle: ElementHandle | null) =>
-  log(`Click on element previously found if is present ${reason}`, async () => {
+  log(`Click on element previously found if is present ${actionDescription}`, async () => {
   if (handle !== null) {
     await handle.evaluate(h => (h as HTMLElement).click())
   }
   return handle
 })
 
-export const clickOrFail = (log: Log, reason: Reason) => 
-  (handle: ElementHandle | null) => 
-  log(`Click or fail on element previously found ${reason}`, async () => {
-  if (handle === null) {
-    throw new Error(`The element was expected to be found`)
-  }
-  await handle.evaluate(h => (h as HTMLElement).click())
-  return handle
-})
+export const findOne = (log: Log, actionDescription: ActionDescription) => (selector: Selector) => (handle: Handle) => 
+  log(`Find one element with selector ${selector} ${actionDescription}`, async () => await handle.$(selector))
 
-export const findOne = (log: Log, reason: Reason) => (selector: Selector) => (handle: Handle) => 
-  log(`Find one element with selector ${selector} ${reason}`, async () => await handle.$(selector))
-
-export const findOneOrFail = (log: Log, reason: Reason) => (selector: Selector) => (handle: Handle) => 
-  log(`Find or fail one element with selector ${selector} ${reason}`, async () => {
+export const findOneOrFail = (log: Log, actionDescription: ActionDescription) => (selector: Selector) => (handle: Handle) => 
+  log(`Find or fail one element with selector ${selector} ${actionDescription}`, async () => {
     const found = await handle.$(selector)
     if (found === null) {
       let html: string = handle instanceof Page 
@@ -82,8 +68,8 @@ export const findOneOrFail = (log: Log, reason: Reason) => (selector: Selector) 
     return found
 })
 
-export const findAll = (log: Log, reason: Reason) => (selector: Selector) => (page: Handle): Promise<ElementHandle[]> =>
-  log(`Find all elements with selector ${selector} ${reason}`, async () => await page.$$(selector))
+export const findAll = (log: Log, actionDescription: ActionDescription) => (selector: Selector) => (page: Handle): Promise<ElementHandle[]> =>
+  log(`Find all elements with selector ${selector} ${actionDescription}`, async () => await page.$$(selector))
 
 export type Predicate = (t: Handle) => Promise<boolean>
 export const scrollUntil = (log: Log, timeout: Milliseconds) => (predicate: Predicate) => async (page: Page) => {
@@ -101,8 +87,8 @@ export const scrollUntil = (log: Log, timeout: Milliseconds) => (predicate: Pred
   return await action()
 }
 
-export const getFirstClassOfElementWithSelector = (log: Log, reason: Reason, selector: Selector, handle: Handle) =>
-  log(`Get the first class name of the element with selector ${selector} ${reason}`, async () => {
+export const getFirstClassOfElementWithSelector = (log: Log, actionDescription: ActionDescription, selector: Selector, handle: Handle) =>
+  log(`Get the first class name of the element with selector ${selector} ${actionDescription}`, async () => {
   const el = await handle.$(selector)
   if (!el) {
     throw new Error(`The element with selector ${selector} was not found`)
@@ -112,8 +98,8 @@ export const getFirstClassOfElementWithSelector = (log: Log, reason: Reason, sel
   return tag + '.' + className
 })
 
-export const getFirstClassOfElementWithText = async (log: Log, reason: Reason, text: string, handle: Handle) => 
-  getFirstClassOfElementWithSelector(log, reason, `::-p-text(${text})`, handle) 
+export const getFirstClassOfElementWithText = async (log: Log, actionDescription: ActionDescription, text: string, handle: Handle) => 
+  getFirstClassOfElementWithSelector(log, actionDescription, `::-p-text(${text})`, handle) 
 
 export const consoleToConsole = (page: Page) => {
   page
