@@ -1,51 +1,17 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert'
-import configDataTemplate from '../../../config.example.js'
-import { assertArrayContains, assertArrayNotContains } from '../../custom-asserts.js'
-import { RawConfig } from '../../../src/domain/config/config.js'
-import { parseConfig } from '../../../src/domain/config/config-parser.js'
-
-const assertArgsContains = (argToContain: string) => (message: string, configData: RawConfig) => 
-    assertArrayContains(parseConfig(configData).puppeteer.args, argToContain, message)
-
-const assertArgsNotContains = (argToContain: string) => (message: string, configData: RawConfig) => 
-    assertArrayNotContains(parseConfig(configData).puppeteer.args, argToContain, message)
-
-const assertConfigWithData = (configData: any) => ({
-    containsArgument: (argument: string, message = '') => 
-        assertArgsContains(argument)(message, {...configDataTemplate, ...configData}),
-    notContainsArgument: (argument: string, message = '') => 
-        assertArgsNotContains(argument)(message, {...configDataTemplate, ...configData})
-})
-
-const assertPath = (...path: (string|number)[]) => {
-    const applyPath =  <T extends Record<PropertyKey, any>, K extends PropertyKey>(obj: T, path: K[]): T | T[K] => {
-        if (path.length === 0) {
-            return obj
-        }
-
-        const [p, ...ps] = path
-        return applyPath(obj[p], ps)
-    }
-
-    return {
-        inConfigWithData: (configData: any) => ({
-            hasValue: (value: any, message: string) => assert.strictEqual(applyPath(parseConfig({...configDataTemplate, ...configData}), path), value, message)
-        })
-    }
-}
+import { assertConfigWithData, assertPath } from './custom-asserts.js'
 
 describe('given puppeteer config parser', () => {
     it('when reading config to set puppeteer browser language but it is absent \
         then sets the language to american english', () => {
         assertConfigWithData({ puppeteer: {}})
-            .containsArgument('--lang=en-US')
+            .isConvertedToArgumentsContaining('--lang=en-US')
     })
 
     it('when reading config to set puppeteer browser language \
         then outputs the full puppeteer argument', () => {
         assertConfigWithData({ puppeteer: { browserLanguage: 'es-ES'}})
-            .containsArgument('--lang=es-ES')
+            .isConvertedToArgumentsContaining('--lang=es-ES')
     })
 
     it('when reading config to run puppeteer with a sandboxed browser or not \
@@ -53,19 +19,19 @@ describe('given puppeteer config parser', () => {
         const toDisableSandbox = '--no-sandbox'
 
         assertConfigWithData({ puppeteer: {} })
-            .notContainsArgument(toDisableSandbox, "when don't exists")
+            .isConvertedToArgumentsNotContaining(toDisableSandbox, "when don't exists")
 
         assertConfigWithData({ puppeteer: { sandboxBrowser: true }})
-            .notContainsArgument(toDisableSandbox, 'when is explicitly true')
+            .isConvertedToArgumentsNotContaining(toDisableSandbox, 'when is explicitly true')
 
         assertConfigWithData({ puppeteer: { sandboxBrowser: false }})
-            .containsArgument(toDisableSandbox, 'when is explicitly false')
+            .isConvertedToArgumentsContaining(toDisableSandbox, 'when is explicitly false')
 
         assertConfigWithData({ puppeteer: { sandboxBrowser: 'anything' }})
-            .containsArgument(toDisableSandbox, 'when is anything else')
+            .isConvertedToArgumentsContaining(toDisableSandbox, 'when is anything else')
 
         assertConfigWithData({ puppeteer: { sandboxBrowser: null }})
-            .containsArgument(toDisableSandbox, 'when is null')
+            .isConvertedToArgumentsContaining(toDisableSandbox, 'when is null')
     })
 
     it('when reading config to run puppeteer with a sandboxed setuid or not \
@@ -73,19 +39,19 @@ describe('given puppeteer config parser', () => {
         const toDisableSetuidSandbox = '--disable-setuid-sandbox'
 
         assertConfigWithData({puppeteer: {}})
-            .notContainsArgument(toDisableSetuidSandbox, 'when is absent')
+            .isConvertedToArgumentsNotContaining(toDisableSetuidSandbox, 'when is absent')
         
         assertConfigWithData({ puppeteer: { disableSetuidSandbox: true } })
-            .containsArgument(toDisableSetuidSandbox, 'when is explicitly true')
+            .isConvertedToArgumentsContaining(toDisableSetuidSandbox, 'when is explicitly true')
 
         assertConfigWithData({ puppeteer: { disableSetuidSandbox: false } })
-            .notContainsArgument(toDisableSetuidSandbox, 'when is explicitly false')
+            .isConvertedToArgumentsNotContaining(toDisableSetuidSandbox, 'when is explicitly false')
 
         assertConfigWithData({ puppeteer: { disableSetuidSandbox: 'anything' } })
-            .notContainsArgument(toDisableSetuidSandbox, 'when is anything else')
+            .isConvertedToArgumentsNotContaining(toDisableSetuidSandbox, 'when is anything else')
 
         assertConfigWithData({ puppeteer: { disableSetuidSandbox: null } })
-            .notContainsArgument(toDisableSetuidSandbox, 'when is null')
+            .isConvertedToArgumentsNotContaining(toDisableSetuidSandbox, 'when is null')
     })
 
     it('when reading config to start a headless browser or not \
