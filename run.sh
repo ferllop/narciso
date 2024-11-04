@@ -16,6 +16,7 @@ if [ -z "$(docker ps -q -f name=$CONTAINER_NAME 2> /dev/null)" ]; then
     --workdir /app \
     -v /etc/timezone:/etc/timezone:ro \
     -v /etc/localtime:/etc/localtime:ro \
+    -e "TZ=$(cat /etc/timezone)" \
     -v ./:/app \
     -u $(id -u) \
     --name $CONTAINER_NAME \
