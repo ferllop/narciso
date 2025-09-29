@@ -21,21 +21,34 @@ export const goto = (url: string) => async (page: Page) => {
 
 export const pressKey = (log: Log, actionDescription: ActionDescription, key: KeyInput) => async (page: Page) =>
   log(actionDescription, async () => {
-  await page.keyboard.press(key)
-  return page
+    await page.keyboard.press(key)
+    return page
 })
 
-export const waitForNetworkIdle = (timeout: Milliseconds) => async (page: Page) => {
-  await page.waitForNetworkIdle({timeout})
-  return page
-}
+export const waitForNetworkIdle = (log: Log, timeout: Milliseconds) => async (page: Page) => 
+  log('wait for network idle', async () => {
+    await page.waitForNetworkIdle({timeout})
+    return page
+})
+
+export const waitForNavigation = (log: Log, timeout: Milliseconds) => async (page: Page) =>
+  log('wait for navigation', async () => {
+    await page.waitForNavigation({timeout})
+    return page
+})
+
+export const waitForSelector = (log: Log, selector: Selector, timeout: Milliseconds) => async (page: Page) => 
+  log('wait for selector ' + selector, async () => {
+    await page.waitForSelector(selector, {timeout})
+    return page
+})
 
 export const evalOrElse = <T>(onFound: (x: Element) => T, onNotFound: () => T) => 
   async (handle: ElementHandle | null) => 
   handle === null ? onNotFound() : await handle.evaluate(onFound)
 
-export const selectorByText = (cssSelector: Selector, rejectCookiesText: string) => 
-  `${cssSelector ? cssSelector + ' ' : ''}::-p-text(${rejectCookiesText})`
+export const selectorByText = (cssSelector: Selector, text: string) => 
+  `${cssSelector ? cssSelector + ' ' : ''}::-p-text(${text})`
 
 export const click = (log: Log, actionDescription: ActionDescription) => 
   (handle: ElementHandle) =>
@@ -77,7 +90,9 @@ export const scrollUntil = (log: Log, timeout: Milliseconds) => (predicate: Pred
   const action = async () => {
     await log('to do scroll step number ' + step++, async () => 
       pressKey(log, 'to go at the end of the content', 'End')(page)
-        .then(waitForNetworkIdle(timeout)))
+        .then(waitForNetworkIdle(log, timeout))
+    )
+    console.log({predicate: await predicate(page)})
     if (!await predicate(page)) {
       await action()
     }

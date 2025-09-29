@@ -5,7 +5,8 @@ import { GoogleKnownReview } from "../google.config.js"
 export type InferedSelectors = Record<'content' | 'authorName' | 'review', Selector>
 
 export const inferSelectors = (log: Log, knownReview: GoogleKnownReview) => 
-	async (page: Page): Promise<[InferedSelectors, Page]> => {
+	async (page: Page): Promise<[InferedSelectors, Page]> => log('Infer selectors', async () => {
+
 	const inferedSelectors = {
 		content: await getFirstClassOfElementWithText(
 			log, 'to get the class to get the content', knownReview.content, page),
@@ -16,4 +17,4 @@ export const inferSelectors = (log: Log, knownReview: GoogleKnownReview) =>
 		}
 
 	return [inferedSelectors, page] as const
-}
+})

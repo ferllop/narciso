@@ -18,7 +18,7 @@ if [ -z "$(docker ps -q -f name=$CONTAINER_NAME 2> /dev/null)" ]; then
     -v /etc/localtime:/etc/localtime:ro \
     -e "TZ=$(cat /etc/timezone)" \
     -v ./:/app \
-    -u $(id -u) \
+    -u $(id -u):$(id -g) \
     --name $CONTAINER_NAME \
     --restart no \
     --rm \
