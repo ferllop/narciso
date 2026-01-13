@@ -2,6 +2,8 @@
 
 set -e
 
+source .env
+
 IMAGE_NAME="${NARCISO_IMAGE_NAME:-narciso-puppeteer}"
 CONTAINER_NAME="${NARCISO_CONTAINER_NAME:-narciso}"
 
@@ -14,9 +16,7 @@ if [ -z "$(docker ps -q -f name=$CONTAINER_NAME 2> /dev/null)" ]; then
     --init \
     --cap-add SYS_ADMIN \
     --workdir /app \
-    -v /etc/timezone:/etc/timezone:ro \
-    -v /etc/localtime:/etc/localtime:ro \
-    -e "TZ=$(cat /etc/timezone)" \
+    -e "TZ=${TIMEZONE}" \
     -v ./:/app \
     -u $(id -u):$(id -g) \
     --name $CONTAINER_NAME \

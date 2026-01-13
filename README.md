@@ -16,44 +16,14 @@ Also, it always creates the file `./result/reviews.last.log` with the log of the
 
 Feel free to add code to scrape new providers in `/src/providers/`.
 
-## Launching the process
-### Locally
-To launch Narciso using your local environment first install the dependencies:
-```
-npm ci
-```
-Then launch Narciso:
-```
-npm start
-```
-
-When Narciso runs, it will print the log in realtime to console in a flat format. To get the formatted final log at the end of the execution, add 'final-log' to the start command:
-```
-npm start final-log
-```
-
-### Using Docker
-If you prefer to launch Narciso inside docker you can use the provided script in file `/run.sh`.
-To use it, use the same commands as in the "Locally" section but prepending them with "./run.sh":
-
-```
-./run.sh npm ci
-./run.sh npm start
-```
-or to avoid printing logs:
-```
-./run.sh npm start final-log
-```
-
-With run.sh you can use two environment variables to set the name of the created image and container.
-The purpose of the custom container name is mainly to find which container is causing problems when you have multiple narcisos running in one system.
-The purpose of the custom image name is to be able to create a custom image for some specific narciso or narcisos.
-
-**Be careful not to make the services that you scrape angry launching Narciso very often.**
-
 ## Configuration
 
-The configuration is done through the file `/config.ts`.
+The configuration is done through the files `./.env` and `/config.ts`.
+
+### .env file
+You have an example of a valid .env file in `./env.example`. Copy that example file renaming to `.env` and modify it as needed.
+
+### config.ts file
 There is an example config file named `/config.example.ts`.
 
 There is a command to check that the config is ok:
@@ -92,7 +62,8 @@ That's how a configuration looks like:
 
 As you can see it is divided in two main parts. 
 
-### Puppeteer section
+#### Puppeteer section
+
 Its purpose is to configure the puppeteer process and the other to configure from which webs you want to get the reviews.
 - browserLanguage: the language of the browser. The webs will get this language as the main one. String. Optional. 'en-US' if not provided.
 - sandboxBrowser: open the browser in a sandboxed environment. Boolean. Optional. True if not provided.
@@ -101,7 +72,7 @@ Its purpose is to configure the puppeteer process and the other to configure fro
 - dumpio: show browser logs into console.Boolean. Optional. True if not provided.
 
 
-### Webs section
+#### Webs section
 
 Its purpose is to configure from which webs you want to get the reviews.
 Is an array of web configurations. In the root of each web configuration are the fields that are common for all the providers and inside the `specific` field you can put the configurations which are specific for the provider. 
@@ -122,13 +93,48 @@ The common fields are:
 
 As a convention, all this fields will be followed by the `specific` field with the specific configuration of the provider if applicable.
 
+## Launching the process
+### Locally
+To launch Narciso using your local environment first install the dependencies:
+```
+npm ci
+```
+Then launch Narciso:
+```
+npm start
+```
+
+When Narciso runs, it will print the log in realtime to console in a flat format. To get the formatted final log at the end of the execution, add 'final-log' to the start command:
+```
+npm start final-log
+```
+
+### Using Docker
+If you prefer to launch Narciso inside docker you can use the provided script in file `/run.sh`.
+To use it, use the same commands as in the "Locally" section but prepending them with "./run.sh":
+
+```
+./run.sh npm ci
+./run.sh npm start
+```
+or to avoid printing logs:
+```
+./run.sh npm start final-log
+```
+
+With run.sh you can use two environment variables to set the name of the created image and container.
+The purpose of the custom container name is mainly to find which container is causing problems when you have multiple narcisos running in one system.
+The purpose of the custom image name is to be able to create a custom image for some specific narciso or narcisos.
+
+**Be careful not to make the services that you scrape angry launching Narciso very often.**
+
 ## Generic workflow
 Clone this repository to your local.
 Create a configuration file as previously explained.
 Test in your local system.
 Go to your production system.
 Clone this repo and transfer the configuration from your local.
-Then, for instance, you can set a monthly cron job with final-log argument nd pipe the output to mail command, for example:
+Then, for instance, you can set a monthly cron job with final-log argument and pipe the output to mail command, for example:
 ```
 /narciso/location/run.sh npm start final-log | docker exec -i mymailserver mail -s "Narciso log" me@example.com
 ```
