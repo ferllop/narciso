@@ -7,7 +7,7 @@ export const PROVIDER_NAME = 'bodasnet'
 export const reviewSelectors = {
     authorNameSelector: '.storefrontReviewsTileInfo',
     ratingSelector: '.rating__count',
-    contentSelector: '.app-full-description',
+    contentSelector: '.storefrontReviewsTileContent__description',
     reviewSelector: '.storefrontReviewsTileSubpage'
 }
 export type ReviewSelectors = typeof reviewSelectors

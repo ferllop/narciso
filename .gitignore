@@ -1,5 +1,5 @@
 node_modules
-reviews.json
+/result
 /config.ts
 .env
 build

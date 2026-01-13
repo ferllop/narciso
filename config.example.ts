@@ -31,6 +31,7 @@ const rawConfig: RawConfig = {
             rejectCookiesButtonText: 'Rechazar todo',
             viewMoreButtonText: 'Más',
             viewUntranslatedContentButtonText: 'Ver original',
+            viewTranslatedContentButtonText: 'Ver traducción',
             reviewsSectionButtonText: 'Reseñas',
             sortingButtonText: 'Ordenar',
             byNewestOptionButtonText: 'Más recientes',

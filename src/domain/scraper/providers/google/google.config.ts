@@ -29,6 +29,7 @@ export type GoogleKnownTexts = {
 	rejectCookiesButtonText: string
 	viewMoreButtonText: string
 	viewUntranslatedContentButtonText: string
+	viewTranslatedContentButtonText: string
 	reviewsSectionButtonText: string
 	sortingButtonText: string
 	byNewestOptionButtonText: string

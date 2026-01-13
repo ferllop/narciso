@@ -19,6 +19,7 @@ export const scrapeWebs =
 	let reviews: Review[] = []
 	for (const webConfig of websConfig) {
 		if (!webConfig.activate) {
+			log(`Provider "${webConfig.title}" is deactivated`)
 			continue
 		}
 		const providerReviews = await scrapeWeb(log, logInLoop, browser, webConfig)

@@ -1,7 +1,7 @@
 import { WebConfig } from "../config/web-config.js"
 import { Log } from "../logger/logger.js"
 import { Provider } from "../scraper/providers/provider.js"
-import { Browser, ErrorWithHTML } from "../scraper/puppeteer-actions.js"
+import { Browser } from "../scraper/puppeteer-actions.js"
 import { scrape } from "../scraper/scraper.js"
 
 export const scrapeWeb = 
@@ -21,12 +21,7 @@ export const scrapeWeb =
 		return reviews
 
 	} catch (ex: unknown) {
-		if (ex instanceof ErrorWithHTML) {
-			log(`There was an error scraping the ${webConfig.provider} provider: ${ex.message} and the html of the page is this:`)
-			log(ex.html)
-		} else if (ex instanceof Error) {
-			log(`There was an error scraping the ${webConfig.provider} provider: ${ex.message}`)
-		} else {
+		if (ex instanceof Error === false) {
 			log(`Something wrong happened: ${ex}`)
 		}
 		return []

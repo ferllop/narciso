@@ -1,5 +1,5 @@
 import { Log } from "../../../../logger/logger.js"
-import { Milliseconds, Page, click, findOneOrFail, selectorByText, waitForNetworkIdle, waitForSelector } from "../../../puppeteer-actions.js"
+import { Milliseconds, Page, click, findOneOrFail, selectorByText, waitForSelector } from "../../../puppeteer-actions.js"
 import { GoogleKnownTexts } from "../google.config.js"
 
 export const sortByNewest =	(
@@ -14,7 +14,6 @@ export const sortByNewest =	(
 			.then(_ => waitForSelector(log, selectorByText('', knownTexts.byNewestOptionButtonText ), timeout)(page))
 			.then(findOneOrFail(log, 'to find the order by newest option')(selectorByText('', knownTexts.byNewestOptionButtonText)))
 			.then(click(log, 'to select the order by newest option'))
-			//.then(_ => waitForNetworkIdle(timeout)(page))
 			.then(async _ => page)
 	   )
 

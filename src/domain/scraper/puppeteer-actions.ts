@@ -37,10 +37,10 @@ export const waitForNavigation = (log: Log, timeout: Milliseconds) => async (pag
     return page
 })
 
-export const waitForSelector = (log: Log, selector: Selector, timeout: Milliseconds) => async (page: Page) => 
+export const waitForSelector = (log: Log, selector: Selector, timeout: Milliseconds) => async (handle: Handle) => 
   log('wait for selector ' + selector, async () => {
-    await page.waitForSelector(selector, {timeout})
-    return page
+    await handle.waitForSelector(selector, {timeout})
+    return handle
 })
 
 export const evalOrElse = <T>(onFound: (x: Element) => T, onNotFound: () => T) => 
@@ -66,6 +66,13 @@ export const clickIfPresent = (log: Log, actionDescription: ActionDescription) =
   return handle
 })
 
+export const ifPresent = <T extends ElementHandle>(log: Log, action: (handle: T) => Promise<Handle>) =>
+  (handle: T | null) =>
+  log(`If present`, async () => 
+      handle === null 
+        ? null 
+        : await action(handle))
+
 export const findOne = (log: Log, actionDescription: ActionDescription) => (selector: Selector) => (handle: Handle) => 
   log(`Find one element with selector ${selector} ${actionDescription}`, async () => await handle.$(selector))
 
@@ -76,7 +83,7 @@ export const findOneOrFail = (log: Log, actionDescription: ActionDescription) =>
       let html: string = handle instanceof Page 
         ? await handle.content()
         : await handle.evaluate(el => el.outerHTML)
-      throw new ErrorWithHTML(html, `The element was expected to be found`)
+      throw new ErrorWithHTML(html, `The element with selector ${selector} was not found`)
     }
     return found
 })
@@ -86,20 +93,22 @@ export const findAll = (log: Log, actionDescription: ActionDescription) => (sele
 
 export type Predicate = (t: Handle) => Promise<boolean>
 export const scrollUntil = (log: Log, timeout: Milliseconds) => (predicate: Predicate) => async (page: Page) => {
-  let step = 1
-  const action = async () => {
-    await log('to do scroll step number ' + step++, async () => 
-      pressKey(log, 'to go at the end of the content', 'End')(page)
-        .then(waitForNetworkIdle(log, timeout))
-    )
-    console.log({predicate: await predicate(page)})
-    if (!await predicate(page)) {
-      await action()
+  const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
+  const action = async (step: number): Promise<Page> => {
+    await log('to do scroll step number ' + step, async () => { 
+      await pressKey(log, 'to go at the end of the content', 'End')(page)
+      await sleep(1000)
+    })
+    if (await predicate(page)) {
+      return page
     }
-    return page
+    if (step > 100 || step > timeout) {
+      throw new Error(`Too much steps. Step ${timeout} has been reached and its limit is the smallest of 100 or ${timeout}`)
+    }
+    return await action(step + 1)
   }
 
-  return await action()
+  return await action(1)
 }
 
 export const getFirstClassOfElementWithSelector = (log: Log, actionDescription: ActionDescription, selector: Selector, handle: Handle) =>

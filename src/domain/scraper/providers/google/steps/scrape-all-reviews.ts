@@ -2,35 +2,52 @@ import { Log } from "../../../../logger/logger.js"
 import { 
 	ElementHandle, 
 	Page, 
-	clickIfPresent,
+	click, 
 	evalOrElse, 
 	findAll, 
 	findOne, 
-	selectorByText
+	findOneOrFail, 
+	ifPresent, 
+	selectorByText,
+	waitForSelector,
+	type Handle,
+	type Milliseconds
 } from "../../../puppeteer-actions.js"
 import { Review } from "../../../review.js"
 import { GoogleKnownTexts, GoogleSpecificConfig } from "../google.config.js"
 import { InferedSelectors } from "./infer-selectors.js"
 
-
 export const scrapeAllReviews = (
 	log: Log, 
 	logOnLoop: Log, 
-	{translatedContent, known}: GoogleSpecificConfig,
+	timeout: Milliseconds,
+	googleSpecificConfig: GoogleSpecificConfig,
 	inferedSelectors: InferedSelectors,
 	providerName: string
 ) => async (page: Page): Promise<Review[]> =>
-	log(`get the reviews data with ${translatedContent ? '' : 'un'}translated content`, async () => Promise.all(
-		await Promise.resolve(page)
-			.then(findAll(log, 'to find all the reviews elements')(inferedSelectors.review))
-			.then(reviews => reviews.map(async review => ({
-				provider: providerName, 
-				rating: await scrapeRating(logOnLoop, known.texts.stars, review),
-				authorName: await scrapeAuthor(logOnLoop, inferedSelectors.authorName, review),
-				content: 
-					await scrapeContent(logOnLoop, inferedSelectors.content, known.texts, translatedContent, page, review)
-			})))
-	))
+	log(`get the reviews data with ${googleSpecificConfig.translatedContent ? '' : 'un'}translated content`, async () => {
+		const reviewsEls = await findAll(log, 'to find all the reviews elements')(inferedSelectors.review)(page)
+		let reviews: Review[] = []
+		for await (const review of reviewsEls) {
+			reviews.push(
+				await scrapeReview(logOnLoop, timeout, googleSpecificConfig, inferedSelectors, providerName, review)
+			)
+		}
+		return reviews
+	})
+
+const scrapeReview = async (
+	log: Log, 
+	timeout: Milliseconds,
+	{translatedContent, known}: GoogleSpecificConfig,
+	inferedSelectors: InferedSelectors, 
+	providerName: string, 
+	review: ElementHandle): Promise<Review> => ({
+		provider: providerName, 
+		rating: await scrapeRating(log, known.texts.stars, review),
+		authorName: await scrapeAuthor(log, inferedSelectors.authorName, review),
+		content: await scrapeContent(log, timeout, inferedSelectors.content, known.texts, translatedContent, review)
+	})
 
 const scrapeRating = (log: Log, stars: string, review: ElementHandle): Promise<number> =>  
 	Promise.resolve(review)
@@ -56,30 +73,71 @@ const scrapeAuthor = async (log: Log, authorNameSelector: string, review: Elemen
 
 const scrapeContent = async (
 	log: Log, 
+	timeout: Milliseconds,
 	contentSelector: string, 
 	knownTexts: GoogleKnownTexts, 
 	loadTranslatedContent: boolean,
-	page: Page,
 	review: ElementHandle): Promise<string> => 
-	Promise.resolve(review)
-		.then(review => loadTranslatedContent ? review : loadUntranslatedContent(log, knownTexts.viewUntranslatedContentButtonText))
-		.then(_ => page.waitForNetworkIdle())
-		.then(_ => loadContentEntirely(log, knownTexts.viewMoreButtonText)(review))
-		.then(_ => page.waitForNetworkIdle())
-		.then(_ => review)
+	loadContentInDesiredTranslationState(log, timeout, loadTranslatedContent, knownTexts)(review)
+		// .then(loadContentEntirely(log, timeout, knownTexts.viewMoreButtonText, contentSelector))
 		.then(findOne(log, 'to get the content')(contentSelector))
 		.then(evalOrElse(el => el.innerHTML, () => ''))
-
-const loadUntranslatedContent = 
-	(log: Log, viewUntranslatedContentButtonText: string) => (review: ElementHandle) =>  
-	Promise.resolve(review)
-		.then(findOne(log, 'to get the clickable element to view the untranslated content')
-			  (selectorByText('span', viewUntranslatedContentButtonText)))
-		.then(clickIfPresent(log, 'to view the untranslated content'))
+		
+export const loadContentInDesiredTranslationState = (
+	log: Log, 
+	timeout: Milliseconds,
+	loadTranslatedContent: boolean,
+	knownTexts: GoogleKnownTexts, 
+) => (review: ElementHandle) =>  
+	loadTranslatedContent
+		? Promise.resolve(review)
+		: Promise.resolve(review)
+			.then(findOne(log, 'to get the clickable element to view the untranslated content')
+				  (selectorByText('span', knownTexts.viewUntranslatedContentButtonText)))
+			// .then(ifPresent(log, click(log, 'to view the untranslated content')))
+			.then(ifPresent(log, async (seeOriginalButton) => {
+				await click(log, 'to view the untranslated content')(seeOriginalButton)
+				return waitForSelector(log, selectorByText('', knownTexts.viewTranslatedContentButtonText), timeout)(review)
+			}))
+			.then(_ => review)
 
 const loadContentEntirely = 
-	(log: Log, viewMoreButtonText: string) => (review: ElementHandle) => 
+	(log: Log, timeout: Milliseconds, viewMoreButtonText: string, contentSelector: string) => (review: ElementHandle) => 
 	Promise.resolve(review)
 		.then(findOne(log, 'to get the clickable element to expand the content')(selectorByText('button', viewMoreButtonText)))
-		.then(clickIfPresent(log, 'to view the entire content'))
+		.then(ifPresent(log, async viewMoreButton => {
+			const getContentLength = () => findOneOrFail(log, 'to get the content')(contentSelector)(review)
+				.then(async content => {
+					console.log({content: await content.evaluate(el => el.innerHTML)})
+					return content.evaluate(el => el.innerHTML.length)
+				})
+			const contentLengthBefore = await getContentLength()
+
+			await click(log, 'to view the entire content')(viewMoreButton)
+
+			const waitUntil = (pollTime: Milliseconds, timeout: Milliseconds, predicate: (handle: Handle) => Promise<boolean>) => async (handle: Handle) => {
+				return await new Promise(resolve => {
+					let timeWaiting = 0
+					const interval = setInterval(async () => {
+						if (await predicate(handle)) {
+							clearInterval(interval);
+							return resolve(handle);
+						};
+						timeWaiting += pollTime
+						if (timeWaiting > timeout) {
+							clearInterval(interval)
+							throw new Error('TIMEOUT', { cause: {pollTime, timeWaiting, timeout}})
+						}
+					}, pollTime);
+				});
+			}
+			await waitUntil(100, timeout, async () => {
+				const after = await getContentLength() 
+				console.log({after, before: contentLengthBefore})
+				return after > contentLengthBefore
+			})(review)
+
+			return viewMoreButton
+		}))
+		.then(_ => review)
 

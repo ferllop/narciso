@@ -19,6 +19,6 @@ export const googleSteps: Steps<typeof PROVIDER_NAME> = (log, logInLoop, webConf
         .then(goToReviewsTab(log, timeout, reviewsSectionButtonText))
         .then(sortByNewest(log, timeout, webConfig.specific.known.texts))
         .then(loadAllReviews(log, timeout, oldestReviewAuthorName))
-        .then(inferSelectors(log, knownReview))
-        .then(([selectors, page]) => scrapeAllReviews(log, logInLoop, webConfig.specific, selectors, PROVIDER_NAME)(page))
+        .then(inferSelectors(log, timeout, webConfig.specific.translatedContent, knownTexts, knownReview))
+        .then(([selectors, page]) => scrapeAllReviews(log, logInLoop, timeout, webConfig.specific, selectors, PROVIDER_NAME)(page))
 }
