@@ -1,9 +1,12 @@
 FROM node:21
 
+ARG USER_UID=1000
+ARG USER_GID=1000
+
 # Configure default locale (important for chrome-headless-shell). 
-ENV LANG en_US.UTF-8
-ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/google-chrome
-ENV NPM_CONFIG_UPDATE_NOTIFIER false
+ENV LANG=en_US.UTF-8
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 
 # Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
 # Note: this installs the necessary libs to make the bundled version of Chrome that Puppeteer
@@ -16,8 +19,14 @@ RUN apt-get update \
     && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \
       --no-install-recommends \
     && service dbus start \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && groupmod -g ${USER_GID} node \
+    && usermod -u ${USER_UID} -g ${USER_GID} node
 
-ENV DBUS_SESSION_BUS_ADDRESS autolaunch:
+COPY package-lock.json ./
+COPY package.json ./
+RUN npm ci
+
+ENV DBUS_SESSION_BUS_ADDRESS=autolaunch:
 
 CMD ["google-chrome-stable"]
