@@ -14,8 +14,15 @@ export const scrape =
     async <P extends Provider>(log: Log, logInLoop: Log, browser: Browser, webConfig: WebConfig<P>) => {
     const page = await browser.newPage()
     await page.setUserAgent({
-        userAgent: 'Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0'
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36'
     })
+    await page.setViewport({
+        width: 1920,
+        height: 1080,
+        deviceScaleFactor: 1, // Ensures 1:1 pixel mapping
+        isMobile: false,
+    })
+
     try {
         return await getSteps(webConfig.provider)(log, logInLoop, webConfig)(page)
             .then(reviews => reviews.filter(createReviewValidator(webConfig.ignoreReviews)))
